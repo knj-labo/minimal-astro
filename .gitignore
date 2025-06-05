@@ -3,3 +3,6 @@
 
 # dipendency
 node_modules
+
+# settings
+.claude
