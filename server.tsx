@@ -1,4 +1,5 @@
 import { renderToString } from 'react-dom/server';
+import { Counter } from './src/islands/Counter';
 
 const server = Bun.serve({
   port: 3000,
@@ -21,6 +22,9 @@ const server = Bun.serve({
 <html>
 <head>
   <title>Island Architecture</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/output.css">
 </head>
 <body class="bg-gray-50 p-8">
   <h1 class="text-3xl font-bold text-center mb-8">Island Architecture Demo</h1>
@@ -34,7 +38,7 @@ const server = Bun.serve({
   <!-- Island -->
   <div class="max-w-2xl mx-auto">
     <div data-island="Counter" data-props='{"initialCount": 10}'>
-      ${renderToString("<div>Loading...</div>")}
+      ${renderToString(<Counter initialCount={10} />)}
     </div>
   </div>
   

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm css:build && bun build.ts",
+    "css:build": "npx @tailwindcss/cli -i ./static/input.css -o ./static/output.css"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.8",
     "@types/bun": "^1.2.15",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
