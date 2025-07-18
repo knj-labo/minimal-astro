@@ -1,8 +1,17 @@
 # editor
 .idea
 
-# dipendency
+# dependency
 node_modules
+
+# build outputs
+dist/
+build/
+coverage/
+
+# cache
+.turbo
+.biome-cache
 
 # settings
 .claude

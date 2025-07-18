@@ -30,366 +30,434 @@ export enum Mode {
   Attribute = 'Attribute',
 }
 
-export class Tokenizer {
-  private source: string;
-  private position: number = 0;
-  private line: number = 1;
-  private column: number = 1;
-  private mode: Mode = Mode.HTML;
-  private modeStack: Mode[] = [];
+interface TokenizerState {
+  readonly source: string;
+  readonly position: number;
+  readonly line: number;
+  readonly column: number;
+  readonly mode: Mode;
+  readonly modeStack: readonly Mode[];
+}
 
-  constructor(source: string) {
-    this.source = this.normalizeLineEndings(source);
-  }
+function createInitialState(source: string): TokenizerState {
+  return {
+    source: normalizeLineEndings(source),
+    position: 0,
+    line: 1,
+    column: 1,
+    mode: Mode.HTML,
+    modeStack: [],
+  };
+}
 
-  private normalizeLineEndings(source: string): string {
-    return source.replace(/\r\n/g, '\n');
-  }
+function normalizeLineEndings(source: string): string {
+  return source.replace(/\r\n/g, '\n');
+}
 
-  private getCurrentPosition(): Position {
-    return {
-      line: this.line,
-      column: this.column,
-      offset: this.position,
-    };
-  }
+function getCurrentPosition(state: TokenizerState): Position {
+  return {
+    line: state.line,
+    column: state.column,
+    offset: state.position,
+  };
+}
 
-  private advance(count: number = 1): void {
-    for (let i = 0; i < count; i++) {
-      if (this.position < this.source.length) {
-        if (this.source[this.position] === '\n') {
-          this.line++;
-          this.column = 1;
-        } else {
-          this.column++;
-        }
-        this.position++;
+function advance(state: TokenizerState, count = 1): TokenizerState {
+  let { position, line, column } = state;
+
+  for (let i = 0; i < count; i++) {
+    if (position < state.source.length) {
+      if (state.source[position] === '\n') {
+        line++;
+        column = 1;
+      } else {
+        column++;
       }
+      position++;
     }
   }
 
-  private peek(offset: number = 0): string {
-    return this.source[this.position + offset] || '';
-  }
+  return { ...state, position, line, column };
+}
 
-  private peekSequence(sequence: string): boolean {
-    for (let i = 0; i < sequence.length; i++) {
-      if (this.peek(i) !== sequence[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
+function peek(state: TokenizerState, offset = 0): string {
+  return state.source[state.position + offset] || '';
+}
 
-  private consumeWhile(predicate: (char: string) => boolean): string {
-    const start = this.position;
-    while (this.position < this.source.length && predicate(this.peek())) {
-      this.advance();
-    }
-    return this.source.slice(start, this.position);
-  }
-
-  private pushMode(mode: Mode): void {
-    this.modeStack.push(this.mode);
-    this.mode = mode;
-  }
-
-  private popMode(): void {
-    if (this.modeStack.length > 0) {
-      this.mode = this.modeStack.pop()!;
+function peekSequence(state: TokenizerState, sequence: string): boolean {
+  for (let i = 0; i < sequence.length; i++) {
+    if (peek(state, i) !== sequence[i]) {
+      return false;
     }
   }
+  return true;
+}
 
-  private isAtStart(): boolean {
-    return this.position === 0;
+function consumeWhile(
+  state: TokenizerState,
+  predicate: (char: string) => boolean
+): [TokenizerState, string] {
+  const start = state.position;
+  let currentState = state;
+
+  while (currentState.position < currentState.source.length && predicate(peek(currentState))) {
+    currentState = advance(currentState);
   }
 
-  private isComponentTag(name: string): boolean {
-    return /^[A-Z]/.test(name);
-  }
+  return [currentState, currentState.source.slice(start, currentState.position)];
+}
 
-  private scanFrontmatter(): Token | null {
-    if (this.isAtStart() && this.peekSequence('---')) {
-      const start = this.getCurrentPosition();
-      this.advance(3); // Skip ---
-      
-      const contentStart = this.position;
-      while (this.position < this.source.length) {
-        if (this.peek() === '\n' && this.peekSequence('\n---')) {
-          const content = this.source.slice(contentStart, this.position);
-          this.advance(); // Skip newline
-          this.advance(3); // Skip ---
-          
-          return {
+function pushMode(state: TokenizerState, mode: Mode): TokenizerState {
+  return {
+    ...state,
+    modeStack: [...state.modeStack, state.mode],
+    mode,
+  };
+}
+
+function popMode(state: TokenizerState): TokenizerState {
+  if (state.modeStack.length > 0) {
+    const newStack = [...state.modeStack];
+    const mode = newStack.pop();
+    if (mode) {
+      return { ...state, mode, modeStack: newStack };
+    }
+  }
+  return state;
+}
+
+function isAtStart(state: TokenizerState): boolean {
+  return state.position === 0;
+}
+
+// Removed unused function - component detection is handled in parser
+
+function scanFrontmatter(state: TokenizerState): [TokenizerState, Token | null] {
+  if (isAtStart(state) && peekSequence(state, '---')) {
+    const start = getCurrentPosition(state);
+    let currentState = advance(state, 3); // Skip ---
+
+    const contentStart = currentState.position;
+    while (currentState.position < currentState.source.length) {
+      if (peek(currentState) === '\n' && peekSequence(currentState, '\n---')) {
+        const content = currentState.source.slice(contentStart, currentState.position);
+        currentState = advance(currentState); // Skip newline
+        currentState = advance(currentState, 3); // Skip ---
+
+        return [
+          currentState,
+          {
             type: TokenType.FrontmatterContent,
             value: content.trim(),
             loc: {
               start,
-              end: this.getCurrentPosition(),
+              end: getCurrentPosition(currentState),
             },
-          };
-        }
-        this.advance();
+          },
+        ];
       }
+      currentState = advance(currentState);
     }
-    return null;
   }
+  return [state, null];
+}
 
-  private scanExpression(): Token | null {
-    if (this.peek() === '{') {
-      const start = this.getCurrentPosition();
-      const startPos = this.position;
-      this.advance(); // Skip {
-      
-      let depth = 1;
-      let incomplete = false;
-      
-      while (this.position < this.source.length && depth > 0) {
-        const char = this.peek();
-        if (char === '{') {
-          depth++;
-        } else if (char === '}') {
-          depth--;
-          if (depth === 0) {
-            const content = this.source.slice(startPos + 1, this.position);
-            this.advance(); // Skip closing }
-            return {
+function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
+  if (peek(state) === '{') {
+    const start = getCurrentPosition(state);
+    const startPos = state.position;
+    let currentState = advance(state); // Skip {
+
+    let depth = 1;
+    let incomplete = false;
+
+    while (currentState.position < currentState.source.length && depth > 0) {
+      const char = peek(currentState);
+      if (char === '{') {
+        depth++;
+      } else if (char === '}') {
+        depth--;
+        if (depth === 0) {
+          const content = currentState.source.slice(startPos + 1, currentState.position);
+          currentState = advance(currentState); // Skip closing }
+          return [
+            currentState,
+            {
               type: TokenType.ExpressionContent,
               value: content,
               loc: {
                 start,
-                end: this.getCurrentPosition(),
+                end: getCurrentPosition(currentState),
               },
-            };
-          }
-        } else if (char === '<' && this.peekSequence('</')) {
-          // Stop at closing tag to allow better error recovery
-          incomplete = true;
-          break;
+            },
+          ];
         }
-        this.advance();
+      } else if (char === '<' && peekSequence(currentState, '</')) {
+        // Stop at closing tag to allow better error recovery
+        incomplete = true;
+        break;
       }
-      
-      // Unclosed expression
-      const content = this.source.slice(startPos + 1, this.position);
-      return {
+      currentState = advance(currentState);
+    }
+
+    // Unclosed expression
+    const content = currentState.source.slice(startPos + 1, currentState.position);
+    return [
+      currentState,
+      {
         type: TokenType.ExpressionContent,
         value: content + (incomplete ? '\x00incomplete' : ''),
         loc: {
           start,
-          end: this.getCurrentPosition(),
+          end: getCurrentPosition(currentState),
         },
-      };
-    }
-    return null;
+      },
+    ];
   }
+  return [state, null];
+}
 
-  private scanTag(): Token | null {
-    const start = this.getCurrentPosition();
-    
-    if (this.peek() === '<') {
-      this.advance();
-      
-      // Check for closing tag
-      if (this.peek() === '/') {
-        this.advance();
-        const name = this.consumeWhile(c => /[a-zA-Z0-9-]/.test(c));
-        this.consumeWhile(c => c === ' ' || c === '\t');
-        if (this.peek() === '>') {
-          this.advance();
-          return {
+function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
+  const start = getCurrentPosition(state);
+
+  if (peek(state) === '<') {
+    let currentState = advance(state);
+
+    // Check for closing tag
+    if (peek(currentState) === '/') {
+      currentState = advance(currentState);
+      const [newState, name] = consumeWhile(currentState, (c) => /[a-zA-Z0-9-]/.test(c));
+      currentState = newState;
+
+      const [spacesState, _] = consumeWhile(currentState, (c) => c === ' ' || c === '\t');
+      currentState = spacesState;
+
+      if (peek(currentState) === '>') {
+        currentState = advance(currentState);
+        return [
+          currentState,
+          {
             type: TokenType.TagClose,
             value: name,
             loc: {
               start,
-              end: this.getCurrentPosition(),
+              end: getCurrentPosition(currentState),
             },
-          };
-        }
-      } else {
-        // Opening tag
-        const name = this.consumeWhile(c => /[a-zA-Z0-9-]/.test(c));
-        if (name) {
-          this.pushMode(Mode.Tag);
-          return {
+          },
+        ];
+      }
+    } else {
+      // Opening tag
+      const [newState, name] = consumeWhile(currentState, (c) => /[a-zA-Z0-9-]/.test(c));
+      if (name) {
+        const tagState = pushMode(newState, Mode.Tag);
+        return [
+          tagState,
+          {
             type: TokenType.TagOpen,
             value: name,
             loc: {
               start,
-              end: this.getCurrentPosition(),
+              end: getCurrentPosition(newState),
             },
-          };
-        }
+          },
+        ];
       }
     }
-    return null;
   }
+  return [state, null];
+}
 
-  private scanAttribute(): Token | null {
-    this.consumeWhile(c => c === ' ' || c === '\t' || c === '\n');
-    
-    const start = this.getCurrentPosition();
-    
-    // Check for self-closing
-    if (this.peekSequence('/>')) {
-      this.advance(2);
-      this.popMode();
-      return {
+function scanAttribute(state: TokenizerState): [TokenizerState, Token | null] {
+  const [spacesState, _] = consumeWhile(state, (c) => c === ' ' || c === '\t' || c === '\n');
+  let currentState = spacesState;
+
+  const start = getCurrentPosition(currentState);
+
+  // Check for self-closing
+  if (peekSequence(currentState, '/>')) {
+    currentState = advance(currentState, 2);
+    currentState = popMode(currentState);
+    return [
+      currentState,
+      {
         type: TokenType.TagSelfClose,
         value: '/>',
         loc: {
           start,
-          end: this.getCurrentPosition(),
+          end: getCurrentPosition(currentState),
         },
-      };
-    }
-    
-    // Check for tag close
-    if (this.peek() === '>') {
-      this.advance();
-      this.popMode();
-      return {
+      },
+    ];
+  }
+
+  // Check for tag close
+  if (peek(currentState) === '>') {
+    currentState = advance(currentState);
+    currentState = popMode(currentState);
+    return [
+      currentState,
+      {
         type: TokenType.TagClose,
         value: '>',
         loc: {
           start,
-          end: this.getCurrentPosition(),
+          end: getCurrentPosition(currentState),
         },
-      };
-    }
-    
-    // Scan attribute name
-    const name = this.consumeWhile(c => /[a-zA-Z0-9-:@]/.test(c));
-    if (name) {
-      const token: Token = {
-        type: TokenType.AttributeName,
-        value: name,
-        loc: {
-          start,
-          end: this.getCurrentPosition(),
-        },
-      };
-      
-      this.consumeWhile(c => c === ' ' || c === '\t');
-      
-      // Check for attribute value
-      if (this.peek() === '=') {
-        this.advance();
-        this.consumeWhile(c => c === ' ' || c === '\t');
-        
-        const valueStart = this.getCurrentPosition();
-        let value = '';
-        
-        if (this.peek() === '"' || this.peek() === "'") {
-          const quote = this.peek();
-          this.advance();
-          value = this.consumeWhile(c => c !== quote);
-          this.advance(); // Skip closing quote
-        } else if (this.peek() === '{') {
-          // Expression attribute value
-          const expr = this.scanExpression();
-          if (expr) {
-            value = '{' + expr.value + '}';
-          }
+      },
+    ];
+  }
+
+  // Scan attribute name
+  const [nameState, name] = consumeWhile(currentState, (c) => /[a-zA-Z0-9-:@]/.test(c));
+  if (name) {
+    currentState = nameState;
+    const token: Token = {
+      type: TokenType.AttributeName,
+      value: name,
+      loc: {
+        start,
+        end: getCurrentPosition(currentState),
+      },
+    };
+
+    const [spacesState2, _2] = consumeWhile(currentState, (c) => c === ' ' || c === '\t');
+    currentState = spacesState2;
+
+    // Check for attribute value
+    if (peek(currentState) === '=') {
+      currentState = advance(currentState);
+      const [spacesState3, _3] = consumeWhile(currentState, (c) => c === ' ' || c === '\t');
+      currentState = spacesState3;
+
+      let value = '';
+
+      if (peek(currentState) === '"' || peek(currentState) === "'") {
+        const quote = peek(currentState);
+        currentState = advance(currentState);
+        const [quotedState, quotedValue] = consumeWhile(currentState, (c) => c !== quote);
+        currentState = quotedState;
+        value = quotedValue;
+        currentState = advance(currentState); // Skip closing quote
+      } else if (peek(currentState) === '{') {
+        // Expression attribute value
+        const [exprState, expr] = scanExpression(currentState);
+        if (expr) {
+          currentState = exprState;
+          value = `{${expr.value}}`;
         }
-        
-        return {
+      }
+
+      return [
+        currentState,
+        {
           type: TokenType.AttributeValue,
-          value: name + '=' + value,
+          value: `${name}=${value}`,
           loc: {
             start: token.loc.start,
-            end: this.getCurrentPosition(),
+            end: getCurrentPosition(currentState),
           },
-        };
-      }
-      
-      return token;
+        },
+      ];
     }
-    
-    return null;
+
+    return [currentState, token];
   }
 
-  private scanText(): Token | null {
-    const start = this.getCurrentPosition();
-    const startPos = this.position;
-    
-    while (this.position < this.source.length) {
-      const char = this.peek();
-      if (char === '<' || char === '{') {
-        break;
-      }
-      this.advance();
+  return [state, null];
+}
+
+function scanText(state: TokenizerState): [TokenizerState, Token | null] {
+  const start = getCurrentPosition(state);
+  const startPos = state.position;
+  let currentState = state;
+
+  while (currentState.position < currentState.source.length) {
+    const char = peek(currentState);
+    if (char === '<' || char === '{') {
+      break;
     }
-    
-    if (this.position > startPos) {
-      return {
+    currentState = advance(currentState);
+  }
+
+  if (currentState.position > startPos) {
+    return [
+      currentState,
+      {
         type: TokenType.Text,
-        value: this.source.slice(startPos, this.position),
+        value: currentState.source.slice(startPos, currentState.position),
         loc: {
           start,
-          end: this.getCurrentPosition(),
+          end: getCurrentPosition(currentState),
         },
-      };
-    }
-    
-    return null;
+      },
+    ];
   }
 
-  public nextToken(): Token {
-    if (this.position >= this.source.length) {
-      return {
+  return [state, null];
+}
+
+function nextToken(state: TokenizerState): [TokenizerState, Token] {
+  if (state.position >= state.source.length) {
+    return [
+      state,
+      {
         type: TokenType.EOF,
         value: '',
         loc: {
-          start: this.getCurrentPosition(),
-          end: this.getCurrentPosition(),
+          start: getCurrentPosition(state),
+          end: getCurrentPosition(state),
         },
-      };
-    }
-
-    // Check for frontmatter at start
-    if (this.isAtStart()) {
-      const frontmatter = this.scanFrontmatter();
-      if (frontmatter) {
-        return frontmatter;
-      }
-    }
-
-    switch (this.mode) {
-      case Mode.Tag:
-        const attr = this.scanAttribute();
-        if (attr) return attr;
-        break;
-        
-      case Mode.HTML:
-        // Check for expression
-        const expr = this.scanExpression();
-        if (expr) return expr;
-        
-        // Check for tag
-        const tag = this.scanTag();
-        if (tag) return tag;
-        
-        // Otherwise, scan text
-        const text = this.scanText();
-        if (text) return text;
-        break;
-    }
-
-    // Fallback: advance and try again
-    this.advance();
-    return this.nextToken();
+      },
+    ];
   }
 
-  public tokenize(): Token[] {
-    const tokens: Token[] = [];
-    let token = this.nextToken();
-    
-    while (token.type !== TokenType.EOF) {
+  // Check for frontmatter at start
+  if (isAtStart(state)) {
+    const [newState, frontmatter] = scanFrontmatter(state);
+    if (frontmatter) {
+      return [newState, frontmatter];
+    }
+  }
+
+  switch (state.mode) {
+    case Mode.Tag: {
+      const [attrState, attr] = scanAttribute(state);
+      if (attr) return [attrState, attr];
+      break;
+    }
+
+    case Mode.HTML: {
+      // Check for expression
+      const [exprState, expr] = scanExpression(state);
+      if (expr) return [exprState, expr];
+
+      // Check for tag
+      const [tagState, tag] = scanTag(state);
+      if (tag) return [tagState, tag];
+
+      // Otherwise, scan text
+      const [textState, text] = scanText(state);
+      if (text) return [textState, text];
+      break;
+    }
+  }
+
+  // Fallback: advance and try again
+  return nextToken(advance(state));
+}
+
+export function tokenize(source: string): Token[] {
+  const tokens: Token[] = [];
+  let state = createInitialState(source);
+  let token: Token;
+
+  do {
+    [state, token] = nextToken(state);
+    if (token.type !== TokenType.EOF) {
       tokens.push(token);
-      token = this.nextToken();
     }
-    
-    return tokens;
-  }
+  } while (token.type !== TokenType.EOF);
+
+  return tokens;
 }

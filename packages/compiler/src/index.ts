@@ -1,3 +1,3 @@
-export { parseAstro } from './parse-functional.js';
-export type { ParseOptions } from './parse-functional.js';
+export { parseAstro } from './parse';
+export type { ParseOptions } from './parse';
 export * from '../types/index.js';
