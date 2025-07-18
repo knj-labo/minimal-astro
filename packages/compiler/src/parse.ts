@@ -147,9 +147,13 @@ export class Parser {
     if (token && token.type === TokenType.ExpressionContent) {
       this.advance();
       
-      // Check if expression was incomplete (unclosed brace)
-      const incomplete = !token.value.includes('}') && this.isAtEnd();
-      if (incomplete) {
+      // Check if expression was marked as incomplete
+      let code = token.value;
+      let incomplete = false;
+      
+      if (code.includes('\x00incomplete')) {
+        code = code.replace('\x00incomplete', '');
+        incomplete = true;
         this.addDiagnostic(
           'unclosed-expression',
           'Unclosed expression',
@@ -159,7 +163,7 @@ export class Parser {
 
       return {
         type: 'Expression',
-        code: token.value,
+        code,
         loc: token.loc,
         ...(incomplete && { incomplete: true }),
       };
@@ -238,6 +242,7 @@ export class Parser {
 
   private parseChildren(parentTag: string): Node[] {
     const children: Node[] = [];
+    const implicitlyClosedBy = this.getImplicitlyClosedTags(parentTag);
 
     while (!this.isAtEnd()) {
       const token = this.peek();
@@ -260,6 +265,12 @@ export class Parser {
         break;
       }
 
+      // Check for tags that implicitly close the parent (like <li> closing previous <li>)
+      if (token.type === TokenType.TagOpen && implicitlyClosedBy.includes(token.value)) {
+        // Don't consume the token, let parent handle it
+        break;
+      }
+
       const node = this.parseNode();
       if (node) {
         children.push(node);
@@ -269,7 +280,39 @@ export class Parser {
       }
     }
 
+    // Check if we reached end without closing tag
+    if (this.isAtEnd() && !this.isVoidElement(parentTag)) {
+      const lastToken = this.tokens[this.tokens.length - 1];
+      this.addDiagnostic(
+        'unclosed-tag',
+        `Unclosed tag <${parentTag}>`,
+        lastToken?.loc || { 
+          start: { line: 1, column: 1, offset: 0 },
+          end: { line: 1, column: 1, offset: 0 }
+        }
+      );
+    }
+
     return children;
+  }
+
+  private getImplicitlyClosedTags(tag: string): string[] {
+    // HTML tags that are implicitly closed by certain other tags
+    const implicitClosers: Record<string, string[]> = {
+      'li': ['li'],
+      'dt': ['dt', 'dd'],
+      'dd': ['dt', 'dd'],
+      'p': ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'pre', 'blockquote'],
+      'option': ['option', 'optgroup'],
+      'optgroup': ['optgroup'],
+      'thead': ['tbody', 'tfoot'],
+      'tbody': ['tbody', 'tfoot'],
+      'tfoot': ['tbody'],
+      'tr': ['tr'],
+      'td': ['td', 'th'],
+      'th': ['td', 'th'],
+    };
+    return implicitClosers[tag.toLowerCase()] || [];
   }
 
   private parseNode(): Node | null {

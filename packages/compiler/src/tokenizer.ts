@@ -162,15 +162,19 @@ export class Tokenizer {
               },
             };
           }
+        } else if (char === '<' && this.peekSequence('</')) {
+          // Stop at closing tag to allow better error recovery
+          incomplete = true;
+          break;
         }
         content += char;
         this.advance();
       }
       
-      // Unclosed expression
+      // Unclosed expression - include the incomplete flag in value for parser
       return {
         type: TokenType.ExpressionContent,
-        value: content,
+        value: content + (incomplete ? '\x00incomplete' : ''),
         loc: {
           start,
           end: this.getCurrentPosition(),
