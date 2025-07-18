@@ -1,4 +1,5 @@
-import { parseAstro } from '../src/parse.js';
+import { parseAstro } from '../src/parse-functional.js';
+import { describe, test, expect } from 'bun:test';
 
 describe('Parser Performance', () => {
   test('should parse 300KB file in under 15ms', () => {

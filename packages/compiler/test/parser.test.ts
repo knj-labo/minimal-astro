@@ -1,7 +1,8 @@
-import { parseAstro } from '../src/parse.js';
+import { parseAstro } from '../src/parse-functional.js';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { describe, test, expect } from 'bun:test';
 import type { Node, FragmentNode, ElementNode, ComponentNode, TextNode, ExpressionNode, FrontmatterNode } from '../types/ast.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
