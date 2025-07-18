@@ -82,12 +82,11 @@ export class Tokenizer {
   }
 
   private consumeWhile(predicate: (char: string) => boolean): string {
-    let result = '';
+    const start = this.position;
     while (this.position < this.source.length && predicate(this.peek())) {
-      result += this.peek();
       this.advance();
     }
-    return result;
+    return this.source.slice(start, this.position);
   }
 
   private pushMode(mode: Mode): void {
@@ -139,10 +138,10 @@ export class Tokenizer {
   private scanExpression(): Token | null {
     if (this.peek() === '{') {
       const start = this.getCurrentPosition();
+      const startPos = this.position;
       this.advance(); // Skip {
       
       let depth = 1;
-      let content = '';
       let incomplete = false;
       
       while (this.position < this.source.length && depth > 0) {
@@ -152,6 +151,7 @@ export class Tokenizer {
         } else if (char === '}') {
           depth--;
           if (depth === 0) {
+            const content = this.source.slice(startPos + 1, this.position);
             this.advance(); // Skip closing }
             return {
               type: TokenType.ExpressionContent,
@@ -167,11 +167,11 @@ export class Tokenizer {
           incomplete = true;
           break;
         }
-        content += char;
         this.advance();
       }
       
-      // Unclosed expression - include the incomplete flag in value for parser
+      // Unclosed expression
+      const content = this.source.slice(startPos + 1, this.position);
       return {
         type: TokenType.ExpressionContent,
         value: content + (incomplete ? '\x00incomplete' : ''),
@@ -311,20 +311,20 @@ export class Tokenizer {
 
   private scanText(): Token | null {
     const start = this.getCurrentPosition();
-    let content = '';
+    const startPos = this.position;
     
     while (this.position < this.source.length) {
-      if (this.peek() === '<' || this.peek() === '{') {
+      const char = this.peek();
+      if (char === '<' || char === '{') {
         break;
       }
-      content += this.peek();
       this.advance();
     }
     
-    if (content) {
+    if (this.position > startPos) {
       return {
         type: TokenType.Text,
-        value: content,
+        value: this.source.slice(startPos, this.position),
         loc: {
           start,
           end: this.getCurrentPosition(),
