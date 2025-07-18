@@ -11,7 +11,7 @@ import type {
   SourceSpan,
   TextNode,
 } from '../types/ast.js';
-import { type Token, TokenType, tokenize } from './tokenizer';
+import { type Token, TokenType, tokenize } from './tokenizer.js';
 
 export interface ParseOptions {
   filename?: string;
@@ -151,6 +151,51 @@ function parseAttributes(state: ParserState): [ParserState, Attr[]] {
           }
         }
       }
+
+      attrs.push({
+        name,
+        value,
+        loc: attrToken.loc,
+      });
+    } else if (token.type === TokenType.AttributeValue) {
+      // Handle combined attribute tokens from tokenizer
+      const [newState, attrToken] = advance(currentState);
+      currentState = newState;
+
+      if (!attrToken) continue;
+
+      const fullValue = attrToken.value;
+      const equalIndex = fullValue.indexOf('=');
+      
+      let name: string;
+      let value: string | boolean = true;
+      
+      if (equalIndex !== -1) {
+        name = fullValue.substring(0, equalIndex);
+        value = fullValue.substring(equalIndex + 1);
+        
+        // Remove quotes if present
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
+          value = value.slice(1, -1);
+        }
+      } else {
+        name = fullValue;
+      }
+
+      // Check for duplicate client directives
+      if (name.startsWith('client:') && seenNames.has(name)) {
+        currentState = addDiagnostic(
+          currentState,
+          'duplicate-directive',
+          `Duplicate ${name} directive`,
+          attrToken.loc,
+          'warning'
+        );
+      }
+      seenNames.add(name);
 
       attrs.push({
         name,

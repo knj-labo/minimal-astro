@@ -348,6 +348,7 @@ function scanAttribute(state: TokenizerState): [TokenizerState, Token | null] {
         }
       }
 
+      // Store the combined token for now - the parser will handle this
       return [
         currentState,
         {
