@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "types": ["bun-types"],
+    "noEmit": false,
+    "allowImportingTsExtensions": false
   },
   "include": ["src/**/*", "types/**/*"],
   "exclude": ["test/**/*", "**/*.test.ts", "**/*.spec.ts"]

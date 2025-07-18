@@ -7,9 +7,7 @@ import type {
   ComponentNode,
   ElementNode,
   ExpressionNode,
-  FragmentNode,
   FrontmatterNode,
-  Node,
   TextNode,
 } from '../types/ast.js';
 
