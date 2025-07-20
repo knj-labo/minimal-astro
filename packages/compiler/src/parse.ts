@@ -11,7 +11,8 @@ import type {
   SourceSpan,
   TextNode,
 } from '../types/ast.js';
-import { type Token, TokenType, tokenize } from './tokenizer';
+import { type Token, TokenType, tokenize } from './tokenizer.js';
+import { safeExecute } from './utils/error-boundary.js';
 
 export interface ParseOptions {
   filename?: string;
@@ -29,7 +30,7 @@ function createInitialState(tokens: Token[], options: ParseOptions = {}): Parser
     tokens,
     current: 0,
     diagnostics: [],
-    filename: options.filename || '<anonymous>',
+    filename: options.filename ?? '<anonymous>',
   };
 }
 
@@ -130,27 +131,80 @@ function parseAttributes(state: ParserState): [ParserState, Attr[]] {
       }
       seenNames.add(name);
 
-      // Check if next token is an attribute value
+      // Check if next token is an attribute value that belongs to this attribute
       const nextToken = peek(currentState);
       if (nextToken && nextToken.type === TokenType.AttributeValue) {
-        const [valueState, valueToken] = advance(currentState);
-        currentState = valueState;
+        // If the AttributeValue token contains an '=' and doesn't start with our attribute name,
+        // it's a separate attribute, not the value of this one
+        const fullValue = nextToken.value;
+        const equalIndex = fullValue.indexOf('=');
 
-        if (valueToken) {
-          const fullValue = valueToken.value;
-          const equalIndex = fullValue.indexOf('=');
-          if (equalIndex !== -1) {
-            value = fullValue.substring(equalIndex + 1);
-            // Remove quotes if present
-            if (
-              (value.startsWith('"') && value.endsWith('"')) ||
-              (value.startsWith("'") && value.endsWith("'"))
-            ) {
-              value = value.slice(1, -1);
+        if (equalIndex !== -1) {
+          const tokenAttrName = fullValue.substring(0, equalIndex);
+          // Only consume this token if it belongs to our current attribute
+          if (tokenAttrName === name) {
+            const [valueState, valueToken] = advance(currentState);
+            currentState = valueState;
+
+            if (valueToken) {
+              value = fullValue.substring(equalIndex + 1);
+              // Remove quotes if present
+              if (
+                (value.startsWith('"') && value.endsWith('"')) ||
+                (value.startsWith("'") && value.endsWith("'"))
+              ) {
+                value = value.slice(1, -1);
+              }
             }
           }
+          // If tokenAttrName !== name, don't consume the token - let it be processed separately
         }
       }
+
+      attrs.push({
+        name,
+        value,
+        loc: attrToken.loc,
+      });
+    } else if (token.type === TokenType.AttributeValue) {
+      // Handle combined attribute tokens from tokenizer
+      const [newState, attrToken] = advance(currentState);
+      currentState = newState;
+
+      if (!attrToken) continue;
+
+      const fullValue = attrToken.value;
+      const equalIndex = fullValue.indexOf('=');
+
+      let name: string;
+      let value: string | boolean = true;
+
+      if (equalIndex !== -1) {
+        name = fullValue.substring(0, equalIndex);
+        value = fullValue.substring(equalIndex + 1);
+
+        // Remove quotes if present
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
+          value = value.slice(1, -1);
+        }
+      } else {
+        name = fullValue;
+      }
+
+      // Check for duplicate client directives
+      if (name.startsWith('client:') && seenNames.has(name)) {
+        currentState = addDiagnostic(
+          currentState,
+          'duplicate-directive',
+          `Duplicate ${name} directive`,
+          attrToken.loc,
+          'warning'
+        );
+      }
+      seenNames.add(name);
 
       attrs.push({
         name,
@@ -248,7 +302,7 @@ function getImplicitlyClosedTags(tag: string): string[] {
     td: ['td', 'th'],
     th: ['td', 'th'],
   };
-  return implicitClosers[tag.toLowerCase()] || [];
+  return implicitClosers[tag.toLowerCase()] ?? [];
 }
 
 function parseChildren(state: ParserState, parentTag: string): [ParserState, Node[]] {
@@ -301,7 +355,7 @@ function parseChildren(state: ParserState, parentTag: string): [ParserState, Nod
       currentState,
       'unclosed-tag',
       `Unclosed tag <${parentTag}>`,
-      lastToken?.loc || {
+      lastToken?.loc ?? {
         start: { line: 1, column: 1, offset: 0 },
         end: { line: 1, column: 1, offset: 0 },
       }
@@ -343,7 +397,7 @@ function parseElement(state: ParserState): [ParserState, ElementNode | Component
     }
   }
 
-  const endLoc = currentState.tokens[currentState.current - 1]?.loc.end || openToken.loc.end;
+  const endLoc = currentState.tokens[currentState.current - 1]?.loc.end ?? openToken.loc.end;
   const loc: SourceSpan = {
     start: openToken.loc.start,
     end: endLoc,
@@ -407,8 +461,8 @@ function parse(state: ParserState): ParseResult {
     }
   }
 
-  const startLoc = children[0]?.loc.start || { line: 1, column: 1, offset: 0 };
-  const endLoc = children[children.length - 1]?.loc.end || startLoc;
+  const startLoc = children[0]?.loc.start ?? { line: 1, column: 1, offset: 0 };
+  const endLoc = children[children.length - 1]?.loc.end ?? startLoc;
 
   const ast: FragmentNode = {
     type: 'Fragment',
@@ -426,7 +480,26 @@ function parse(state: ParserState): ParseResult {
 }
 
 export function parseAstro(source: string, options?: ParseOptions): ParseResult {
-  const tokens = tokenize(source);
-  const initialState = createInitialState(tokens, options);
-  return parse(initialState);
+  return safeExecute(
+    () => {
+      const tokens = tokenize(source);
+      const initialState = createInitialState(tokens, options);
+      return parse(initialState);
+    },
+    {
+      operation: 'parse',
+      filename: options?.filename,
+      context: { sourceLength: source.length },
+    },
+    {
+      fallbackValue: {
+        ast: {
+          type: 'Fragment',
+          children: [],
+          loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } },
+        },
+        diagnostics: [],
+      },
+    }
+  );
 }

@@ -90,7 +90,7 @@ Integration APIとBuild Hooksを実装し、サードパーティによる拡張
 最終的に読者はmonorepo形式の"re-astro"を完成させる。`pnpm dev`で`examples/blog`を立ち上げれば、Islands Architectureと型安全Content Collectionsを兼ね備えたHMR環境が動作する。各章の実装演習が積み重なり、この成果物へと結実する。
 
 ```text
-astro-lite/
+minimal-astro/
 ├─ .gitignore
 ├─ package.json
 ├─ tsconfig.base.json
@@ -104,13 +104,18 @@ astro-lite/
 │  │  │  └─ logger.ts
 │  │  └─ package.json
 │  │
-│  ├─ compiler/                    # 第２章・第３章で実装
+│  ├─ compiler/                    # 第２章・第３章・第５章で実装
 │  │  ├─ src/
 │  │  │  ├─ parse.ts              # 第２章：パーサー実装
 │  │  │  ├─ html-builder.ts       # 第３章：HTMLビルダー実装
-│  │  │  ├─ transform.ts
-│  │  │  └─ codegen.ts
-│  │  └─ package.json
+│  │  │  ├─ vite/                 # 第５章：Viteプラグイン
+│  │  │  │  ├─ plugin.ts
+│  │  │  │  ├─ transform.ts
+│  │  │  │  └─ hmr.ts
+│  │  │  ├─ cli/                  # CLI tools
+│  │  │  │  └─ build.ts
+│  │  │  └─ content/              # Content Collections
+│  │  └─ package.json             # depends: @minimal-astro/runtime
 │  │
 │  ├─ renderer-react/             # 第４章で実装
 │  │  └─ src/index.ts
@@ -127,15 +132,21 @@ astro-lite/
 │  │  │  └─ optimizer.ts
 │  │  └─ package.json
 │  │
-│  ├─ runtime/                    # 第６章で実装
+│  ├─ runtime/                    # 第６章で実装（リファクタリング版）
 │  │  ├─ src/
 │  │  │  ├─ index.ts
-│  │  │  ├─ manifest.ts
+│  │  │  ├─ hydrate.ts
+│  │  │  ├─ event-system.ts
+│  │  │  ├─ state-management.ts
+│  │  │  ├─ data-access.ts
+│  │  │  ├─ framework-renderers.ts
+│  │  │  ├─ types.ts
 │  │  │  └─ strategies/
 │  │  │     ├─ load.ts
-│  │  │     ├─ visible.ts
 │  │  │     ├─ idle.ts
-│  │  │     └─ media.ts
+│  │  │     ├─ visible.ts
+│  │  │     ├─ media.ts
+│  │  │     └─ only.ts
 │  │  └─ package.json
 │  │
 │  ├─ content/                    # 第７章で実装

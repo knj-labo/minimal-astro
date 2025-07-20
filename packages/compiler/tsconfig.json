@@ -5,9 +5,10 @@
     "outDir": "./dist",
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "types": ["bun-types"],
+    "lib": ["ES2020", "DOM"],
     "noEmit": false,
     "allowImportingTsExtensions": false
   },
-  "include": ["src/**/*", "types/**/*"],
+  "include": ["src/**/*", "types/**/*", "bin/**/*"],
   "exclude": ["test/**/*", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -1,12 +1,12 @@
 {
-  "name": "astro-lite",
+  "name": "minimal-astro",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "description": "A minimal implementation of Astro from scratch",
   "scripts": {
     "build": "turbo run build",
-    "test": "turbo run test",
+    "test": "bun test",
     "dev": "turbo run dev",
     "lint": "biome check",
     "format": "biome format --write",
@@ -23,5 +23,8 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "dependencies": {
+    "@turbo/codemod": "^2.5.5"
+  }
 }
