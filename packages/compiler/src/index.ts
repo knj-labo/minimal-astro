@@ -26,14 +26,8 @@ export {
   type JSXTransformOptions,
 } from './renderer/jsx-transform.js';
 
-// Runtime exports
-export {
-  createHydrationRuntime,
-  autoHydrate,
-  hydrate,
-  type HydrationOptions,
-  type HydrationContext,
-} from './runtime/hydrate.js';
+// Runtime exports - moved to @minimal-astro/runtime package
+// import { createHydrationRuntime, autoHydrate, hydrate } from '@minimal-astro/runtime';
 
 // Content Collections exports
 export {
