@@ -51,7 +51,7 @@ interface TransformCache {
 
 interface ParseCache {
   ast: unknown;
-  diagnostics: unknown[];
+  diagnostics: Diagnostic[];
 }
 
 // Fast hash function for cache keys
@@ -86,7 +86,7 @@ function createPluginCache(maxAge = 5 * 60 * 1000) {
       return null;
     },
 
-    setAst(id: string, code: string, ast: unknown, diagnostics: unknown[]): void {
+    setAst(id: string, code: string, ast: unknown, diagnostics: Diagnostic[]): void {
       const hash = quickHash(code);
       astCache.set(id, {
         value: { ast, diagnostics },
@@ -282,7 +282,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
         // Report any parsing errors
         if (parseResult.diagnostics.length > 0) {
-          const errors = parseResult.diagnostics.filter((d: Diagnostic) => d.severity === 'error');
+          const errors = parseResult.diagnostics.filter((d) => d.severity === 'error');
           if (errors.length > 0) {
             const error = errors[0];
             throw new Error(

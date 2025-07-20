@@ -279,7 +279,7 @@ function validateArray(
   // Validate items if schema provided
   if (schema.items) {
     return value.map((item, index) =>
-      validateValue(item, schema.items, `${path}[${index}]`, errors)
+      validateValue(item, schema.items!, `${path}[${index}]`, errors)
     );
   }
 

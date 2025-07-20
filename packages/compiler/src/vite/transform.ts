@@ -72,7 +72,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   // Import React/Preact if needed
   if (framework === 'react' && hasClientDirectives(ast)) {
     parts.push(`import React from 'react';`);
-    parts.push(`import { hydrate } from '@minimal-astro/compiler/runtime/hydrate';`);
+    parts.push(`import { hydrate } from '@minimal-astro/runtime';`);
   }
 
   // Add frontmatter code if present
@@ -264,14 +264,14 @@ export function extractClientScript(
   parts.push('  if (typeof window !== "undefined") {');
 
   if (framework === 'react') {
-    parts.push('    import("@minimal-astro/compiler/runtime/hydrate").then(({ autoHydrate }) => {');
+    parts.push('    import("@minimal-astro/runtime").then(({ autoHydrate }) => {');
     parts.push('      autoHydrate({');
     parts.push('        runtime: "react",');
     parts.push('        components: window.__ASTRO_COMPONENTS__ ?? new Map(),');
     parts.push('      });');
     parts.push('    });');
   } else if (framework === 'preact') {
-    parts.push('    import("@minimal-astro/compiler/runtime/hydrate").then(({ autoHydrate }) => {');
+    parts.push('    import("@minimal-astro/runtime").then(({ autoHydrate }) => {');
     parts.push('      autoHydrate({');
     parts.push('        runtime: "preact",');
     parts.push('        components: window.__ASTRO_COMPONENTS__ ?? new Map(),');

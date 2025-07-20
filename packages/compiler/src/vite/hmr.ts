@@ -223,7 +223,7 @@ function extractStyleBlocks(ast: FragmentNode): string[] {
         if (styleContent.trim()) {
           styleBlocks.push(styleContent);
         }
-      } else if (node.children) {
+      } else if ('children' in node && node.children) {
         traverseNodes(node.children);
       }
     }
