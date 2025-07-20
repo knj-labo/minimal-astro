@@ -87,7 +87,7 @@ Integration APIとBuild Hooksを実装し、サードパーティによる拡張
 
 ## 読後の成果物
 
-最終的に読者はmonorepo形式の"re-astro"を完成させる。`pnpm dev`で`examples/blog`を立ち上げれば、Islands Architectureと型安全Content Collectionsを兼ね備えたHMR環境が動作する。各章の実装演習が積み重なり、この成果物へと結実する。
+最終的に読者はmonorepo形式の"minimal-astro"を完成させる。`pnpm dev`で`examples/blog`を立ち上げれば、Islands Architectureと型安全Content Collectionsを兼ね備えたHMR環境が動作する。各章の実装演習が積み重なり、この成果物へと結実する。
 
 ```text
 minimal-astro/
@@ -95,80 +95,56 @@ minimal-astro/
 ├─ package.json
 ├─ tsconfig.base.json
 ├─ turbo.json
-├─ astro.config.mjs
-│
 ├─ packages/
-│  ├─ core/
+│  ├─ minimal-astro/              # メインパッケージ（全コア機能統合）
 │  │  ├─ src/
-│  │  │  ├─ index.ts
-│  │  │  └─ logger.ts
+│  │  │  ├─ index.ts              # メインエクスポート
+│  │  │  ├─ cli/                  # CLIツール
+│  │  │  ├─ core/                 # 第２章・第３章：パーサー・HTMLビルダー
+│  │  │  │  ├─ parse.ts
+│  │  │  │  ├─ html-builder.ts
+│  │  │  │  ├─ tokenizer.ts
+│  │  │  │  ├─ content/           # 第７章：Content Collections
+│  │  │  │  ├─ renderer/          # 第４章：レンダラー
+│  │  │  │  └─ utils/
+│  │  │  ├─ runtime/              # 第６章：ハイドレーション戦略
+│  │  │  │  ├─ hydrate.ts
+│  │  │  │  ├─ event-system.ts
+│  │  │  │  ├─ state-management.ts
+│  │  │  │  └─ strategies/
+│  │  │  └─ vite-plugin-astro/    # 第５章：Viteプラグイン
+│  │  │     ├─ index.ts
+│  │  │     ├─ plugin.ts
+│  │  │     ├─ transform.ts
+│  │  │     └─ hmr.ts
 │  │  └─ package.json
 │  │
-│  ├─ compiler/                    # 第２章・第３章・第５章で実装
-│  │  ├─ src/
-│  │  │  ├─ parse.ts              # 第２章：パーサー実装
-│  │  │  ├─ html-builder.ts       # 第３章：HTMLビルダー実装
-│  │  │  ├─ vite/                 # 第５章：Viteプラグイン
-│  │  │  │  ├─ plugin.ts
-│  │  │  │  ├─ transform.ts
-│  │  │  │  └─ hmr.ts
-│  │  │  ├─ cli/                  # CLI tools
-│  │  │  │  └─ build.ts
-│  │  │  └─ content/              # Content Collections
-│  │  └─ package.json             # depends: @minimal-astro/runtime
-│  │
-│  ├─ renderer-react/             # 第４章で実装
-│  │  └─ src/index.ts
-│  ├─ renderer-vue/               # 第４章で実装
-│  │  └─ src/index.ts
-│  ├─ renderer-svelte/            # 第４章で実装
-│  │  └─ src/index.ts
-│  │
-│  ├─ vite-plugin/                # 第５章で実装
-│  │  ├─ src/
-│  │  │  ├─ load-astro.ts
-│  │  │  ├─ hmr.ts
-│  │  │  ├─ build.ts
-│  │  │  └─ optimizer.ts
+│  ├─ create-minimal-astro/       # プロジェクト作成ツール
+│  │  ├─ src/index.ts
 │  │  └─ package.json
 │  │
-│  ├─ runtime/                    # 第６章で実装（リファクタリング版）
-│  │  ├─ src/
-│  │  │  ├─ index.ts
-│  │  │  ├─ hydrate.ts
-│  │  │  ├─ event-system.ts
-│  │  │  ├─ state-management.ts
-│  │  │  ├─ data-access.ts
-│  │  │  ├─ framework-renderers.ts
-│  │  │  ├─ types.ts
-│  │  │  └─ strategies/
-│  │  │     ├─ load.ts
-│  │  │     ├─ idle.ts
-│  │  │     ├─ visible.ts
-│  │  │     ├─ media.ts
-│  │  │     └─ only.ts
-│  │  └─ package.json
+│  ├─ integrations/               # フレームワーク統合
+│  │  ├─ react/
+│  │  │  ├─ index.ts              # React統合
+│  │  │  └─ package.json
+│  │  ├─ vue/
+│  │  │  ├─ index.ts              # Vue統合
+│  │  │  └─ package.json
+│  │  └─ svelte/
+│  │     ├─ index.ts              # Svelte統合
+│  │     └─ package.json
 │  │
-│  ├─ content/                    # 第７章で実装
-│  │  ├─ src/
-│  │  │  ├─ index.ts
-│  │  │  ├─ loaders/
-│  │  │  │  ├─ md-loader.ts
-│  │  │  │  └─ json-loader.ts
-│  │  │  ├─ schema/
-│  │  │  │  └─ zod-helpers.ts
-│  │  │  ├─ generator/
-│  │  │  │  ├─ manifest.ts
-│  │  │  │  └─ dts-gen.ts
-│  │  │  └─ runtime.ts
-│  │  └─ package.json
+│  ├─ markdown/                   # Markdown処理
+│  │  └─ remark/
+│  │     ├─ src/index.ts
+│  │     └─ package.json
 │  │
-│  └─ types/
-│     ├─ astro-lite-content.d.ts
+│  └─ internal-helpers/           # 共有ユーティリティ
+│     ├─ src/index.ts
 │     └─ package.json
 │
 └─ examples/
-   ├─ blog/
+   ├─ blog/                       # 動作するブログ例
    │  ├─ src/
    │  │  ├─ content/
    │  │  │  ├─ blog/welcome.md
@@ -176,7 +152,7 @@ minimal-astro/
    │  │  ├─ pages/
    │  │  │  └─ blog/index.astro
    │  │  └─ content.config.ts
-   │  ├─ astro.config.mjs
+   │  ├─ vite.config.ts
    │  └─ package.json
    └─ benchmark/
        └─ lighthouseci.config.mjs

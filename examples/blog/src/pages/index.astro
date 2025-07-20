@@ -1,0 +1,210 @@
+---
+import { collections } from '../content.config.js';
+import Counter from '../components/Counter.jsx';
+
+// Get blog posts (would use actual Content Collections API in real implementation)
+const posts = [
+  {
+    slug: 'welcome',
+    data: {
+      title: 'Welcome to Minimal Astro',
+      description: 'A simple blog built with our reimplemented Astro framework',
+      publishDate: '2024-01-15',
+      author: 'jp-knj',
+      tags: ['astro', 'framework', 'islands', 'tutorial']
+    }
+  },
+  {
+    slug: 'islands-architecture', 
+    data: {
+      title: 'Understanding Islands Architecture',
+      description: 'Deep dive into the Islands Architecture pattern and why it matters for web performance',
+      publishDate: '2024-01-20',
+      author: 'jp-knj',
+      tags: ['islands', 'architecture', 'performance', 'javascript']
+    }
+  }
+];
+
+const title = 'Minimal Astro Blog';
+const description = 'Educational blog built with a reimplemented Astro framework';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #fafafa;
+      }
+      
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #e1e1e1;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+      }
+      
+      .header p {
+        font-size: 1.1rem;
+        color: #666;
+      }
+      
+      .posts {
+        display: grid;
+        gap: 2rem;
+      }
+      
+      .post-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      }
+      
+      .post-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      
+      .post-title:hover {
+        color: #3498db;
+      }
+      
+      .post-meta {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+      
+      .post-description {
+        color: #555;
+        margin-bottom: 1rem;
+      }
+      
+      .post-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      
+      .tag {
+        background: #3498db;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+      }
+      
+      .tag:hover {
+        background: #2980b9;
+      }
+      
+      .footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e1e1e1;
+        text-align: center;
+        color: #666;
+      }
+      
+      .footer a {
+        color: #3498db;
+        text-decoration: none;
+      }
+      
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </header>
+
+      <!-- Demo: Interactive Islands -->
+      <section style="margin-bottom: 3rem;">
+        <h2 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">
+          Islands Architecture Demo
+        </h2>
+        <p style="text-align: center; margin-bottom: 2rem; color: #666;">
+          This React component only loads JavaScript when it becomes visible!
+        </p>
+        <Counter client:visible initialCount={42} label="Demo Counter" />
+      </section>
+
+      <main class="posts">
+        {posts.map(post => (
+          <article class="post-card">
+            <h2>
+              <a href={`/blog/${post.slug}`} class="post-title">
+                {post.data.title}
+              </a>
+            </h2>
+            <div class="post-meta">
+              By {post.data.author} • {new Date(post.data.publishDate).toLocaleDateString()}
+            </div>
+            <p class="post-description">
+              {post.data.description}
+            </p>
+            <div class="post-tags">
+              {post.data.tags.map(tag => (
+                <a href={`/tags/${tag}`} class="tag">
+                  {tag}
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </main>
+
+      <footer class="footer">
+        <p>
+          Built with ❤️ using 
+          <a href="https://github.com/minimal-astro" target="_blank">
+            Minimal Astro
+          </a>
+          - A reimplemented Astro framework for educational purposes
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

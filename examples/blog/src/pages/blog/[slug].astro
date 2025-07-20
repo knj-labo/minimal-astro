@@ -1,0 +1,249 @@
+---
+// This would use actual Content Collections API in real implementation
+const { slug } = Astro.params;
+
+// Mock post data - in real implementation this would come from collections
+const posts = {
+  'welcome': {
+    title: 'Welcome to Minimal Astro',
+    description: 'A simple blog built with our reimplemented Astro framework',
+    publishDate: '2024-01-15',
+    author: 'jp-knj',
+    tags: ['astro', 'framework', 'islands', 'tutorial'],
+    content: `
+      <h1>Welcome to Minimal Astro!</h1>
+      <p>This is our first blog post using the <strong>Minimal Astro</strong> framework - a reimplementation of Astro built from the ground up for educational purposes.</p>
+      
+      <h2>What We've Built</h2>
+      <p>Our minimal implementation includes:</p>
+      <ul>
+        <li>🏗️ <strong>Complete AST Parser</strong> - Handles .astro file syntax with frontmatter, HTML, and expressions</li>
+        <li>🎨 <strong>HTML Builder</strong> - Generates optimized static HTML with streaming support</li>
+        <li>⚡ <strong>Vite Integration</strong> - Full HMR support with error overlays and caching</li>
+        <li>🏝️ <strong>Islands Architecture</strong> - Selective hydration with multiple strategies</li>
+        <li>🔄 <strong>Multi-framework Support</strong> - React, Vue, and Svelte renderers</li>
+        <li>📝 <strong>Content Collections</strong> - Type-safe content management with file system scanning</li>
+      </ul>
+      
+      <h2>Islands Architecture in Action</h2>
+      <p>The beauty of Islands Architecture is that JavaScript only loads when and where you need it.</p>
+      
+      <p><em>Built with ❤️ using Minimal Astro</em></p>
+    `
+  },
+  'islands-architecture': {
+    title: 'Understanding Islands Architecture',
+    description: 'Deep dive into the Islands Architecture pattern and why it matters for web performance',
+    publishDate: '2024-01-20',
+    author: 'jp-knj',
+    tags: ['islands', 'architecture', 'performance', 'javascript'],
+    content: `
+      <h1>Understanding Islands Architecture</h1>
+      <p>Islands Architecture represents a paradigm shift in how we think about client-side JavaScript delivery.</p>
+      
+      <h2>The Problem with Traditional SPAs</h2>
+      <p>Single Page Applications often suffer from JavaScript bloat, poor initial loading, and hydration overhead.</p>
+      
+      <h2>The Islands Solution</h2>
+      <p>Islands Architecture solves these problems by using server-first rendering and selective hydration.</p>
+      
+      <h2>Performance Benefits</h2>
+      <p>Real-world measurements show 50-80% smaller initial bundles and faster Time to Interactive.</p>
+      
+      <p><em>This post demonstrates Islands Architecture in practice!</em></p>
+    `
+  }
+};
+
+const post = posts[slug];
+
+if (!post) {
+  return new Response('Post not found', { status: 404 });
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={post.description} />
+    <title>{post.title} | Minimal Astro Blog</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #fafafa;
+      }
+      
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      
+      .nav {
+        margin-bottom: 2rem;
+      }
+      
+      .nav a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      
+      .nav a:hover {
+        text-decoration: underline;
+      }
+      
+      .article {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .article-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e1e1e1;
+      }
+      
+      .article-title {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+      
+      .article-meta {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+      
+      .article-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      
+      .tag {
+        background: #3498db;
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+      }
+      
+      .tag:hover {
+        background: #2980b9;
+      }
+      
+      .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+      }
+      
+      .article-content h1,
+      .article-content h2,
+      .article-content h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1rem 0;
+      }
+      
+      .article-content h1 {
+        font-size: 2rem;
+      }
+      
+      .article-content h2 {
+        font-size: 1.5rem;
+      }
+      
+      .article-content p {
+        margin-bottom: 1.5rem;
+      }
+      
+      .article-content ul,
+      .article-content ol {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+      }
+      
+      .article-content li {
+        margin-bottom: 0.5rem;
+      }
+      
+      .article-content strong {
+        color: #2c3e50;
+      }
+      
+      .article-content em {
+        color: #666;
+        font-style: italic;
+      }
+      
+      .article-content code {
+        background: #f4f4f4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 0.9em;
+      }
+      
+      .footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e1e1e1;
+        text-align: center;
+      }
+      
+      .footer a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <a href="/">← Back to Blog</a>
+      </nav>
+
+      <article class="article">
+        <header class="article-header">
+          <h1 class="article-title">{post.title}</h1>
+          <div class="article-meta">
+            By {post.author} • {new Date(post.publishDate).toLocaleDateString()}
+          </div>
+          <div class="article-tags">
+            {post.tags.map(tag => (
+              <a href={`/tags/${tag}`} class="tag">
+                {tag}
+              </a>
+            ))}
+          </div>
+        </header>
+
+        <div class="article-content" set:html={post.content}>
+        </div>
+      </article>
+
+      <footer class="footer">
+        <a href="/">← Back to Blog</a>
+      </footer>
+    </div>
+  </body>
+</html>
