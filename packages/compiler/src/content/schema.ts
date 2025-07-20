@@ -326,7 +326,12 @@ function validateObject(
     for (const [prop, propSchema] of Object.entries(schema.properties)) {
       const propPath = path ? `${path}.${prop}` : prop;
       if (prop in value) {
-        result[prop] = validateValue(value[prop], propSchema, propPath, errors);
+        result[prop] = validateValue(
+          (value as Record<string, unknown>)[prop],
+          propSchema,
+          propPath,
+          errors
+        );
       }
     }
   }
@@ -376,8 +381,8 @@ export const z = {
   enum(values: string[]): Schema {
     return {
       type: 'string',
-      validate: (value: string) => {
-        if (!values.includes(value)) {
+      validate: (value: unknown) => {
+        if (typeof value !== 'string' || !values.includes(value)) {
           return `Expected one of: ${values.join(', ')}`;
         }
         return true;
@@ -388,8 +393,8 @@ export const z = {
   min(minValue: number): (schema: Schema) => Schema {
     return (schema: Schema) => ({
       ...schema,
-      validate: (value: number) => {
-        if (value < minValue) {
+      validate: (value: unknown) => {
+        if (typeof value !== 'number' || value < minValue) {
           return `Value must be at least ${minValue}`;
         }
         return true;
@@ -400,8 +405,8 @@ export const z = {
   max(maxValue: number): (schema: Schema) => Schema {
     return (schema: Schema) => ({
       ...schema,
-      validate: (value: number) => {
-        if (value > maxValue) {
+      validate: (value: unknown) => {
+        if (typeof value !== 'number' || value > maxValue) {
           return `Value must be at most ${maxValue}`;
         }
         return true;
@@ -412,7 +417,10 @@ export const z = {
   email(): Schema {
     return {
       type: 'string',
-      validate: (value: string) => {
+      validate: (value: unknown) => {
+        if (typeof value !== 'string') {
+          return 'Invalid email format';
+        }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
           return 'Invalid email format';
@@ -425,7 +433,10 @@ export const z = {
   url(): Schema {
     return {
       type: 'string',
-      validate: (value: string) => {
+      validate: (value: unknown) => {
+        if (typeof value !== 'string') {
+          return 'Invalid URL format';
+        }
         try {
           new URL(value);
           return true;

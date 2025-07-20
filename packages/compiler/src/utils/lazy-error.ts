@@ -40,7 +40,6 @@ export function createLazyError(messageFactory: LazyMessageFactory, name = 'Lazy
   return error;
 }
 
-
 /**
  * Parse error with lazy message construction
  */
@@ -82,7 +81,6 @@ export function createLazyTransformError(
 
   return error;
 }
-
 
 /**
  * Creates a lazy parse error with position information
@@ -232,7 +230,6 @@ export function createErrorAggregator(maxErrors = 50, maxWarnings = 100) {
     },
   };
 }
-
 
 /**
  * Common error message factories for performance

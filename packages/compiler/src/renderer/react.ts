@@ -3,7 +3,6 @@
  * Handles SSR and client-side rendering with hydration support
  */
 
-import { createContextualLogger } from '../utils/logger.js';
 import type {
   ComponentNode,
   ElementNode,
@@ -13,6 +12,7 @@ import type {
   Node,
   TextNode,
 } from '../../types/ast.js';
+import { createContextualLogger } from '../utils/logger.js';
 
 // Component type definition
 type ComponentType<P = Record<string, unknown>> = (props: P) => unknown;
@@ -252,7 +252,13 @@ export function createReactRenderer(options: ReactRendererOptions) {
         if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
           const expression = value.slice(1, -1); // Remove braces
           try {
-            value = evaluateExpression(expression, context);
+            const result = evaluateExpression(expression, context);
+            // Convert to string/boolean for HTML attributes
+            if (typeof result === 'string' || typeof result === 'boolean') {
+              value = result;
+            } else {
+              value = String(result);
+            }
           } catch (error) {
             // For simple numbers, try parsing directly but keep as strings for attributes
             if (/^\d+$/.test(expression)) {
@@ -260,7 +266,10 @@ export function createReactRenderer(options: ReactRendererOptions) {
             } else if (/^\d+\.\d+$/.test(expression)) {
               value = expression; // Keep as string for HTML attributes
             } else {
-              logger.warn('Failed to evaluate attribute expression', { expression, error: error.message });
+              logger.warn('Failed to evaluate attribute expression', {
+                expression,
+                error: error instanceof Error ? error.message : String(error),
+              });
               value = expression; // Fall back to the expression string
             }
           }
@@ -337,7 +346,10 @@ export function createReactRenderer(options: ReactRendererOptions) {
         const result = evaluateExpression(code, context);
         return escapeHtml(String(result));
       } catch (error) {
-        logger.warn('Expression evaluation error', { code, error: error.message });
+        logger.warn('Expression evaluation error', {
+          code,
+          error: error instanceof Error ? error.message : String(error),
+        });
         return `<!-- Expression error: ${escapeHtml(code)} -->`;
       }
     }
@@ -400,7 +412,12 @@ function renderComponentToString(
     // For now, return a placeholder
     return `<div><!-- ${Component.name ?? 'Component'} rendered here --></div>`;
   } catch (error) {
-    logger.error('Component render error', error, { component: Component.name });
+    const logger = createContextualLogger({ module: 'react-renderer' });
+    logger.error(
+      'Component render error',
+      error instanceof Error ? error : new Error(String(error)),
+      { component: Component.name }
+    );
     return '<!-- Component render error -->';
   }
 }
@@ -442,7 +459,10 @@ function processFrontmatter(code: string): Record<string, unknown> {
       }
     }
   } catch (error) {
-    logger.warn('Frontmatter processing error', { error: error.message });
+    const logger = createContextualLogger({ module: 'frontmatter-processor' });
+    logger.warn('Frontmatter processing error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   return context;

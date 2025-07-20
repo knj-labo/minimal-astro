@@ -109,6 +109,49 @@ export {
   createErrorAggregator,
   ErrorFactories,
 } from './utils/lazy-error.js';
+export {
+  createErrorBoundary,
+  globalErrorBoundary,
+  safeExecute,
+  safeExecuteAsync,
+  withErrorBoundary,
+  withAsyncErrorBoundary,
+  type ErrorContext,
+  type RecoveryStrategy,
+  type ErrorBoundaryOptions,
+} from './utils/error-boundary.js';
+export {
+  enhanceError,
+  generateCodeFrame,
+  formatEnhancedError,
+  createDevErrorHandler,
+  validateDevelopmentSetup,
+  getPerformanceHints,
+  collectDebugInfo,
+  withDevEnhancements,
+  type ErrorEnhancement,
+  type CodeContext,
+} from './utils/dev-experience.js';
+export {
+  createLogger,
+  createContextualLogger,
+  logger,
+  LogLevel,
+  type LogEntry,
+  type LoggerOptions,
+} from './utils/logger.js';
+export {
+  createPerformanceMonitor,
+  globalPerformanceMonitor,
+  timed,
+  timedAsync,
+  withTiming,
+  withAsyncTiming,
+  createPerformanceBudget,
+  trackMemoryUsage,
+  type PerformanceMetric,
+  type PerformanceReport,
+} from './utils/performance-monitor.js';
 
 // Type exports
 export type * from '../types/ast.js';

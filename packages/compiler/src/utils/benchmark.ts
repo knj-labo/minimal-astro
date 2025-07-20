@@ -166,7 +166,6 @@ export function createBenchmarkSuite() {
   };
 }
 
-
 /**
  * Format benchmark results for display
  */
@@ -248,7 +247,6 @@ export function createMemoryTracker() {
   };
 }
 
-
 /**
  * Performance regression detector
  */
@@ -296,7 +294,6 @@ export function createRegressionDetector() {
     },
   };
 }
-
 
 /**
  * Quick performance test utility

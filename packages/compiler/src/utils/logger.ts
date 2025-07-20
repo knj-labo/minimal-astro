@@ -69,7 +69,12 @@ export function createLogger(options: LoggerOptions = {}) {
     return parts.join(' ');
   }
 
-  function log(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): void {
+  function log(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, unknown>,
+    error?: Error
+  ): void {
     if (!shouldLog(level)) return;
 
     const entry: LogEntry = {
@@ -112,7 +117,11 @@ export function createLogger(options: LoggerOptions = {}) {
       log(LogLevel.WARN, message, context);
     },
 
-    error(message: string, errorOrContext?: Error | Record<string, unknown>, context?: Record<string, unknown>): void {
+    error(
+      message: string,
+      errorOrContext?: Error | Record<string, unknown>,
+      context?: Record<string, unknown>
+    ): void {
       if (errorOrContext instanceof Error) {
         log(LogLevel.ERROR, message, context, errorOrContext);
       } else {
@@ -120,7 +129,7 @@ export function createLogger(options: LoggerOptions = {}) {
       }
     },
 
-    setLevel(newLevel: LogLevel): void {
+    setLevel(_newLevel: LogLevel): void {
       // Note: This would require storing level in a mutable way
       // For now, create a new logger if you need different levels
     },
@@ -173,22 +182,25 @@ function shouldEnableColors(): boolean {
 function colorizeLevel(levelName: string, level: LogLevel): string {
   const colors = {
     [LogLevel.DEBUG]: '\x1b[36m', // Cyan
-    [LogLevel.INFO]: '\x1b[32m',  // Green
-    [LogLevel.WARN]: '\x1b[33m',  // Yellow
+    [LogLevel.INFO]: '\x1b[32m', // Green
+    [LogLevel.WARN]: '\x1b[33m', // Yellow
     [LogLevel.ERROR]: '\x1b[31m', // Red
     [LogLevel.SILENT]: '\x1b[0m', // Reset
   };
 
   const reset = '\x1b[0m';
   const color = colors[level] ?? reset;
-  
+
   return `${color}${levelName}${reset}`;
 }
 
 /**
  * Create a contextual logger with additional context
  */
-export function createContextualLogger(baseContext: Record<string, unknown>, options?: LoggerOptions) {
+export function createContextualLogger(
+  baseContext: Record<string, unknown>,
+  options?: LoggerOptions
+) {
   const baseLogger = createLogger(options);
 
   return {
@@ -204,7 +216,11 @@ export function createContextualLogger(baseContext: Record<string, unknown>, opt
       baseLogger.warn(message, { ...baseContext, ...context });
     },
 
-    error(message: string, errorOrContext?: Error | Record<string, unknown>, context?: Record<string, unknown>): void {
+    error(
+      message: string,
+      errorOrContext?: Error | Record<string, unknown>,
+      context?: Record<string, unknown>
+    ): void {
       if (errorOrContext instanceof Error) {
         baseLogger.error(message, errorOrContext, { ...baseContext, ...context });
       } else {

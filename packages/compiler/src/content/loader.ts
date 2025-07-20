@@ -72,7 +72,9 @@ export function parseFrontmatter(content: string): {
   } catch (error) {
     // Create a local logger for this function
     const logger = createContextualLogger({ module: 'frontmatter-parser' });
-    logger.warn('Failed to parse frontmatter', { error: error.message });
+    logger.warn('Failed to parse frontmatter', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return {
       frontmatter: {},
       content: content.trim(),
@@ -333,7 +335,6 @@ export function createYamlLoader(_options: LoaderOptions): ContentLoader {
  * Auto-detect and create appropriate loader based on file extension
  */
 export function createAutoLoader(options: LoaderOptions): ContentLoader {
-  const logger = createContextualLogger({ module: 'content-loader' });
   const markdownLoader = createMarkdownLoader(options);
   const jsonLoader = createJsonLoader(options);
   const yamlLoader = createYamlLoader(options);

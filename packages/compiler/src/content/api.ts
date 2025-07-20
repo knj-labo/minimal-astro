@@ -143,7 +143,11 @@ export function createContentManager(options: ContentManagerOptions): ContentAPI
       collections.add(name);
       return entries;
     } catch (error) {
-      logger.error(`Failed to load collection "${name}"`, error, { collection: name });
+      logger.error(
+        `Failed to load collection "${name}"`,
+        error instanceof Error ? error : new Error(String(error)),
+        { collection: name }
+      );
       return [];
     }
   }
@@ -179,12 +183,15 @@ export function createContentManager(options: ContentManagerOptions): ContentAPI
         if (config.schema) {
           const validation = validateContentEntry(entry, config.schema);
           if (!validation.valid) {
-            logger.error(`Validation failed for ${entry.id}`, { errors: validation.errors, entryId: entry.id });
+            logger.error(`Validation failed for ${entry.id}`, {
+              errors: validation.errors,
+              entryId: entry.id,
+            });
             if (!dev) {
               continue; // Skip invalid entries in production
             }
           } else {
-            entry.data = validation.data;
+            entry.data = validation.data as Record<string, unknown>;
           }
         }
 
@@ -196,7 +203,11 @@ export function createContentManager(options: ContentManagerOptions): ContentAPI
           entries.push(entry);
         }
       } catch (error) {
-        logger.error(`Failed to load entry ${file}`, error, { file });
+        logger.error(
+          `Failed to load entry ${file}`,
+          error instanceof Error ? error : new Error(String(error)),
+          { file }
+        );
         if (!dev) {
           // Skip failed entries in production
         }

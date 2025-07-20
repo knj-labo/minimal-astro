@@ -279,7 +279,7 @@ export function createHydrationRuntime(options: HydrationOptions) {
     // Find all hydration roots
     const hydrationRoots = rootElement.querySelectorAll('[data-astro-root]');
 
-    for (const element of hydrationRoots) {
+    for (const element of Array.from(hydrationRoots)) {
       if (element instanceof HTMLElement) {
         hydrateComponent(element);
       }

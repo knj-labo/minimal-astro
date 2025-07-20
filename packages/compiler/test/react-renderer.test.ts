@@ -204,8 +204,8 @@ const name = "Astro";
 
       const hydrationData = result.hydrationData as HydrationData;
       expect(hydrationData.directives[0].props).toEqual({
-        initialCount: 10,
-        step: 2,
+        initialCount: '10',
+        step: '2',
       });
     });
 

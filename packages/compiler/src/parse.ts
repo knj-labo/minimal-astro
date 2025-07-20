@@ -12,6 +12,7 @@ import type {
   TextNode,
 } from '../types/ast.js';
 import { type Token, TokenType, tokenize } from './tokenizer.js';
+import { safeExecute } from './utils/error-boundary.js';
 
 export interface ParseOptions {
   filename?: string;
@@ -137,7 +138,7 @@ function parseAttributes(state: ParserState): [ParserState, Attr[]] {
         // it's a separate attribute, not the value of this one
         const fullValue = nextToken.value;
         const equalIndex = fullValue.indexOf('=');
-        
+
         if (equalIndex !== -1) {
           const tokenAttrName = fullValue.substring(0, equalIndex);
           // Only consume this token if it belongs to our current attribute
@@ -479,7 +480,26 @@ function parse(state: ParserState): ParseResult {
 }
 
 export function parseAstro(source: string, options?: ParseOptions): ParseResult {
-  const tokens = tokenize(source);
-  const initialState = createInitialState(tokens, options);
-  return parse(initialState);
+  return safeExecute(
+    () => {
+      const tokens = tokenize(source);
+      const initialState = createInitialState(tokens, options);
+      return parse(initialState);
+    },
+    {
+      operation: 'parse',
+      filename: options?.filename,
+      context: { sourceLength: source.length },
+    },
+    {
+      fallbackValue: {
+        ast: {
+          type: 'Fragment',
+          children: [],
+          loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } },
+        },
+        diagnostics: [],
+      },
+    }
+  );
 }
