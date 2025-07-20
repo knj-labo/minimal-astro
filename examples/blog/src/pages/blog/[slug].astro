@@ -4,13 +4,13 @@ const { slug } = Astro.params;
 
 // Mock post data - in real implementation this would come from collections
 const posts = {
-  'welcome': {
-    title: 'Welcome to Minimal Astro',
-    description: 'A simple blog built with our reimplemented Astro framework',
-    publishDate: '2024-01-15',
-    author: 'jp-knj',
-    tags: ['astro', 'framework', 'islands', 'tutorial'],
-    content: `
+	welcome: {
+		title: "Welcome to Minimal Astro",
+		description: "A simple blog built with our reimplemented Astro framework",
+		publishDate: "2024-01-15",
+		author: "jp-knj",
+		tags: ["astro", "framework", "islands", "tutorial"],
+		content: `
       <h1>Welcome to Minimal Astro!</h1>
       <p>This is our first blog post using the <strong>Minimal Astro</strong> framework - a reimplementation of Astro built from the ground up for educational purposes.</p>
       
@@ -29,15 +29,16 @@ const posts = {
       <p>The beauty of Islands Architecture is that JavaScript only loads when and where you need it.</p>
       
       <p><em>Built with ❤️ using Minimal Astro</em></p>
-    `
-  },
-  'islands-architecture': {
-    title: 'Understanding Islands Architecture',
-    description: 'Deep dive into the Islands Architecture pattern and why it matters for web performance',
-    publishDate: '2024-01-20',
-    author: 'jp-knj',
-    tags: ['islands', 'architecture', 'performance', 'javascript'],
-    content: `
+    `,
+	},
+	"islands-architecture": {
+		title: "Understanding Islands Architecture",
+		description:
+			"Deep dive into the Islands Architecture pattern and why it matters for web performance",
+		publishDate: "2024-01-20",
+		author: "jp-knj",
+		tags: ["islands", "architecture", "performance", "javascript"],
+		content: `
       <h1>Understanding Islands Architecture</h1>
       <p>Islands Architecture represents a paradigm shift in how we think about client-side JavaScript delivery.</p>
       
@@ -51,14 +52,14 @@ const posts = {
       <p>Real-world measurements show 50-80% smaller initial bundles and faster Time to Interactive.</p>
       
       <p><em>This post demonstrates Islands Architecture in practice!</em></p>
-    `
-  }
+    `,
+	},
 };
 
 const post = posts[slug];
 
 if (!post) {
-  return new Response('Post not found', { status: 404 });
+	return new Response("Post not found", { status: 404 });
 }
 ---
 

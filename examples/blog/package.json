@@ -1,21 +1,21 @@
 {
-  "name": "minimal-astro-blog-example",
-  "version": "0.0.1",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "minimal-astro build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "minimal-astro": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "typescript": "^5.4.0",
-    "vite": "^5.0.0"
-  }
+	"name": "minimal-astro-blog-example",
+	"version": "0.0.1",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "vite",
+		"build": "minimal-astro build",
+		"preview": "vite preview",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"minimal-astro": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/react": "^18.0.0",
+		"@types/react-dom": "^18.0.0",
+		"typescript": "^5.4.0",
+		"vite": "^5.0.0"
+	}
 }

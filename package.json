@@ -1,30 +1,39 @@
 {
-  "name": "minimal-astro",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "description": "A minimal implementation of Astro from scratch",
-  "scripts": {
-    "build": "turbo run build",
-    "test": "bun test",
-    "dev": "turbo run dev",
-    "lint": "biome check",
-    "format": "biome format --write",
-    "check": "biome check --write"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.7.0",
-    "@types/node": "^20.0.0",
-    "turbo": "^1.10.0",
-    "typescript": "^5.4.0"
-  },
-  "workspaces": ["packages/minimal-astro", "packages/create-minimal-astro", "packages/internal-helpers", "packages/integrations/react", "packages/integrations/vue", "packages/integrations/svelte", "packages/markdown/remark", "examples/*"],
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "packageManager": "pnpm@8.15.0",
-  "dependencies": {
-    "@turbo/codemod": "^2.5.5"
-  }
+	"name": "minimal-astro",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"description": "A minimal implementation of Astro from scratch",
+	"scripts": {
+		"build": "turbo run build",
+		"test": "bun test",
+		"dev": "turbo run dev",
+		"lint": "biome check",
+		"format": "biome format --write",
+		"check": "biome check --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.7.0",
+		"@types/node": "^20.0.0",
+		"turbo": "^1.10.0",
+		"typescript": "^5.4.0"
+	},
+	"workspaces": [
+		"packages/minimal-astro",
+		"packages/create-minimal-astro",
+		"packages/internal-helpers",
+		"packages/integrations/react",
+		"packages/integrations/vue",
+		"packages/integrations/svelte",
+		"packages/markdown/remark",
+		"examples/*"
+	],
+	"engines": {
+		"node": ">=18.0.0",
+		"pnpm": ">=8.0.0"
+	},
+	"packageManager": "pnpm@8.15.0",
+	"dependencies": {
+		"@turbo/codemod": "^2.5.5"
+	}
 }

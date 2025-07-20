@@ -1,33 +1,35 @@
 ---
-import { collections } from '../content.config.js';
-import Counter from '../components/Counter.jsx';
+import Counter from "../components/Counter.jsx";
+import { collections } from "../content.config.js";
 
 // Get blog posts (would use actual Content Collections API in real implementation)
 const posts = [
-  {
-    slug: 'welcome',
-    data: {
-      title: 'Welcome to Minimal Astro',
-      description: 'A simple blog built with our reimplemented Astro framework',
-      publishDate: '2024-01-15',
-      author: 'jp-knj',
-      tags: ['astro', 'framework', 'islands', 'tutorial']
-    }
-  },
-  {
-    slug: 'islands-architecture', 
-    data: {
-      title: 'Understanding Islands Architecture',
-      description: 'Deep dive into the Islands Architecture pattern and why it matters for web performance',
-      publishDate: '2024-01-20',
-      author: 'jp-knj',
-      tags: ['islands', 'architecture', 'performance', 'javascript']
-    }
-  }
+	{
+		slug: "welcome",
+		data: {
+			title: "Welcome to Minimal Astro",
+			description: "A simple blog built with our reimplemented Astro framework",
+			publishDate: "2024-01-15",
+			author: "jp-knj",
+			tags: ["astro", "framework", "islands", "tutorial"],
+		},
+	},
+	{
+		slug: "islands-architecture",
+		data: {
+			title: "Understanding Islands Architecture",
+			description:
+				"Deep dive into the Islands Architecture pattern and why it matters for web performance",
+			publishDate: "2024-01-20",
+			author: "jp-knj",
+			tags: ["islands", "architecture", "performance", "javascript"],
+		},
+	},
 ];
 
-const title = 'Minimal Astro Blog';
-const description = 'Educational blog built with a reimplemented Astro framework';
+const title = "Minimal Astro Blog";
+const description =
+	"Educational blog built with a reimplemented Astro framework";
 ---
 
 <html lang="en">

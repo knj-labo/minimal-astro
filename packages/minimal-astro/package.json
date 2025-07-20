@@ -1,43 +1,43 @@
 {
-  "name": "minimal-astro",
-  "version": "0.0.1",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "minimal-astro": "./dist/cli/index.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./vite-plugin-astro": {
-      "types": "./dist/vite-plugin-astro/index.d.ts",
-      "import": "./dist/vite-plugin-astro/index.js"
-    },
-    "./runtime": {
-      "types": "./dist/runtime/index.d.ts",
-      "import": "./dist/runtime/index.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
-    "format": "biome format --write ."
-  },
-  "dependencies": {
-    "vite": "^5.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "bun-types": "latest",
-    "typescript": "^5.4.0"
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0"
-  }
+	"name": "minimal-astro",
+	"version": "0.0.1",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"bin": {
+		"minimal-astro": "./dist/cli/index.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./vite-plugin-astro": {
+			"types": "./dist/vite-plugin-astro/index.d.ts",
+			"import": "./dist/vite-plugin-astro/index.js"
+		},
+		"./runtime": {
+			"types": "./dist/runtime/index.d.ts",
+			"import": "./dist/runtime/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"format": "biome format --write ."
+	},
+	"dependencies": {
+		"vite": "^5.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"bun-types": "latest",
+		"typescript": "^5.4.0"
+	},
+	"peerDependencies": {
+		"vite": "^5.0.0"
+	}
 }

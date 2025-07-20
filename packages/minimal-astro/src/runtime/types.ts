@@ -6,50 +6,50 @@
 export type ComponentType<P = Record<string, unknown>> = (props: P) => unknown;
 
 export interface HydrationOptions {
-  /**
-   * Root element selector or element
-   */
-  root?: string | HTMLElement;
+	/**
+	 * Root element selector or element
+	 */
+	root?: string | HTMLElement;
 
-  /**
-   * Component registry
-   */
-  components: Map<string, ComponentType>;
+	/**
+	 * Component registry
+	 */
+	components: Map<string, ComponentType>;
 
-  /**
-   * React or Preact
-   */
-  runtime: 'react' | 'preact';
+	/**
+	 * React or Preact
+	 */
+	runtime: "react" | "preact";
 
-  /**
-   * Custom render function
-   */
-  render?: (component: ComponentType, container: HTMLElement) => void;
+	/**
+	 * Custom render function
+	 */
+	render?: (component: ComponentType, container: HTMLElement) => void;
 }
 
 export interface PendingHydration {
-  element: HTMLElement;
-  component: ComponentType;
-  props: Record<string, unknown>;
-  directive: string;
-  value?: string;
+	element: HTMLElement;
+	component: ComponentType;
+	props: Record<string, unknown>;
+	directive: string;
+	value?: string;
 }
 
 export interface HydrationState {
-  readonly hydrated: ReadonlySet<string>;
-  readonly pending: ReadonlyMap<string, PendingHydration>;
-  readonly observers: {
-    readonly intersection?: IntersectionObserver;
-    readonly mutation?: MutationObserver;
-  };
+	readonly hydrated: ReadonlySet<string>;
+	readonly pending: ReadonlyMap<string, PendingHydration>;
+	readonly observers: {
+		readonly intersection?: IntersectionObserver;
+		readonly mutation?: MutationObserver;
+	};
 }
 
 export interface HydrationRuntime {
-  hydrateAll: () => void;
-  hydrateComponent: (element: HTMLElement, immediate?: boolean) => void;
-  cleanup: () => void;
-  context: HydrationState;
+	hydrateAll: () => void;
+	hydrateComponent: (element: HTMLElement, immediate?: boolean) => void;
+	cleanup: () => void;
+	context: HydrationState;
 }
 
 // Re-export FrameworkHooks from event-system
-export type { FrameworkHooks } from './event-system.js';
+export type { FrameworkHooks } from "./event-system.js";
