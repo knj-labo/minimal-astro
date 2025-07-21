@@ -1,0 +1,90 @@
+---
+const title = "Minimal Astro Blog";
+const description = "Educational blog built with a reimplemented Astro framework";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Educational blog built with a reimplemented Astro framework" />
+    <title>Minimal Astro Blog</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Minimal Astro Blog</h1>
+        <p>Educational blog built with a reimplemented Astro framework</p>
+      </header>
+
+      <section style="margin-bottom: 3rem; text-align: center; padding: 2rem; border: 2px solid #3498db; border-radius: 8px; background: #f8f9fa;">
+        <h2 style="color: #2c3e50; margin-bottom: 1rem;">
+          Islands Architecture Demo
+        </h2>
+        <p style="color: #666; margin-bottom: 2rem;">
+          This React component only loads JavaScript when it becomes visible!
+        </p>
+        <!-- React Counter component would be here -->
+        <div style="padding: 1rem; background: white; border-radius: 4px; border: 1px solid #ddd;">
+          <strong>Interactive Counter (Island)</strong>
+          <p>This would be a React component with client:visible directive</p>
+        </div>
+      </section>
+
+      <main class="posts">
+        <article class="post-card">
+          <h2>
+            <a href="/blog/welcome" class="post-title">
+              Welcome to Minimal Astro
+            </a>
+          </h2>
+          <div class="post-meta">
+            By jp-knj • January 15, 2024
+          </div>
+          <p class="post-description">
+            A simple blog built with our reimplemented Astro framework
+          </p>
+          <div class="post-tags">
+            <a href="/tags/astro" class="tag">astro</a>
+            <a href="/tags/framework" class="tag">framework</a>
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/tutorial" class="tag">tutorial</a>
+          </div>
+        </article>
+
+        <article class="post-card">
+          <h2>
+            <a href="/blog/islands-architecture" class="post-title">
+              Understanding Islands Architecture
+            </a>
+          </h2>
+          <div class="post-meta">
+            By jp-knj • January 20, 2024
+          </div>
+          <p class="post-description">
+            Deep dive into the Islands Architecture pattern and why it matters for web performance
+          </p>
+          <div class="post-tags">
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/architecture" class="tag">architecture</a>
+            <a href="/tags/performance" class="tag">performance</a>
+            <a href="/tags/javascript" class="tag">javascript</a>
+          </div>
+        </article>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Built with ❤️ using 
+          <a href="https://github.com/minimal-astro" target="_blank">
+            Minimal Astro
+          </a>
+          - A reimplemented Astro framework for educational purposes
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

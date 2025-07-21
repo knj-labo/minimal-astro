@@ -18,7 +18,16 @@
     "turbo": "^1.10.0",
     "typescript": "^5.4.0"
   },
-  "workspaces": ["packages/*", "examples/*"],
+  "workspaces": [
+    "packages/minimal-astro",
+    "packages/create-minimal-astro",
+    "packages/internal-helpers",
+    "packages/integrations/react",
+    "packages/integrations/vue",
+    "packages/integrations/svelte",
+    "packages/markdown/remark",
+    "examples/*"
+  ],
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
