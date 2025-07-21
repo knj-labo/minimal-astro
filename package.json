@@ -10,11 +10,16 @@
     "dev": "turbo run dev",
     "lint": "biome check",
     "format": "biome format --write",
-    "check": "biome check --write"
+    "check": "biome check --write",
+    "knip": "knip",
+    "knip:fix": "knip --fix",
+    "knip:production": "knip --production",
+    "knip:dependencies": "knip --dependencies"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.0",
     "@types/node": "^20.0.0",
+    "knip": "^5.62.0",
     "turbo": "^1.10.0",
     "typescript": "^5.4.0"
   },

@@ -127,6 +127,9 @@ async function renderPages(
     server: { middlewareMode: true },
   });
 
+  const absoluteOutDir = resolve(process.cwd(), outDir);
+  console.log(`  Base output directory: ${absoluteOutDir}`);
+
   try {
     for (const page of pages) {
       // Import and render each page
@@ -138,39 +141,65 @@ async function renderPages(
         .replace(/\.astro$/, '.html')
         .replace(/\/index\.html$/, '/index.html'); // Keep index.html at root
 
-      const outputPath = join(outDir, relativePath);
+      const outputPath = join(absoluteOutDir, 'pages', relativePath);
 
       // Render the page
       console.log(`  Rendering: ${relativePath}`);
+      console.log(`  Output path: ${outputPath}`);
 
       try {
-        // Check if the module exports a render function
-        if (typeof module.render === 'function') {
+        // Log module structure for debugging
+        console.log(`  Module exports:`, Object.keys(module));
+        
+        // The transform generates: export default { render, metadata, Component }
+        const moduleExports = module.default || module;
+        console.log(`  Module default exports:`, moduleExports ? Object.keys(moduleExports) : 'none');
+        
+        // Check if the module has a render function
+        if (moduleExports && typeof moduleExports.render === 'function') {
+          console.log(`  Found render function, executing...`);
+          
           // Call the render function with empty props for now
-          const result = await module.render({});
+          const result = await moduleExports.render({});
+          console.log(`  Render result type:`, typeof result);
+          console.log(`  Render result keys:`, result ? Object.keys(result) : 'none');
 
           // Extract HTML from result
           const html = result.html || result;
+          
+          if (!html || typeof html !== 'string') {
+            console.error(`  ❌ Render function returned invalid HTML:`, html);
+            continue;
+          }
+          
+          console.log(`  HTML length: ${html.length} characters`);
 
           // Ensure directory exists
           const outputDir = dirname(outputPath);
+          console.log(`  Creating directory: ${outputDir}`);
           await mkdir(outputDir, { recursive: true });
 
           // Write HTML file
-          await writeFile(outputPath, html, 'utf-8');
-        } else if (typeof module.default === 'function') {
-          // Try default export
-          const result = await module.default({});
-          const html = result.html || result;
-
-          // Ensure directory exists
-          const outputDir = dirname(outputPath);
-          await mkdir(outputDir, { recursive: true });
-
-          // Write HTML file
-          await writeFile(outputPath, html, 'utf-8');
+          try {
+            console.log(`  Writing file to: ${outputPath}`);
+            await writeFile(outputPath, html, 'utf-8');
+            
+            // Verify the file was written
+            const { existsSync, statSync } = await import('node:fs');
+            if (existsSync(outputPath)) {
+              const stats = statSync(outputPath);
+              console.log(`  ✅ Generated: ${outputPath} (${stats.size} bytes)`);
+            } else {
+              console.error(`  ❌ File was not created: ${outputPath}`);
+            }
+          } catch (writeError) {
+            console.error(`  ❌ Failed to write file:`, writeError);
+            console.error(`  Stack trace:`, writeError instanceof Error ? writeError.stack : 'No stack');
+            throw writeError;
+          }
         } else {
-          console.warn(`  ⚠️  No render function found in ${page}`);
+          console.warn(`  ⚠️  No render function found in module`);
+          console.warn(`  Module structure:`, JSON.stringify(moduleExports, null, 2));
         }
       } catch (error) {
         console.error(`  ❌ Failed to render ${relativePath}:`, error);

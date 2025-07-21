@@ -1,0 +1,68 @@
+---
+const post = {
+  title: "Welcome to Minimal Astro",
+  description: "A simple blog built with our reimplemented Astro framework",
+  publishDate: "2024-01-15",
+  author: "jp-knj",
+  tags: ["astro", "framework", "islands", "tutorial"]
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={post.description} />
+    <title>{post.title} | Minimal Astro Blog</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <a href="/">← Back to Blog</a>
+      </nav>
+
+      <article class="article">
+        <header class="article-header">
+          <h1 class="article-title">{post.title}</h1>
+          <div class="article-meta">
+            By {post.author} • {post.publishDate}
+          </div>
+          <div class="article-tags">
+            <a href="/tags/astro" class="tag">astro</a>
+            <a href="/tags/framework" class="tag">framework</a>
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/tutorial" class="tag">tutorial</a>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <h1>Welcome to Minimal Astro!</h1>
+          <p>This is our first blog post using the <strong>Minimal Astro</strong> framework - a reimplementation of Astro built from the ground up for educational purposes.</p>
+          
+          <h2>What We've Built</h2>
+          <p>Our minimal implementation includes:</p>
+          
+          <ul>
+            <li>🏗️ <strong>Complete AST Parser</strong> - Handles .astro file syntax with frontmatter, HTML, and expressions</li>
+            <li>🎨 <strong>HTML Builder</strong> - Generates optimized static HTML with streaming support</li>
+            <li>⚡ <strong>Vite Integration</strong> - Full HMR support with error overlays and caching</li>
+            <li>🏝️ <strong>Islands Architecture</strong> - Selective hydration with multiple strategies</li>
+            <li>🔄 <strong>Multi-framework Support</strong> - React, Vue, and Svelte renderers</li>
+            <li>📝 <strong>Content Collections</strong> - Type-safe content management with file system scanning</li>
+          </ul>
+          
+          <h2>Islands Architecture in Action</h2>
+          <p>The beauty of Islands Architecture is that JavaScript only loads when and where you need it.</p>
+          
+          <p><em>Built with ❤️ using Minimal Astro</em></p>
+        </div>
+      </article>
+
+      <footer class="footer">
+        <a href="/">← Back to Blog</a>
+      </footer>
+    </div>
+  </body>
+</html>

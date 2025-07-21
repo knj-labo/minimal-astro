@@ -1,0 +1,51 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    "packages/minimal-astro": {
+      "entry": ["src/index.ts", "src/cli/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**", "src/cli/build-simple.ts"]
+    },
+    "packages/create-minimal-astro": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/internal-helpers": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/integrations/*": {
+      "entry": ["index.ts"],
+      "project": ["**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/markdown/remark": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**", "test-markdown.ts"]
+    },
+    "examples/*": {
+      "entry": ["vite.config.ts", "serve.js"],
+      "project": ["src/**/*.{ts,tsx,js,jsx,astro}", "*.{ts,js}"],
+      "ignore": ["dist/**"]
+    }
+  },
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/tests/**",
+    "**/test/**",
+    "**/__tests__/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.vite/**",
+    "**/coverage/**",
+    "packages/minimal-astro/tests/**"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": ["@turbo/codemod"],
+  "ignoreWorkspaces": []
+}

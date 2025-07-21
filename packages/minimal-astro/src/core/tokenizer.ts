@@ -770,8 +770,17 @@ function nextTokenOptimized(
     }
   }
 
-  // Fallback: advance and try again
-  return nextTokenOptimized(advance(state), tokenPool);
+  // Fallback: advance position and return a text token for the character
+  const char = state.source[state.position];
+  const advancedState = advance(state);
+  const token = tokenPool.acquire();
+  token.type = TokenType.Text;
+  token.value = char;
+  token.loc = {
+    start: getCurrentPosition(state),
+    end: getCurrentPosition(advancedState),
+  };
+  return [advancedState, token];
 }
 
 // Legacy function for backward compatibility
