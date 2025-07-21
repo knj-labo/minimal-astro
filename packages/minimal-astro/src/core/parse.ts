@@ -289,6 +289,7 @@ function parseText(state: ParserState): [ParserState, TextNode | null] {
 			{
 				type: "Text",
 				value: token.value,
+				content: token.value,
 				loc: token.loc,
 			},
 		];
@@ -443,6 +444,7 @@ function parseElement(
 				type: "Component" as const,
 				tag,
 				attrs,
+				attributes: attrs,
 				children,
 				selfClosing,
 				loc,
@@ -451,6 +453,7 @@ function parseElement(
 				type: "Element" as const,
 				tag,
 				attrs,
+				attributes: attrs,
 				children,
 				selfClosing,
 				loc,

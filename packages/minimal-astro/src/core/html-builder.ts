@@ -289,7 +289,11 @@ function buildTextHtml(
 	const indent = options.prettyPrint
 		? (options.indent ?? "").repeat(depth)
 		: "";
-	const text = escapeHtml(node.value);
+	
+	// Don't escape DOCTYPE declarations
+	const text = node.value.trim().startsWith('<!DOCTYPE') 
+		? node.value 
+		: escapeHtml(node.value);
 
 	// Skip indentation for text nodes that are part of inline content
 	if (text.trim() === "") {
@@ -478,7 +482,11 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
 				const indent = opts.prettyPrint
 					? (opts.indent?.repeat(depth) ?? "")
 					: "";
-				const text = escapeHtml(node.value);
+				
+				// Don't escape DOCTYPE declarations
+				const text = node.value.trim().startsWith('<!DOCTYPE') 
+					? node.value 
+					: escapeHtml(node.value);
 
 				// Handle inline vs block text
 				if (opts.prettyPrint && text.trim() !== text) {

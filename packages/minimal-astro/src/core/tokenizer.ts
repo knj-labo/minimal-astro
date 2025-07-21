@@ -28,6 +28,7 @@ export enum Mode {
 	Frontmatter = "Frontmatter",
 	Tag = "Tag",
 	Attribute = "Attribute",
+	Style = "Style",
 }
 
 interface TokenizerState {
@@ -37,6 +38,7 @@ interface TokenizerState {
 	readonly column: number;
 	readonly mode: Mode;
 	readonly modeStack: readonly Mode[];
+	readonly currentTagName?: string;
 }
 
 function createInitialState(source: string): TokenizerState {
@@ -47,6 +49,7 @@ function createInitialState(source: string): TokenizerState {
 		column: 1,
 		mode: Mode.HTML,
 		modeStack: [],
+		currentTagName: undefined,
 	};
 }
 
@@ -126,10 +129,14 @@ function popMode(state: TokenizerState): TokenizerState {
 		const newStack = [...state.modeStack];
 		const mode = newStack.pop();
 		if (mode) {
-			return { ...state, mode, modeStack: newStack };
+			return { ...state, mode, modeStack: newStack, currentTagName: undefined };
 		}
 	}
 	return state;
+}
+
+function setTagName(state: TokenizerState, tagName: string): TokenizerState {
+	return { ...state, currentTagName: tagName };
 }
 
 function isAtStart(state: TokenizerState): boolean {
@@ -174,6 +181,11 @@ function scanFrontmatter(
 }
 
 function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
+	// Skip expression scanning when in Style mode (CSS content)
+	if (state.mode === Mode.Style) {
+		return [state, null];
+	}
+	
 	if (peek(state) === "{") {
 		const start = getCurrentPosition(state);
 		const startPos = state.position;
@@ -256,6 +268,12 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
 
 			if (peek(currentState) === ">") {
 				currentState = advance(currentState);
+				
+				// If closing a style tag, exit Style mode
+				if (name === "style" && state.mode === Mode.Style) {
+					currentState = { ...currentState, mode: Mode.HTML };
+				}
+				
 				return [
 					currentState,
 					{
@@ -274,7 +292,7 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
 				/[a-zA-Z0-9-]/.test(c),
 			);
 			if (name) {
-				const tagState = pushMode(newState, Mode.Tag);
+				const tagState = setTagName(pushMode(newState, Mode.Tag), name);
 				return [
 					tagState,
 					{
@@ -321,7 +339,14 @@ function scanAttribute(state: TokenizerState): [TokenizerState, Token | null] {
 	// Check for tag close
 	if (peek(currentState) === ">") {
 		currentState = advance(currentState);
-		currentState = popMode(currentState);
+		
+		// If closing a style tag, enter Style mode instead of popping to HTML
+		if (state.currentTagName === "style") {
+			currentState = { ...popMode(currentState), mode: Mode.Style };
+		} else {
+			currentState = popMode(currentState);
+		}
+		
 		return [
 			currentState,
 			{
@@ -542,6 +567,17 @@ function nextToken(state: TokenizerState): [TokenizerState, Token] {
 		case Mode.Tag: {
 			const [attrState, attr] = scanAttribute(state);
 			if (attr) return [attrState, attr];
+			break;
+		}
+
+		case Mode.Style: {
+			// Check for closing </style> tag
+			const [tagState, tag] = scanTag(state);
+			if (tag) return [tagState, tag];
+
+			// Otherwise, scan CSS content as text
+			const [textState, text] = scanText(state);
+			if (text) return [textState, text];
 			break;
 		}
 

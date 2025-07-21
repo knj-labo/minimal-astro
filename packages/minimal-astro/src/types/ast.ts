@@ -44,8 +44,9 @@ export interface Diagnostic {
 
 export interface Attr {
 	readonly name: string;
-	readonly value?: string | null;
+	readonly value?: string | boolean | null;
 	readonly directive?: ClientDirective;
+	readonly loc?: SourceSpan;
 }
 
 export type ClientDirective = 
