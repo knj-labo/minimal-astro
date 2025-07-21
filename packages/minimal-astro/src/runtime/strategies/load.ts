@@ -10,8 +10,8 @@ import type { PendingHydration } from '../types.js';
  * RequestIdleCallback polyfill
  */
 const requestIdleCallback =
-  (typeof window !== 'undefined'
-    ? (window as { requestIdleCallback?: typeof setTimeout }).requestIdleCallback
+  (typeof window !== 'undefined' && 'requestIdleCallback' in window
+    ? (window as any).requestIdleCallback
     : null) ||
   ((
     callback: (deadline: {

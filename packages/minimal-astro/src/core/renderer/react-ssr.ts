@@ -188,7 +188,7 @@ export function renderReactComponent(
     const element = createHydrationWrapper(componentExport, props, hydrationData);
 
     // Wrap in error boundary for SSR safety
-    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName }, element);
+    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName, children: element });
 
     // Render to string
     const html = renderToString(wrappedElement);
@@ -261,7 +261,7 @@ function extractPropsFromNode(node: ComponentNode): Record<string, unknown> {
     if (attr.value) {
       try {
         // Try to parse as JSON for complex values
-        if (attr.value.startsWith('{') || attr.value.startsWith('[')) {
+        if (typeof attr.value === 'string' && (attr.value.startsWith('{') || attr.value.startsWith('['))) {
           props[attr.name] = JSON.parse(attr.value);
         } else {
           props[attr.name] = attr.value;

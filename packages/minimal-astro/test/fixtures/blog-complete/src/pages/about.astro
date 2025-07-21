@@ -1,52 +1,18 @@
 ---
 import Layout from '../components/Layout.astro';
 import Counter from '../components/Counter.jsx';
-
-const teamMembers = [
-  {
-    name: "John Doe",
-    role: "Senior Developer",
-    bio: "Expert in modern JavaScript frameworks and performance optimization."
-  },
-  {
-    name: "Jane Smith", 
-    role: "UI/UX Designer",
-    bio: "Creates beautiful, accessible web experiences with attention to detail."
-  }
-];
 ---
 
-<Layout title="About - Test Blog" description="Learn more about our team and mission">
+<Layout>
   <div class="about-page">
-    <header class="page-header">
+    <header>
       <h1>About Test Blog</h1>
-      <p class="page-subtitle">
-        Learn more about our mission to demonstrate modern web development with Minimal Astro.
-      </p>
+      <p>This is our about page testing various features.</p>
     </header>
-
-    <section class="mission">
-      <h2>Our Mission</h2>
-      <p>
-        Test Blog exists to showcase the capabilities of Minimal Astro, a lightweight implementation 
-        of the popular Astro framework. We're passionate about:
-      </p>
-      
-      <ul>
-        <li><strong>Performance:</strong> Building the fastest possible websites</li>
-        <li><strong>Developer Experience:</strong> Creating tools that developers love to use</li>
-        <li><strong>Innovation:</strong> Pushing the boundaries of web technology</li>
-        <li><strong>Education:</strong> Sharing knowledge with the community</li>
-      </ul>
-    </section>
 
     <section class="interactive-demo">
       <h2>Interactive Demo</h2>
-      <p>
-        Even our About page demonstrates Islands Architecture! This counter only loads 
-        JavaScript when the component is rendered:
-      </p>
-      
+      <p>This counter demonstrates Islands Architecture:</p>
       <Counter 
         client:visible 
         initialCount={42} 
@@ -57,189 +23,16 @@ const teamMembers = [
 
     <section class="team">
       <h2>Our Team</h2>
-      <div class="team-grid">
-        {teamMembers.map(member => {
-          return (
-            <div class="team-member" key={member.name}>
-              <h3>{member.name}</h3>
-              <p class="role">{member.role}</p>
-              <p class="bio">{member.bio}</p>
-            </div>
-          );
-        })}
+      <div>
+        <h3>John Doe</h3>
+        <p>Senior Developer</p>
+        <p>Expert in modern JavaScript frameworks and performance optimization.</p>
       </div>
-    </section>
-
-    <section class="technology">
-      <h2>Technology Stack</h2>
-      <p>This site is built with:</p>
-      
-      <div class="tech-grid">
-        <div class="tech-item">
-          <h4>🚀 Minimal Astro</h4>
-          <p>Our custom implementation of Astro's core features</p>
-        </div>
-        
-        <div class="tech-item">
-          <h4>⚛️ React</h4>
-          <p>For interactive components and islands</p>
-        </div>
-        
-        <div class="tech-item">
-          <h4>📝 MDX</h4>
-          <p>Enhanced markdown with component support</p>
-        </div>
-        
-        <div class="tech-item">
-          <h4>⚡ Vite</h4>
-          <p>Fast development and optimized builds</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact">
-      <h2>Get In Touch</h2>
-      <p>
-        Interested in contributing or learning more? We'd love to hear from you!
-      </p>
-      
-      <div class="contact-links">
-        <a href="https://github.com/example/minimal-astro" class="contact-link">
-          GitHub Repository
-        </a>
-        <a href="/blog" class="contact-link">
-          Read Our Blog
-        </a>
+      <div>
+        <h3>Jane Smith</h3>
+        <p>UI/UX Designer</p>
+        <p>Creates beautiful, accessible web experiences with attention to detail.</p>
       </div>
     </section>
   </div>
 </Layout>
-
-<style>
-  .about-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-    line-height: 1.6;
-  }
-  
-  .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #e1e1e1;
-  }
-  
-  .page-header h1 {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 1rem;
-  }
-  
-  .page-subtitle {
-    font-size: 1.25rem;
-    color: #666;
-    margin: 0;
-  }
-  
-  section {
-    margin-bottom: 3rem;
-  }
-  
-  section h2 {
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    font-size: 1.75rem;
-  }
-  
-  .mission ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .mission li {
-    padding: 0.5rem 0;
-    border-left: 3px solid #3498db;
-    padding-left: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-  
-  .team-member {
-    padding: 2rem;
-    border: 1px solid #e1e1e1;
-    border-radius: 12px;
-    background: white;
-    text-align: center;
-  }
-  
-  .team-member h3 {
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-  }
-  
-  .role {
-    color: #3498db;
-    font-weight: 500;
-    margin-bottom: 1rem;
-  }
-  
-  .bio {
-    color: #666;
-    font-size: 0.95rem;
-  }
-  
-  .tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-  
-  .tech-item {
-    padding: 1.5rem;
-    border: 1px solid #e1e1e1;
-    border-radius: 8px;
-    background: #f8f9fa;
-  }
-  
-  .tech-item h4 {
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-  }
-  
-  .tech-item p {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
-  }
-  
-  .contact-links {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 2rem;
-  }
-  
-  .contact-link {
-    display: inline-block;
-    padding: 1rem 1.5rem;
-    background: #3498db;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background 0.2s ease;
-  }
-  
-  .contact-link:hover {
-    background: #2980b9;
-  }
-</style>

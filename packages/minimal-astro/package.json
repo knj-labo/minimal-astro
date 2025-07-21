@@ -19,6 +19,10 @@
     "./runtime": {
       "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.js"
+    },
+    "./core/html-builder": {
+      "types": "./dist/core/html-builder.d.ts",
+      "import": "./dist/core/html-builder.js"
     }
   },
   "scripts": {

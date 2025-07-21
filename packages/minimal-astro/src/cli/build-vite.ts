@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
 import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
@@ -118,7 +119,7 @@ function calculateBuildStats(startTime: number, outputFiles: readonly string[]):
 async function renderPages(
   pages: readonly string[],
   viteConfig: InlineConfig,
-  _outDir: string
+  outDir: string
 ): Promise<void> {
   // Create a Vite dev server in middleware mode for SSR
   const server = await createServer({
@@ -129,16 +130,51 @@ async function renderPages(
   try {
     for (const page of pages) {
       // Import and render each page
-      await server.ssrLoadModule(page);
+      const module = await server.ssrLoadModule(page);
 
       // Generate output path
       const relativePath = page
         .replace(join(viteConfig.root!, 'src', 'pages'), '')
-        .replace(/\.astro$/, '.html');
+        .replace(/\.astro$/, '.html')
+        .replace(/\/index\.html$/, '/index.html'); // Keep index.html at root
 
-      // Render the page (this will be implemented when we have SSR renderers)
-      // For now, we'll use the existing build logic
+      const outputPath = join(outDir, relativePath);
+
+      // Render the page
       console.log(`  Rendering: ${relativePath}`);
+
+      try {
+        // Check if the module exports a render function
+        if (typeof module.render === 'function') {
+          // Call the render function with empty props for now
+          const result = await module.render({});
+
+          // Extract HTML from result
+          const html = result.html || result;
+
+          // Ensure directory exists
+          const outputDir = dirname(outputPath);
+          await mkdir(outputDir, { recursive: true });
+
+          // Write HTML file
+          await writeFile(outputPath, html, 'utf-8');
+        } else if (typeof module.default === 'function') {
+          // Try default export
+          const result = await module.default({});
+          const html = result.html || result;
+
+          // Ensure directory exists
+          const outputDir = dirname(outputPath);
+          await mkdir(outputDir, { recursive: true });
+
+          // Write HTML file
+          await writeFile(outputPath, html, 'utf-8');
+        } else {
+          console.warn(`  ⚠️  No render function found in ${page}`);
+        }
+      } catch (error) {
+        console.error(`  ❌ Failed to render ${relativePath}:`, error);
+      }
     }
   } finally {
     await server.close();

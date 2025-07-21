@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "minimal-astro build",
+    "build": "minimal-astro build && node serve.js",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

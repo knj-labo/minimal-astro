@@ -28,6 +28,34 @@ export interface TransformResult {
 }
 
 /**
+ * Strip TypeScript syntax from code
+ * This is a simple implementation that handles common cases
+ */
+function stripTypeScript(code: string): string {
+  // Remove type annotations (e.g., : string, : number)
+  let stripped = code.replace(/:\s*[A-Za-z0-9_<>[\]{}|&\s]+(?=\s*[=,;)\]}])/g, '');
+
+  // Remove interface declarations
+  stripped = stripped.replace(/export\s+interface\s+\w+\s*\{[^}]*\}/gs, '');
+  stripped = stripped.replace(/interface\s+\w+\s*\{[^}]*\}/gs, '');
+
+  // Remove type declarations
+  stripped = stripped.replace(/export\s+type\s+\w+\s*=\s*[^;]+;/g, '');
+  stripped = stripped.replace(/type\s+\w+\s*=\s*[^;]+;/g, '');
+
+  // Remove readonly modifiers
+  stripped = stripped.replace(/\breadonly\s+/g, '');
+
+  // Remove type assertions (as Type)
+  stripped = stripped.replace(/\s+as\s+[A-Za-z0-9_<>[\]{}|&\s]+/g, '');
+
+  // Remove type parameters <T>
+  stripped = stripped.replace(/<[A-Za-z0-9_,\s]+>/g, '');
+
+  return stripped;
+}
+
+/**
  * Transform an Astro AST to a JavaScript module
  */
 export function transformAstroToJs(ast: FragmentNode, options: TransformOptions): TransformResult {
@@ -75,17 +103,32 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`import { hydrate } from '@minimal-astro/runtime';`);
   }
 
-  // Add frontmatter code if present
-  if (frontmatter) {
-    parts.push('');
-    parts.push('// Frontmatter');
-    parts.push(frontmatter.code);
-  }
-
   // Create the render function
   parts.push('');
   parts.push('// Component render function');
   parts.push('export async function render(props = {}) {');
+  parts.push('  // Inject Astro global');
+  parts.push('  const Astro = {');
+  parts.push('    props,');
+  parts.push('    request: {},');
+  parts.push('    params: {},');
+  parts.push('    url: new URL("http://localhost:3000/"),');
+  parts.push('    slots: {}');
+  parts.push('  };');
+
+  // Add frontmatter code inside render function so it has access to Astro
+  if (frontmatter) {
+    parts.push('');
+    parts.push('  // Frontmatter execution');
+    // Strip TypeScript syntax from frontmatter code
+    const strippedCode = stripTypeScript(frontmatter.code);
+    // Indent the code for the render function
+    const indentedCode = strippedCode
+      .split('\n')
+      .map((line) => (line ? '  ' + line : ''))
+      .join('\n');
+    parts.push(indentedCode);
+  }
 
   const templateAst: FragmentNode = {
     type: 'Fragment',
@@ -111,9 +154,14 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     );
     parts.push('  return { html, hydrationData };');
   } else {
-    // Use simple HTML builder for vanilla components
-    const staticHtml = buildHtml(templateAst, { prettyPrint });
-    parts.push(`  const html = ${JSON.stringify(staticHtml)};`);
+    // Generate dynamic HTML at runtime
+    parts.push('  // Build HTML dynamically with Astro context');
+    parts.push(`  const { buildHtml } = await import('minimal-astro/core/html-builder');`);
+    parts.push(`  const templateAst = ${JSON.stringify(templateAst)};`);
+    parts.push(`  const html = buildHtml(templateAst, {`);
+    parts.push(`    prettyPrint: ${prettyPrint},`);
+    parts.push(`    evaluateExpressions: true`);
+    parts.push(`  });`);
     parts.push('  return { html };');
   }
 

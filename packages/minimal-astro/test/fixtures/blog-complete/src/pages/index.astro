@@ -16,21 +16,21 @@ const featuredPosts = [
 ];
 ---
 
-<Layout title="Home - Test Blog" description="Welcome to our test blog built with Minimal Astro">
-  <section class="hero">
-    <div class="hero-content">
-      <h1 class="hero-title">Welcome to Test Blog</h1>
-      <p class="hero-description">
+<Layout>
+  <section style="text-align: center; padding: 3rem 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 3rem;">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 2rem;">
+      <h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 700;">Welcome to Test Blog</h1>
+      <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; line-height: 1.6;">
         A demonstration of Minimal Astro's capabilities including server-side rendering,
         component islands, and content collections.
       </p>
-      <img src="/images/hero.jpg" alt="Hero image" class="hero-image" />
+      <img src="/images/hero.jpg" alt="Hero image" style="max-width: 100%; height: auto; border-radius: 12px;" />
     </div>
   </section>
 
-  <section class="features">
-    <h2>Interactive Demo</h2>
-    <p>This React component demonstrates Islands Architecture - it only loads JavaScript when needed:</p>
+  <section style="max-width: 1200px; margin: 0 auto 3rem; padding: 0 2rem;">
+    <h2 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">Interactive Demo</h2>
+    <p style="text-align: center; margin-bottom: 2rem; color: #666;">This React component demonstrates Islands Architecture - it only loads JavaScript when needed:</p>
     
     <Counter 
       client:load 
@@ -39,149 +39,37 @@ const featuredPosts = [
       testId="homepage-counter" 
     />
     
-    <div class="features-grid">
-      <div class="feature-card">
-        <h3>🚀 Fast Builds</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+      <div style="text-align: center; padding: 2rem; border: 1px solid #e1e1e1; border-radius: 12px; background: white;">
+        <h3 style="margin-bottom: 1rem; color: #2c3e50; font-size: 1.25rem;">🚀 Fast Builds</h3>
         <p>Lightning-fast development with Vite and optimized production builds.</p>
       </div>
       
-      <div class="feature-card">
-        <h3>🏝️ Islands Architecture</h3>
+      <div style="text-align: center; padding: 2rem; border: 1px solid #e1e1e1; border-radius: 12px; background: white;">
+        <h3 style="margin-bottom: 1rem; color: #2c3e50; font-size: 1.25rem;">🏝️ Islands Architecture</h3>
         <p>Load JavaScript selectively for optimal performance.</p>
       </div>
       
-      <div class="feature-card">
-        <h3>📝 Content Collections</h3>
+      <div style="text-align: center; padding: 2rem; border: 1px solid #e1e1e1; border-radius: 12px; background: white;">
+        <h3 style="margin-bottom: 1rem; color: #2c3e50; font-size: 1.25rem;">📝 Content Collections</h3>
         <p>Type-safe content management with schema validation.</p>
       </div>
       
-      <div class="feature-card">
-        <h3>⚛️ Multi-Framework</h3>
+      <div style="text-align: center; padding: 2rem; border: 1px solid #e1e1e1; border-radius: 12px; background: white;">
+        <h3 style="margin-bottom: 1rem; color: #2c3e50; font-size: 1.25rem;">⚛️ Multi-Framework</h3>
         <p>Mix React, Vue, and Svelte components seamlessly.</p>
       </div>
     </div>
   </section>
 
-  <section class="featured-posts">
-    <h2>Featured Posts</h2>
+  <section style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+    <h2 style="margin-bottom: 2rem; color: #2c3e50;">Featured Posts</h2>
     {featuredPosts.map(post => (
       <BlogCard {...post} key={post.slug} />
     ))}
     
-    <div class="cta">
-      <a href="/blog" class="cta-link">View All Posts →</a>
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="/blog" style="display: inline-block; padding: 1rem 2rem; background: #3498db; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">View All Posts →</a>
     </div>
   </section>
 </Layout>
-
-<style>
-  .hero {
-    text-align: center;
-    padding: 3rem 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    margin-bottom: 3rem;
-  }
-  
-  .hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-  
-  .hero-title {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-  
-  .hero-description {
-    font-size: 1.25rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
-    line-height: 1.6;
-  }
-  
-  .hero-image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
-  
-  .features {
-    max-width: 1200px;
-    margin: 0 auto 3rem;
-    padding: 0 2rem;
-  }
-  
-  .features h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-    color: #2c3e50;
-  }
-  
-  .features > p {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #666;
-  }
-  
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-  
-  .feature-card {
-    text-align: center;
-    padding: 2rem;
-    border: 1px solid #e1e1e1;
-    border-radius: 12px;
-    background: white;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-  
-  .feature-card h3 {
-    margin-bottom: 1rem;
-    color: #2c3e50;
-    font-size: 1.25rem;
-  }
-  
-  .featured-posts {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-  
-  .featured-posts h2 {
-    margin-bottom: 2rem;
-    color: #2c3e50;
-  }
-  
-  .cta {
-    text-align: center;
-    margin-top: 2rem;
-  }
-  
-  .cta-link {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background: #3498db;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background 0.2s ease;
-  }
-  
-  .cta-link:hover {
-    background: #2980b9;
-  }
-</style>

@@ -240,7 +240,10 @@ export function createReactRenderer(options: ReactRendererOptions) {
     const { tag, attrs, children } = node;
 
     // Check for client directive
-    const directive = extractClientDirective(attrs);
+    const directive = extractClientDirective(attrs.map(attr => ({ 
+      name: attr.name, 
+      value: attr.value !== null && attr.value !== undefined ? attr.value : true 
+    })));
 
     // Process props
     const componentProps: Record<string, unknown> = {};
