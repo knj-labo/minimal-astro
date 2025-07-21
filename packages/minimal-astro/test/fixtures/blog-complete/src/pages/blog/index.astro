@@ -1,0 +1,289 @@
+---
+import Layout from '../../components/Layout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+
+// Simulate content collection query
+const allPosts = [
+  {
+    title: "Getting Started with Minimal Astro",
+    description: "Learn how to build fast, modern websites with our lightweight Astro implementation.",
+    publishDate: new Date('2024-01-15'),
+    author: "John Doe",
+    slug: "first-post",
+    tags: ["astro", "web-development", "javascript", "getting-started"]
+  },
+  {
+    title: "Advanced Patterns in Minimal Astro", 
+    description: "Explore advanced techniques for building complex applications with our Astro implementation.",
+    publishDate: new Date('2024-02-01'),
+    author: "Jane Smith",
+    slug: "second-post",
+    tags: ["astro", "advanced", "patterns", "architecture"]
+  }
+];
+
+// Filter out draft posts (in real implementation, this would be automatic)
+const publishedPosts = allPosts.filter(post => true); // No draft field in our simulation
+---
+
+<Layout title="Blog - Test Blog" description="Read our latest posts about web development and Minimal Astro">
+  <div class="blog-page">
+    <header class="page-header">
+      <h1>Blog Posts</h1>
+      <p class="page-subtitle">
+        Insights, tutorials, and updates from our team about web development and Minimal Astro.
+      </p>
+    </header>
+
+    <div class="blog-stats">
+      <div class="stat">
+        <span class="stat-number">{publishedPosts.length}</span>
+        <span class="stat-label">Published Posts</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-number">{new Set(publishedPosts.flatMap(p => p.tags)).size}</span>
+        <span class="stat-label">Topics Covered</span>
+      </div>
+      
+      <div class="stat">
+        <span class="stat-number">{new Set(publishedPosts.map(p => p.author)).size}</span>
+        <span class="stat-label">Authors</span>
+      </div>
+    </div>
+
+    <section class="posts-section">
+      <h2>Latest Posts</h2>
+      
+      {publishedPosts.length === 0 ? (
+        <div class="no-posts">
+          <p>No posts published yet. Check back soon!</p>
+        </div>
+      ) : (
+        <div class="posts-list">
+          {publishedPosts.map(post => (
+            <BlogCard {...post} key={post.slug} />
+          ))}
+        </div>
+      )}
+    </section>
+
+    <section class="tags-section">
+      <h2>Browse by Topic</h2>
+      <div class="tags-cloud">
+        {Array.from(new Set(publishedPosts.flatMap(p => p.tags))).map(tag => (
+          <span class="tag-item" key={tag}>
+            #{tag}
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div class="newsletter-content">
+        <h2>Stay Updated</h2>
+        <p>
+          Get notified when we publish new posts about web development, 
+          performance optimization, and framework innovations.
+        </p>
+        <div class="newsletter-form">
+          <input 
+            type="email" 
+            placeholder="Enter your email..." 
+            class="newsletter-input"
+            disabled
+          />
+          <button class="newsletter-button" disabled>
+            Subscribe
+          </button>
+        </div>
+        <p class="newsletter-note">
+          <em>Newsletter functionality coming soon!</em>
+        </p>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .blog-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e1e1e1;
+  }
+  
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin: 0;
+  }
+  
+  .blog-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .posts-section {
+    margin-bottom: 3rem;
+  }
+  
+  .posts-section h2 {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
+  }
+  
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .no-posts {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 12px;
+  }
+  
+  .tags-section {
+    margin-bottom: 3rem;
+  }
+  
+  .tags-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+  }
+  
+  .tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .tag-item {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .tag-item:hover {
+    background: #bbdefb;
+    transform: translateY(-2px);
+  }
+  
+  .newsletter {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem;
+    border-radius: 16px;
+    text-align: center;
+  }
+  
+  .newsletter h2 {
+    margin-bottom: 1rem;
+    font-size: 2rem;
+  }
+  
+  .newsletter p {
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+  
+  .newsletter-form {
+    display: flex;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto 1rem;
+  }
+  
+  .newsletter-input {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  .newsletter-button {
+    padding: 1rem 1.5rem;
+    background: #fff;
+    color: #667eea;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .newsletter-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  
+  .newsletter-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .newsletter-note {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .blog-stats {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .newsletter-form {
+      flex-direction: column;
+    }
+  }
+</style>

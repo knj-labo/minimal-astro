@@ -1,0 +1,10 @@
+name: "Jane Smith"
+bio: "Full-stack developer and UI/UX designer. Specializes in creating beautiful, accessible web experiences with modern frameworks."
+avatar: "/images/avatars/jane.jpg"
+email: "jane@example.com"
+social:
+  twitter: "@janesmith"
+  github: "janesmith"
+  website: "https://janesmith.design"
+  linkedin: "janesmith"
+active: true
