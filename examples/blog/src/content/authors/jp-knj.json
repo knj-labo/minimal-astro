@@ -1,10 +1,10 @@
 {
-	"name": "JP Knj",
-	"bio": "Software engineer passionate about web performance and developer experience. Author of the Minimal Astro educational framework.",
-	"avatar": "/avatars/jp-knj.jpg",
-	"social": {
-		"twitter": "@jp_knj",
-		"github": "jp-knj",
-		"website": "https://jpknj.dev"
-	}
+  "name": "JP Knj",
+  "bio": "Software engineer passionate about web performance and developer experience. Author of the Minimal Astro educational framework.",
+  "avatar": "/avatars/jp-knj.jpg",
+  "social": {
+    "twitter": "@jp_knj",
+    "github": "jp-knj",
+    "website": "https://jpknj.dev"
+  }
 }

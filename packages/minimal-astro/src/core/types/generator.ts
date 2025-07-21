@@ -3,64 +3,64 @@
  * Generates types for Content Collections and configuration
  */
 
-import { writeFile, mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
-import { existsSync } from "node:fs";
-import { createContextualLogger } from "../utils/logger.js";
+import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { createContextualLogger } from '../utils/logger.js';
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface TypeGenerationOptions {
-	/**
-	 * Output directory for generated types
-	 */
-	outDir: string;
+  /**
+   * Output directory for generated types
+   */
+  outDir: string;
 
-	/**
-	 * Content collections configuration
-	 */
-	collections?: Record<string, CollectionConfig>;
+  /**
+   * Content collections configuration
+   */
+  collections?: Record<string, CollectionConfig>;
 
-	/**
-	 * Project root directory
-	 */
-	projectRoot?: string;
+  /**
+   * Project root directory
+   */
+  projectRoot?: string;
 }
 
 export interface CollectionConfig {
-	/**
-	 * Schema definition (stringified)
-	 */
-	schema?: string;
+  /**
+   * Schema definition (stringified)
+   */
+  schema?: string;
 
-	/**
-	 * Collection type (content or data)
-	 */
-	type?: "content" | "data";
+  /**
+   * Collection type (content or data)
+   */
+  type?: 'content' | 'data';
 
-	/**
-	 * File glob pattern
-	 */
-	glob?: string;
+  /**
+   * File glob pattern
+   */
+  glob?: string;
 }
 
 export interface GeneratedTypes {
-	/**
-	 * Generated TypeScript content
-	 */
-	content: string;
+  /**
+   * Generated TypeScript content
+   */
+  content: string;
 
-	/**
-	 * Output file path
-	 */
-	filePath: string;
+  /**
+   * Output file path
+   */
+  filePath: string;
 
-	/**
-	 * Collection names processed
-	 */
-	collections: string[];
+  /**
+   * Collection names processed
+   */
+  collections: string[];
 }
 
 // ============================================================================
@@ -144,41 +144,40 @@ export type AnyCollectionKey = ContentCollectionKey | DataCollectionKey;
  * Converts a Zod schema string to TypeScript type
  */
 function zodSchemaToTypeScript(schemaString: string): string {
-	// This is a simplified conversion - real implementation would parse Zod AST
-	return schemaString
-		// Basic type conversions
-		.replace(/z\.string\(\)/g, "string")
-		.replace(/z\.number\(\)/g, "number")
-		.replace(/z\.boolean\(\)/g, "boolean")
-		.replace(/z\.date\(\)/g, "Date")
-		.replace(/z\.array\(([^)]+)\)/g, "Array<$1>")
-		.replace(/z\.optional\(([^)]+)\)/g, "$1 | undefined")
-		.replace(/z\.object\(\{([^}]+)\}\)/g, "{ $1 }")
-		// Clean up
-		.replace(/z\./g, "")
-		.replace(/\(\)/g, "")
-		// Format object properties
-		.replace(/(\w+):\s*([^,}]+)/g, "$1: $2");
+  // This is a simplified conversion - real implementation would parse Zod AST
+  return (
+    schemaString
+      // Basic type conversions
+      .replace(/z\.string\(\)/g, 'string')
+      .replace(/z\.number\(\)/g, 'number')
+      .replace(/z\.boolean\(\)/g, 'boolean')
+      .replace(/z\.date\(\)/g, 'Date')
+      .replace(/z\.array\(([^)]+)\)/g, 'Array<$1>')
+      .replace(/z\.optional\(([^)]+)\)/g, '$1 | undefined')
+      .replace(/z\.object\(\{([^}]+)\}\)/g, '{ $1 }')
+      // Clean up
+      .replace(/z\./g, '')
+      .replace(/\(\)/g, '')
+      // Format object properties
+      .replace(/(\w+):\s*([^,}]+)/g, '$1: $2')
+  );
 }
 
 /**
  * Generates TypeScript interface from schema
  */
-function generateInterfaceFromSchema(
-	collectionName: string,
-	schema: string,
-): string {
-	const interfaceName = `${capitalizeFirst(collectionName)}Entry`;
-	const typeDefinition = zodSchemaToTypeScript(schema);
-	
-	return `export interface ${interfaceName} ${typeDefinition}`;
+function generateInterfaceFromSchema(collectionName: string, schema: string): string {
+  const interfaceName = `${capitalizeFirst(collectionName)}Entry`;
+  const typeDefinition = zodSchemaToTypeScript(schema);
+
+  return `export interface ${interfaceName} ${typeDefinition}`;
 }
 
 /**
  * Capitalizes first letter of a string
  */
 function capitalizeFirst(str: string): string {
-	return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // ============================================================================
@@ -188,108 +187,99 @@ function capitalizeFirst(str: string): string {
 /**
  * Generates collection type entry
  */
-function generateCollectionEntry(
-	name: string,
-	config: CollectionConfig,
-): string {
-	const interfaceName = `${capitalizeFirst(name)}Entry`;
-	
-	if (config.schema) {
-		return `\t${name}: ${interfaceName};`;
-	}
-	
-	// Default to any if no schema provided
-	return `\t${name}: any;`;
+function generateCollectionEntry(name: string, config: CollectionConfig): string {
+  const interfaceName = `${capitalizeFirst(name)}Entry`;
+
+  if (config.schema) {
+    return `\t${name}: ${interfaceName};`;
+  }
+
+  // Default to any if no schema provided
+  return `\t${name}: any;`;
 }
 
 /**
  * Generates all type definitions
  */
-export async function generateTypes(
-	options: TypeGenerationOptions,
-): Promise<GeneratedTypes> {
-	const logger = createContextualLogger({ module: "type-generator" });
-	const { outDir, collections = {}, projectRoot = process.cwd() } = options;
+export async function generateTypes(options: TypeGenerationOptions): Promise<GeneratedTypes> {
+  const logger = createContextualLogger({ module: 'type-generator' });
+  const { outDir, collections = {}, projectRoot = process.cwd() } = options;
 
-	try {
-		logger.info("Generating TypeScript types for Content Collections");
+  try {
+    logger.info('Generating TypeScript types for Content Collections');
 
-		// Separate content and data collections
-		const contentCollections: string[] = [];
-		const dataCollections: string[] = [];
-		const interfaceDefinitions: string[] = [];
+    // Separate content and data collections
+    const contentCollections: string[] = [];
+    const dataCollections: string[] = [];
+    const interfaceDefinitions: string[] = [];
 
-		for (const [name, config] of Object.entries(collections)) {
-			if (config.type === "data") {
-				dataCollections.push(generateCollectionEntry(name, config));
-			} else {
-				contentCollections.push(generateCollectionEntry(name, config));
-			}
+    for (const [name, config] of Object.entries(collections)) {
+      if (config.type === 'data') {
+        dataCollections.push(generateCollectionEntry(name, config));
+      } else {
+        contentCollections.push(generateCollectionEntry(name, config));
+      }
 
-			// Generate interface if schema exists
-			if (config.schema) {
-				interfaceDefinitions.push(
-					generateInterfaceFromSchema(name, config.schema)
-				);
-			}
-		}
+      // Generate interface if schema exists
+      if (config.schema) {
+        interfaceDefinitions.push(generateInterfaceFromSchema(name, config.schema));
+      }
+    }
 
-		// Build the complete type definition
-		let typeContent = BASE_TEMPLATE;
+    // Build the complete type definition
+    let typeContent = BASE_TEMPLATE;
 
-		// Add interface definitions
-		if (interfaceDefinitions.length > 0) {
-			typeContent += "\n// Collection interfaces\n";
-			typeContent += interfaceDefinitions.join("\n\n") + "\n";
-		}
+    // Add interface definitions
+    if (interfaceDefinitions.length > 0) {
+      typeContent += '\n// Collection interfaces\n';
+      typeContent += `${interfaceDefinitions.join('\n\n')}\n`;
+    }
 
-		// Add collection maps
-		const collectionMaps = COLLECTION_MAPS_TEMPLATE
-			.replace("{{contentCollections}}", 
-				contentCollections.length > 0 
-					? contentCollections.join("\n") 
-					: "\t// No content collections defined"
-			)
-			.replace("{{dataCollections}}", 
-				dataCollections.length > 0 
-					? dataCollections.join("\n") 
-					: "\t// No data collections defined"
-			);
+    // Add collection maps
+    const collectionMaps = COLLECTION_MAPS_TEMPLATE.replace(
+      '{{contentCollections}}',
+      contentCollections.length > 0
+        ? contentCollections.join('\n')
+        : '\t// No content collections defined'
+    ).replace(
+      '{{dataCollections}}',
+      dataCollections.length > 0 ? dataCollections.join('\n') : '\t// No data collections defined'
+    );
 
-		typeContent += collectionMaps;
+    typeContent += collectionMaps;
 
-		// Ensure output directory exists
-		const outputPath = join(outDir, "content.d.ts");
-		const outputDir = dirname(outputPath);
-		
-		if (!existsSync(outputDir)) {
-			await mkdir(outputDir, { recursive: true });
-		}
+    // Ensure output directory exists
+    const outputPath = join(outDir, 'content.d.ts');
+    const outputDir = dirname(outputPath);
 
-		// Write the generated types
-		await writeFile(outputPath, typeContent, "utf-8");
+    if (!existsSync(outputDir)) {
+      await mkdir(outputDir, { recursive: true });
+    }
 
-		logger.info(`Generated types for ${Object.keys(collections).length} collections`, {
-			outputPath,
-			collections: Object.keys(collections),
-		});
+    // Write the generated types
+    await writeFile(outputPath, typeContent, 'utf-8');
 
-		return {
-			content: typeContent,
-			filePath: outputPath,
-			collections: Object.keys(collections),
-		};
-	} catch (error) {
-		logger.error("Failed to generate types", error as Error);
-		throw error;
-	}
+    logger.info(`Generated types for ${Object.keys(collections).length} collections`, {
+      outputPath,
+      collections: Object.keys(collections),
+    });
+
+    return {
+      content: typeContent,
+      filePath: outputPath,
+      collections: Object.keys(collections),
+    };
+  } catch (error) {
+    logger.error('Failed to generate types', error as Error);
+    throw error;
+  }
 }
 
 /**
  * Generates environment types for Astro
  */
 export async function generateAstroEnvTypes(outDir: string): Promise<void> {
-	const envTypesContent = `/**
+  const envTypesContent = `/**
  * Environment types for Minimal Astro
  * This file is auto-generated. Do not edit manually.
  */
@@ -363,44 +353,44 @@ declare module "*.webp" {
 }
 `;
 
-	const envTypesPath = join(outDir, "env.d.ts");
-	await writeFile(envTypesPath, envTypesContent, "utf-8");
+  const envTypesPath = join(outDir, 'env.d.ts');
+  await writeFile(envTypesPath, envTypesContent, 'utf-8');
 }
 
 /**
  * Creates a type generator with configured options
  */
 export function createTypeGenerator(options: TypeGenerationOptions) {
-	return {
-		/**
-		 * Generate all types
-		 */
-		async generateAll(): Promise<GeneratedTypes> {
-			const result = await generateTypes(options);
-			await generateAstroEnvTypes(options.outDir);
-			return result;
-		},
+  return {
+    /**
+     * Generate all types
+     */
+    async generateAll(): Promise<GeneratedTypes> {
+      const result = await generateTypes(options);
+      await generateAstroEnvTypes(options.outDir);
+      return result;
+    },
 
-		/**
-		 * Generate only collection types
-		 */
-		async generateCollectionTypes(): Promise<GeneratedTypes> {
-			return generateTypes(options);
-		},
+    /**
+     * Generate only collection types
+     */
+    async generateCollectionTypes(): Promise<GeneratedTypes> {
+      return generateTypes(options);
+    },
 
-		/**
-		 * Generate only environment types
-		 */
-		async generateEnvTypes(): Promise<void> {
-			await generateAstroEnvTypes(options.outDir);
-		},
+    /**
+     * Generate only environment types
+     */
+    async generateEnvTypes(): Promise<void> {
+      await generateAstroEnvTypes(options.outDir);
+    },
 
-		/**
-		 * Watch for changes and regenerate types
-		 */
-		async watch(): Promise<void> {
-			// TODO: Implement file watching for type regeneration
-			throw new Error("Type watching not yet implemented");
-		},
-	};
+    /**
+     * Watch for changes and regenerate types
+     */
+    async watch(): Promise<void> {
+      // TODO: Implement file watching for type regeneration
+      throw new Error('Type watching not yet implemented');
+    },
+  };
 }

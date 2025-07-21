@@ -4,11 +4,11 @@
  */
 
 export {
-	createReactRenderer,
-	createSSRRenderer,
-	createClientRenderer,
-	type ReactRendererOptions,
-	type RenderResult,
-	type HydrationData,
-	type ClientDirective,
-} from "minimal-astro";
+  createReactRenderer,
+  createSSRRenderer,
+  createClientRenderer,
+  type ReactRendererOptions,
+  type RenderResult,
+  type HydrationData,
+  type ClientDirective,
+} from 'minimal-astro';

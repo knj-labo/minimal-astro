@@ -1,0 +1,10 @@
+{
+  "name": "Test Author",
+  "bio": "A test author for testing content collections",
+  "email": "test@example.com",
+  "avatar": "/images/test-author.jpg",
+  "social": {
+    "twitter": "@testauthor",
+    "github": "testauthor"
+  }
+}

@@ -1,0 +1,31 @@
+---
+export const prerender = true;
+
+interface Props {
+  title: string;
+  author?: string;
+}
+
+const { title, author = "Anonymous" } = Astro.props as Props;
+const publishDate = new Date().toISOString().split('T')[0];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <article>
+      <h1>{title}</h1>
+      <div class="meta">
+        <p>By {author}</p>
+        <time datetime={publishDate}>{publishDate}</time>
+      </div>
+      <div class="content">
+        <p>This is test content with complex frontmatter.</p>
+      </div>
+    </article>
+  </body>
+</html>
