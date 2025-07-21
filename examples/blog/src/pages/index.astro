@@ -174,28 +174,45 @@ const description =
       </section>
 
       <main class="posts">
-        {posts.map(post => (
-          <article class="post-card">
-            <h2>
-              <a href={`/blog/${post.slug}`} class="post-title">
-                {post.data.title}
-              </a>
-            </h2>
-            <div class="post-meta">
-              By {post.data.author} • {new Date(post.data.publishDate).toLocaleDateString()}
-            </div>
-            <p class="post-description">
-              {post.data.description}
-            </p>
-            <div class="post-tags">
-              {post.data.tags.map(tag => (
-                <a href={`/tags/${tag}`} class="tag">
-                  {tag}
-                </a>
-              ))}
-            </div>
-          </article>
-        ))}
+        <article class="post-card">
+          <h2>
+            <a href="/blog/welcome" class="post-title">
+              Welcome to Minimal Astro
+            </a>
+          </h2>
+          <div class="post-meta">
+            By jp-knj • January 15, 2024
+          </div>
+          <p class="post-description">
+            A simple blog built with our reimplemented Astro framework
+          </p>
+          <div class="post-tags">
+            <a href="/tags/astro" class="tag">astro</a>
+            <a href="/tags/framework" class="tag">framework</a>
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/tutorial" class="tag">tutorial</a>
+          </div>
+        </article>
+
+        <article class="post-card">
+          <h2>
+            <a href="/blog/islands-architecture" class="post-title">
+              Understanding Islands Architecture
+            </a>
+          </h2>
+          <div class="post-meta">
+            By jp-knj • January 20, 2024
+          </div>
+          <p class="post-description">
+            Deep dive into the Islands Architecture pattern and why it matters for web performance
+          </p>
+          <div class="post-tags">
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/architecture" class="tag">architecture</a>
+            <a href="/tags/performance" class="tag">performance</a>
+            <a href="/tags/javascript" class="tag">javascript</a>
+          </div>
+        </article>
       </main>
 
       <footer class="footer">

@@ -5,6 +5,7 @@ import type { InlineConfig } from "vite";
 import { astroVitePlugin } from "../vite-plugin-astro/plugin.js";
 import { discoverAstroFiles } from "./utils/file-discovery.js";
 import { generateRouteManifest } from "./utils/route-manifest.js";
+import { createAssetOptimizer } from "./assets/optimizer.js";
 import type { BuildOptions } from "./types.js";
 
 // ============================================================================
@@ -239,8 +240,35 @@ export async function buildWithVite(options: ViteBuildOptions): Promise<void> {
 		logBuildProgress("📦 Building client assets...");
 		await viteBuild(viteConfig);
 
-		// Step 6: Post-processing (future: optimize images, etc.)
+		// Step 6: Asset optimization
 		logBuildProgress("✨ Optimizing assets...");
+		
+		const assetOptimizer = createAssetOptimizer({
+			outDir,
+			minifyCSS: true,
+			fingerprint: mode === "production",
+			images: {
+				enabled: true,
+				quality: 85,
+			},
+			inlineThreshold: 4096, // 4KB
+		});
+		
+		// Optimize assets if they exist
+		if (existsSync(outDir)) {
+			try {
+				const manifest = await assetOptimizer.optimizeDirectory(outDir);
+				logBuildProgress(`  Optimized ${manifest.stats.totalFiles} assets`);
+				
+				// Save asset manifest for runtime use
+				const manifestPath = join(outDir, "asset-manifest.json");
+				await import("node:fs/promises").then(({ writeFile }) =>
+					writeFile(manifestPath, JSON.stringify(manifest, null, 2))
+				);
+			} catch (error) {
+				console.warn("⚠️  Asset optimization failed:", error);
+			}
+		}
 		
 		// Calculate and log statistics
 		const outputFiles: string[] = []; // TODO: Collect actual output files

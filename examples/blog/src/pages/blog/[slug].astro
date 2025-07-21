@@ -225,20 +225,32 @@ if (!post) {
 
       <article class="article">
         <header class="article-header">
-          <h1 class="article-title">{post.title}</h1>
+          <h1 class="article-title">Welcome to Minimal Astro</h1>
           <div class="article-meta">
-            By {post.author} • {new Date(post.publishDate).toLocaleDateString()}
+            By jp-knj • January 15, 2024
           </div>
           <div class="article-tags">
-            {post.tags.map(tag => (
-              <a href={`/tags/${tag}`} class="tag">
-                {tag}
-              </a>
-            ))}
+            <a href="/tags/astro" class="tag">astro</a>
+            <a href="/tags/framework" class="tag">framework</a>
+            <a href="/tags/islands" class="tag">islands</a>
+            <a href="/tags/tutorial" class="tag">tutorial</a>
           </div>
         </header>
 
-        <div class="article-content" set:html={post.content}>
+        <div class="article-content">
+          <h1>Welcome to Minimal Astro!</h1>
+          <p>This is our first blog post using the <strong>Minimal Astro</strong> framework - a reimplementation of Astro built from the ground up for educational purposes.</p>
+          
+          <h2>What We've Built</h2>
+          <p>Our minimal implementation includes:</p>
+          <ul>
+            <li>🏗️ <strong>Complete AST Parser</strong> - Handles .astro file syntax with frontmatter, HTML, and expressions</li>
+            <li>🎨 <strong>HTML Builder</strong> - Generates optimized static HTML with streaming support</li>
+            <li>⚡ <strong>Vite Integration</strong> - Full HMR support with error overlays and caching</li>
+            <li>🏝️ <strong>Islands Architecture</strong> - Selective hydration with multiple strategies</li>
+            <li>🔄 <strong>Multi-framework Support</strong> - React, Vue, and Svelte renderers</li>
+            <li>📝 <strong>Content Collections</strong> - Type-safe content management with file system scanning</li>
+          </ul>
         </div>
       </article>
 

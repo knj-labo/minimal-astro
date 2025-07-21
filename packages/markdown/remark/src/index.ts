@@ -3,16 +3,34 @@
  * Content processing and transformation utilities
  */
 
+// Export processor functionality
 export {
-	createMarkdownLoader,
-	parseFrontmatter,
-	generateSlug,
-	extractHeadings,
-	calculateReadingTime,
-} from "minimal-astro";
+	createMarkdownProcessor,
+	processMarkdown,
+	processMarkdownSync,
+	defaultMarkdownProcessor,
+} from "./processor.js";
 
-// Simple markdown processor for educational purposes
-export function processMarkdown(content: string): {
+// Export types
+export type {
+	MarkdownProcessorOptions,
+	ProcessedMarkdown,
+	TocEntry,
+	Heading,
+} from "./processor.js";
+
+// Legacy exports for compatibility
+// TODO: Re-enable when minimal-astro package is built
+// export {
+// 	createMarkdownLoader,
+// 	parseFrontmatter,
+// 	generateSlug,
+// 	extractHeadings,
+// 	calculateReadingTime,
+// } from "minimal-astro";
+
+// Simple markdown processor for educational purposes (kept for backward compatibility)
+export function processMarkdownSimple(content: string): {
 	html: string;
 	frontmatter: Record<string, unknown>;
 } {
