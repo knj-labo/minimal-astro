@@ -1,6 +1,6 @@
 import { buildHtml } from '../core/html-builder.js';
-import { astToJSX } from '../core/renderer/jsx-transform.js';
-import { createSSRRenderer } from '../core/renderer/react.js';
+import { astToJSX } from '@minimal-astro/internal-helpers';
+import { createSSRRenderer } from '@minimal-astro/react';
 import { safeExecute } from '../core/utils/error-boundary.js';
 import type {
   ComponentNode,
@@ -156,13 +156,84 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   } else {
     // Generate dynamic HTML at runtime
     parts.push('  // Build HTML dynamically with Astro context');
-    parts.push(`  const { buildHtml } = await import('minimal-astro/core/html-builder');`);
-    parts.push(`  const templateAst = ${JSON.stringify(templateAst)};`);
-    parts.push(`  const html = buildHtml(templateAst, {`);
-    parts.push(`    prettyPrint: ${prettyPrint},`);
-    parts.push(`    evaluateExpressions: true`);
-    parts.push(`  });`);
-    parts.push('  return { html };');
+    parts.push('  try {');
+    parts.push('    console.log("[RENDER] Starting HTML build...");');
+    parts.push(`    const { buildHtml } = await import('minimal-astro/core/html-builder');`);
+    parts.push('    console.log("[RENDER] buildHtml imported:", typeof buildHtml);');
+    parts.push(`    // Process AST to replace expressions with their evaluated values`);
+    parts.push(`    function processAstExpressions(node, context) {`);
+    parts.push(`      if (node.type === 'Expression') {`);
+    parts.push(`        try {`);
+    parts.push(`          // Create a function that has access to context variables`);
+    parts.push(`          const func = new Function(...Object.keys(context), 'return ' + node.code);`);
+    parts.push(`          const value = func(...Object.values(context));`);
+    parts.push(`          return { type: 'Text', value: String(value) };`);
+    parts.push(`        } catch (e) {`);
+    parts.push(``);
+    parts.push(`          return { type: 'Text', value: '' };`);
+    parts.push(`        }`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      // Process element/component attributes`);
+    parts.push(`      if ((node.type === 'Element' || node.type === 'Component') && node.attrs) {`);
+    parts.push(`        node.attrs = node.attrs.map(attr => {`);
+    parts.push(`          // Check if attribute value contains an expression`);
+    parts.push(`          if (typeof attr.value === 'string' && attr.value.startsWith('{') && attr.value.endsWith('}')) {`);
+    parts.push(`            try {`);
+    parts.push(`              const exprCode = attr.value.slice(1, -1);`);
+    parts.push(`              const func = new Function(...Object.keys(context), 'return ' + exprCode);`);
+    parts.push(`              const value = func(...Object.values(context));`);
+    parts.push(`              return { ...attr, value: String(value) };`);
+    parts.push(`            } catch (e) {`);
+    parts.push(``);
+    parts.push(`              return attr;`);
+    parts.push(`            }`);
+    parts.push(`          }`);
+    parts.push(`          return attr;`);
+    parts.push(`        });`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      // Process children recursively`);
+    parts.push(`      if (node.children) {`);
+    parts.push(`        node.children = node.children.map(child => processAstExpressions(child, context));`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      return node;`);
+    parts.push(`    }`);
+    parts.push(`    `);
+    parts.push(`    // Create context object with all variables in scope`);
+    parts.push(`    const evalContext = { Astro };`);
+    
+    // Add frontmatter variables to context
+    if (frontmatter) {
+      const varMatches = frontmatter.code.match(/(?:const|let|var)\s+(\w+)/g);
+      if (varMatches) {
+        varMatches.forEach(match => {
+          const varName = match.replace(/(?:const|let|var)\s+/, '');
+          parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
+        });
+      }
+    }
+    
+    
+    parts.push(`    `);
+    parts.push(`    // Clone the template AST and process expressions`);
+    parts.push(`    const processedAst = JSON.parse(JSON.stringify(${JSON.stringify(templateAst)}));`);
+    parts.push(`    processAstExpressions(processedAst, evalContext);`);
+    parts.push(`    `);
+    parts.push(`    const html = buildHtml(processedAst, {`);
+    parts.push(`      prettyPrint: ${prettyPrint},`);
+    parts.push(`      evaluateExpressions: false`);
+    parts.push(`    });`);
+    parts.push('    console.log("[RENDER] HTML built, length:", html.length);');
+    parts.push('    console.log("[RENDER] HTML preview:", html.substring(0, 50) + "...");');
+    parts.push('    // Add marker to track if this HTML is from our render');
+    parts.push('    const markedHtml = "<!-- RENDERED BY MINIMAL-ASTRO -->\\n" + html;');
+    parts.push('    return { html: markedHtml };');
+    parts.push('  } catch (error) {');
+    parts.push('    console.error("[RENDER] Failed to build HTML:", error);');
+    parts.push('    return { html: "Error: " + error.message };');
+    parts.push('  }');
   }
 
   parts.push('}');

@@ -262,6 +262,12 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
         return null;
       }
 
+      // Check if this is already transformed code
+      if (code.includes('// Auto-generated from')) {
+        console.warn(`[minimal-astro] WARNING: Attempting to transform already-transformed code for ${id}`);
+        return null;
+      }
+
       try {
         // Check transform cache first
         const cachedTransform = cache.getTransform(id, code);

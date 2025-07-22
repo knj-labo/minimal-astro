@@ -30,7 +30,10 @@ async function main() {
       break;
     }
     case 'dev': {
-      console.log('🚧 Dev server coming soon...');
+      const { dev } = await import('./dev.js');
+      await dev({
+        root: process.cwd(),
+      });
       break;
     }
     default:

@@ -247,10 +247,16 @@ async function optimizeAsset(
       outputPath = createFingerprintedName(filePath, hash);
     }
 
-    // Create output path
-    const outputFilePath = join(outDir, outputPath);
+    // Create output path - outputPath is already a full path, so we need to make it relative to outDir
+    const relativePath = filePath.startsWith(outDir) 
+      ? filePath.slice(outDir.length).replace(/^\//, '') 
+      : filePath;
+    const finalOutputPath = options.fingerprint ? createFingerprintedName(relativePath, hash!) : relativePath;
+    const outputFilePath = join(outDir, finalOutputPath);
 
     // Ensure output directory exists
+    const { mkdirSync } = await import('node:fs');
+    mkdirSync(dirname(outputFilePath), { recursive: true });
     await writeFile(outputFilePath, optimizedContent);
 
     const optimizedSize = optimizedContent.length;

@@ -23,6 +23,10 @@
     "./core/html-builder": {
       "types": "./dist/core/html-builder.d.ts",
       "import": "./dist/core/html-builder.js"
+    },
+    "./content": {
+      "types": "./dist/core/content/api.d.ts",
+      "import": "./dist/core/content/api.js"
     }
   },
   "scripts": {
@@ -36,7 +40,12 @@
   "dependencies": {
     "vite": "^5.0.0",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "zod": "^3.22.0",
+    "@minimal-astro/internal-helpers": "workspace:*",
+    "@minimal-astro/react": "workspace:*",
+    "@minimal-astro/svelte": "workspace:*",
+    "@minimal-astro/vue": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

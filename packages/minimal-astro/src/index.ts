@@ -13,6 +13,7 @@ export {
 export { tokenize } from './core/tokenizer.js';
 
 // Renderer exports
+// Re-export from integration packages
 export {
   createReactRenderer,
   createSSRRenderer,
@@ -21,13 +22,11 @@ export {
   type RenderResult,
   type HydrationData,
   type ClientDirective,
-} from './core/renderer/react.js';
+} from '@minimal-astro/react';
 export {
-  createJSXTransformer,
   astToJSX,
-  astToReactComponent,
   type JSXTransformOptions,
-} from './core/renderer/jsx-transform.js';
+} from '@minimal-astro/internal-helpers';
 
 // Content Collections exports
 export {
@@ -36,6 +35,7 @@ export {
   getContentAPI,
   collections,
   queries,
+  defineConfig,
   type ContentManagerOptions,
 } from './core/content/api.js';
 export {

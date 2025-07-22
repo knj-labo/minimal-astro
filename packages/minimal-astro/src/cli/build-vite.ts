@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { createServer, build as viteBuild } from 'vite';
@@ -65,7 +65,7 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
       // Optimize for static site generation
       cssCodeSplit: true,
       assetsInlineLimit: 4096, // Inline small assets
-      emptyOutDir: true,
+      emptyOutDir: false, // Don't clear the output directory - we've already rendered HTML files
     },
     server: {
       middlewareMode: true, // For SSR rendering during build
@@ -133,7 +133,10 @@ async function renderPages(
   try {
     for (const page of pages) {
       // Import and render each page
+      console.log(`  Loading module: ${page}`);
       const module = await server.ssrLoadModule(page);
+      console.log(`  Module type:`, typeof module);
+      console.log(`  Module is string?:`, typeof module === 'string');
 
       // Generate output path
       const relativePath = page
@@ -173,20 +176,24 @@ async function renderPages(
           }
           
           console.log(`  HTML length: ${html.length} characters`);
+          console.log(`  HTML preview: ${html.substring(0, 100)}...`);
 
           // Ensure directory exists
           const outputDir = dirname(outputPath);
           console.log(`  Creating directory: ${outputDir}`);
           await mkdir(outputDir, { recursive: true });
 
-          // Write HTML file
+          // Write HTML file using synchronous write for reliability
           try {
             console.log(`  Writing file to: ${outputPath}`);
-            await writeFile(outputPath, html, 'utf-8');
+            
+            // Use synchronous operations for more reliable writes
+            mkdirSync(outputDir, { recursive: true });
+            writeFileSync(outputPath, html, 'utf-8');
             
             // Verify the file was written
-            const { existsSync, statSync } = await import('node:fs');
             if (existsSync(outputPath)) {
+              const { statSync } = await import('node:fs');
               const stats = statSync(outputPath);
               console.log(`  ✅ Generated: ${outputPath} (${stats.size} bytes)`);
             } else {
@@ -350,6 +357,7 @@ export async function buildWithVite(options: ViteBuildOptions): Promise<void> {
  * Main build entry point
  */
 export async function build(options: BuildOptions): Promise<void> {
+  console.log('🚀 Starting Minimal Astro build...');
   const viteBuildOptions: ViteBuildOptions = {
     root: options.root || process.cwd(),
     outDir: options.outDir || 'dist',
