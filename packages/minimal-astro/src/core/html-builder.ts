@@ -219,14 +219,20 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, any> {
   for (const child of ast.children) {
     if (child.type === 'Frontmatter') {
       try {
+        // Strip TypeScript syntax first
+        const strippedCode = child.code
+          .replace(/:\s*[A-Za-z0-9_<>[\]{}|&\s]+(?=\s*[=,;)\]}])/g, '') // Remove type annotations
+          .replace(/interface\s+\w+\s*\{[^}]*\}/gs, '') // Remove interfaces
+          .replace(/type\s+\w+\s*=\s*[^;]+;/g, ''); // Remove type declarations
+        
         // Create a safer evaluation context
         const func = new Function(`
-          ${child.code}
+          ${strippedCode}
           
           // Extract all declared variables
           const context = {};
           ${
-            child.code
+            strippedCode
               .match(/(?:const|let|var)\s+(\w+)/g)
               ?.map((match) => {
                 const varName = match.replace(/(?:const|let|var)\s+/, '');
@@ -442,16 +448,17 @@ export function buildHtml(ast: FragmentNode, options: HtmlBuilderOptions = {}): 
 
   // Extract evaluation context if expression evaluation is enabled
   let context: EvaluationContext | undefined;
+  let debugInfo = '';
   if (opts.evaluateExpressions) {
     const variables = extractFrontmatterVariables(ast);
     context = { variables };
   }
 
-  const html = buildNodeHtml(ast, opts, 0, context);
+  let html = buildNodeHtml(ast, opts, 0, context);
 
   // Clean up extra newlines if pretty printing is enabled
   if (opts.prettyPrint) {
-    return `${html.replace(/\n\s*\n/g, '\n').trim()}\n`;
+    html = `${html.replace(/\n\s*\n/g, '\n').trim()}\n`;
   }
 
   return html;

@@ -1,0 +1,19 @@
+
+> blog-example@0.0.1 dev /Users/kenji/Projects/knj-labo/minimal-astro/examples/blog
+> node ../../packages/minimal-astro/dist/cli/index.js dev
+
+🚀 Starting Minimal Astro dev server...
+[PLUGIN] Post-hook function called, adding middleware
+
+  🎉 Server running at http://localhost:3000/
+  
+  Press Ctrl+C to stop
+  
+[MIDDLEWARE] Request: GET /
+[MIDDLEWARE] Looking for page: /index
+[MIDDLEWARE] Possible paths: [ '/src/pages/index.astro', '/src/pages/index/index.astro' ]
+[MIDDLEWARE] Found module, rendering...
+[MIDDLEWARE] Request: GET /
+[MIDDLEWARE] Looking for page: /index
+[MIDDLEWARE] Possible paths: [ '/src/pages/index.astro', '/src/pages/index/index.astro' ]
+[MIDDLEWARE] Found module, rendering...

@@ -1,90 +1,100 @@
 ---
-const title = "Minimal Astro Blog";
-const description = "Educational blog built with a reimplemented Astro framework";
+import Layout from '../components/Layout.astro';
+import PostCard from '../components/PostCard.astro';
+import Counter from '../components/Counter.jsx';
+import ThemeToggle from '../components/ThemeToggle.vue';
+import { getCollection } from 'minimal-astro/content';
+
+const posts = await getCollection('post');
+const recentPosts = posts
+  .filter(post => !post.data.draft)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Educational blog built with a reimplemented Astro framework" />
-    <title>{title}</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <div class="container">
-      <header class="header">
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </header>
+<Layout title="Home">
+  <div class="hero">
+    <h1>Minimal Astro Blog</h1>
+    <p>A demonstration of multi-framework support and Islands Architecture</p>
+    <ThemeToggle client:only="vue" />
+  </div>
 
-      <section style="margin-bottom: 3rem; text-align: center; padding: 2rem; border: 2px solid #3498db; border-radius: 8px; background: #f8f9fa;">
-        <h2 style="color: #2c3e50; margin-bottom: 1rem;">
-          Islands Architecture Demo
-        </h2>
-        <p style="color: #666; margin-bottom: 2rem;">
-          This React component only loads JavaScript when it becomes visible!
-        </p>
-        <!-- React Counter component would be here -->
-        <div style="padding: 1rem; background: white; border-radius: 4px; border: 1px solid #ddd;">
-          <strong>Interactive Counter (Island)</strong>
-          <p>This would be a React component with client:visible directive</p>
-        </div>
-      </section>
+  <section class="demo">
+    <h2>Interactive Demo</h2>
+    <p>This counter is a React component that only hydrates on the client:</p>
+    <Counter client:load />
+  </section>
 
-      <main class="posts">
-        <article class="post-card">
-          <h2>
-            <a href="/blog/welcome" class="post-title">
-              Welcome to Minimal Astro
-            </a>
-          </h2>
-          <div class="post-meta">
-            By jp-knj • January 15, 2024
-          </div>
-          <p class="post-description">
-            A simple blog built with our reimplemented Astro framework
-          </p>
-          <div class="post-tags">
-            <a href="/tags/astro" class="tag">astro</a>
-            <a href="/tags/framework" class="tag">framework</a>
-            <a href="/tags/islands" class="tag">islands</a>
-            <a href="/tags/tutorial" class="tag">tutorial</a>
-          </div>
-        </article>
-
-        <article class="post-card">
-          <h2>
-            <a href="/blog/islands-architecture" class="post-title">
-              Understanding Islands Architecture
-            </a>
-          </h2>
-          <div class="post-meta">
-            By jp-knj • January 20, 2024
-          </div>
-          <p class="post-description">
-            Deep dive into the Islands Architecture pattern and why it matters for web performance
-          </p>
-          <div class="post-tags">
-            <a href="/tags/islands" class="tag">islands</a>
-            <a href="/tags/architecture" class="tag">architecture</a>
-            <a href="/tags/performance" class="tag">performance</a>
-            <a href="/tags/javascript" class="tag">javascript</a>
-          </div>
-        </article>
-      </main>
-
-      <footer class="footer">
-        <p>
-          Built with ❤️ using 
-          <a href="https://github.com/minimal-astro" target="_blank">
-            Minimal Astro
-          </a>
-          - A reimplemented Astro framework for educational purposes
-        </p>
-      </footer>
+  <section class="recent-posts">
+    <h2>Recent Posts</h2>
+    <div class="posts-grid">
+      {recentPosts.map((post) => (
+        <PostCard
+          title={post.data.title}
+          description={post.data.description}
+          date={post.data.date}
+          slug={post.slug}
+          author={post.data.author}
+        />
+      ))}
     </div>
-  </body>
-</html>
+    <a href="/post" class="view-all">View all posts →</a>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 1rem;
+    margin-bottom: 4rem;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .demo {
+    background: #f9fafb;
+    padding: 3rem;
+    border-radius: 1rem;
+    margin-bottom: 4rem;
+  }
+
+  .demo h2 {
+    margin-bottom: 1rem;
+  }
+
+  .recent-posts h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .view-all {
+    display: inline-block;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .view-all:hover {
+    color: #764ba2;
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+import Layout from '../components/Layout.astro';
+import Counter from '../components/Counter.jsx';
+---
+
+<Layout>
+  <div class="about-page">
+    <header>
+      <h1>About Test Blog</h1>
+      <p>This is our about page testing various features.</p>
+    </header>
+
+    <section class="interactive-demo">
+      <h2>Interactive Demo</h2>
+      <p>This counter demonstrates Islands Architecture:</p>
+      <Counter 
+        client:visible 
+        initialCount={42} 
+        label="About Page Views"
+        testId="about-counter" 
+      />
+    </section>
+
+    <section class="team">
+      <h2>Our Team</h2>
+      <div>
+        <h3>John Doe</h3>
+        <p>Senior Developer</p>
+        <p>Expert in modern JavaScript frameworks and performance optimization.</p>
+      </div>
+      <div>
+        <h3>Jane Smith</h3>
+        <p>UI/UX Designer</p>
+        <p>Creates beautiful, accessible web experiences with attention to detail.</p>
+      </div>
+    </section>
+  </div>
+</Layout>

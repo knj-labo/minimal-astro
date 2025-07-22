@@ -1,0 +1,94 @@
+---
+import Layout from '../../components/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'minimal-astro/content';
+
+const posts = await getCollection('post');
+const publishedPosts = posts
+  .filter(post => !post.data.draft)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const tags = [...new Set(publishedPosts.flatMap(post => post.data.tags || []))];
+---
+
+<Layout title="All Posts">
+  <header class="page-header">
+    <h1>All Posts</h1>
+    <p>Explore our collection of articles about web development and minimal tooling</p>
+  </header>
+
+  <div class="tags">
+    <h3>Browse by tag:</h3>
+    <div class="tag-list">
+      {tags.map(tag => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  </div>
+
+  <div class="posts-grid">
+    {publishedPosts.map((post) => (
+      <PostCard
+        title={post.data.title}
+        description={post.data.description}
+        date={post.data.date}
+        slug={post.slug}
+        author={post.data.author}
+      />
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    font-size: 1.125rem;
+    color: #666;
+  }
+
+  .tags {
+    margin-bottom: 3rem;
+  }
+
+  .tags h3 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: #666;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    color: #4b5563;
+    transition: all 0.2s;
+  }
+
+  .tag:hover {
+    background: #d1d5db;
+    color: #1f2937;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+</style>

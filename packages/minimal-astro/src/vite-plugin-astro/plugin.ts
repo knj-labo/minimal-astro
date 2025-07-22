@@ -247,6 +247,110 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
   return {
     name: 'minimal-astro',
+    enforce: 'pre', // Run before other plugins including Vite's internal ones
+
+    // Configure dev server to handle page requests
+    configureServer(server) {
+      // Return a function to run middleware AFTER Vite's internal middlewares
+      return () => {
+        console.log('[PLUGIN] Post-hook function called, adding middleware');
+        server.middlewares.use(async (req, res, next) => {
+          console.log(`[MIDDLEWARE] Request: ${req.method} ${req.url}`);
+          // Only handle GET requests to pages (not assets)
+          if (req.method !== 'GET' || !req.url) {
+            return next();
+          }
+
+          // Skip if this is an asset request or Vite special requests
+          if (req.url.includes('.') && !req.url.endsWith('.html') || req.url.startsWith('/@')) {
+            return next();
+          }
+
+          try {
+            // Map URL to page file path
+            let pagePath = req.url === '/' ? '/index' : req.url;
+            pagePath = pagePath.replace(/\/$/, ''); // Remove trailing slash
+            
+            console.log(`[MIDDLEWARE] Looking for page: ${pagePath}`);
+            
+            // Try to find the corresponding .astro file
+            const possiblePaths = [
+              `/src/pages${pagePath}.astro`,
+              `/src/pages${pagePath}/index.astro`
+            ];
+            console.log(`[MIDDLEWARE] Possible paths:`, possiblePaths);
+
+            let astroModule = null;
+            let resolvedPath = '';
+
+            for (const path of possiblePaths) {
+              try {
+                resolvedPath = server.config.root + path;
+                
+                // Force the file through Vite's transform pipeline first
+                const module = server.moduleGraph.getModuleById(resolvedPath);
+                if (!module || !module.ssrModule) {
+                  // Load the module which will trigger our transform
+                  astroModule = await server.ssrLoadModule(resolvedPath);
+                } else {
+                  astroModule = module.ssrModule;
+                }
+                
+                break;
+              } catch (e) {
+                // Try next path
+              }
+            }
+
+            // If no exact match, check for dynamic routes
+            if (!astroModule) {
+              // Simple dynamic route matching for [slug].astro
+              const urlParts = req.url.split('/').filter(Boolean);
+              if (urlParts.length > 0) {
+                const basePath = urlParts.slice(0, -1).join('/');
+                const dynamicPath = `/src/pages/${basePath ? basePath + '/' : ''}[slug].astro`;
+                try {
+                  resolvedPath = server.config.root + dynamicPath;
+                  astroModule = await server.ssrLoadModule(resolvedPath);
+                } catch (e) {
+                  // Not found
+                }
+              }
+            }
+
+            if (!astroModule || !astroModule.render) {
+              console.log(`[MIDDLEWARE] No module found for ${req.url}`);
+              return next();
+            }
+            
+            console.log(`[MIDDLEWARE] Found module, rendering...`);
+            // Render the page
+            const result = await astroModule.render({
+              // Pass any props/params here
+              slug: req.url.split('/').pop() || undefined
+            });
+
+            // Send HTML response
+            console.log(`[MIDDLEWARE] Sending response, html length: ${result.html?.length}`);
+            console.log(`[MIDDLEWARE] Response already sent? ${res.headersSent}`);
+            
+            if (res.headersSent) {
+              console.log(`[MIDDLEWARE] Headers already sent, skipping response`);
+              return;
+            }
+            
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/html');
+            res.end(result.html);
+            console.log(`[MIDDLEWARE] Response sent!`);
+            return; // Ensure we don't call next()
+          } catch (error) {
+            logger.error('Error rendering page', error as Error, { url: req.url });
+            next(error);
+          }
+        });
+      };
+    },
 
     // Handle .astro files
     load(id) {
@@ -259,6 +363,12 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
     transform(code, id) {
       if (!opts.extensions.some((ext) => id.endsWith(ext))) {
+        return null;
+      }
+
+      // Check if this is already transformed code
+      if (code.includes('// Auto-generated from')) {
+        console.warn(`[minimal-astro] WARNING: Attempting to transform already-transformed code for ${id}`);
         return null;
       }
 

@@ -1,6 +1,6 @@
 import { buildHtml } from '../core/html-builder.js';
-import { astToJSX } from '../core/renderer/jsx-transform.js';
-import { createSSRRenderer } from '../core/renderer/react.js';
+import { astToJSX } from '@minimal-astro/internal-helpers';
+import { createSSRRenderer } from '@minimal-astro/react';
 import { safeExecute } from '../core/utils/error-boundary.js';
 import type {
   ComponentNode,
@@ -25,6 +25,34 @@ export interface TransformOptions {
 export interface TransformResult {
   code: string;
   map?: string;
+}
+
+/**
+ * Strip TypeScript syntax from code
+ * This is a simple implementation that handles common cases
+ */
+function stripTypeScript(code: string): string {
+  // Remove type annotations (e.g., : string, : number)
+  let stripped = code.replace(/:\s*[A-Za-z0-9_<>[\]{}|&\s]+(?=\s*[=,;)\]}])/g, '');
+
+  // Remove interface declarations
+  stripped = stripped.replace(/export\s+interface\s+\w+\s*\{[^}]*\}/gs, '');
+  stripped = stripped.replace(/interface\s+\w+\s*\{[^}]*\}/gs, '');
+
+  // Remove type declarations
+  stripped = stripped.replace(/export\s+type\s+\w+\s*=\s*[^;]+;/g, '');
+  stripped = stripped.replace(/type\s+\w+\s*=\s*[^;]+;/g, '');
+
+  // Remove readonly modifiers
+  stripped = stripped.replace(/\breadonly\s+/g, '');
+
+  // Remove type assertions (as Type)
+  stripped = stripped.replace(/\s+as\s+[A-Za-z0-9_<>[\]{}|&\s]+/g, '');
+
+  // Remove type parameters <T>
+  stripped = stripped.replace(/<[A-Za-z0-9_,\s]+>/g, '');
+
+  return stripped;
 }
 
 /**
@@ -65,9 +93,50 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Generate the module
   const parts: string[] = [];
+  const frontmatterImports: string[] = [];
+  let frontmatterCode = '';
+  let getStaticPathsCode = '';
+
+  if (frontmatter) {
+    const code = frontmatter.code;
+    const getStaticPathsRegex = /export\s+async\s+function\s+getStaticPaths\s*\([^)]*\)\s*\{[\s\S]*?^\}/m;
+    const match = code.match(getStaticPathsRegex);
+
+    if (match) {
+      getStaticPathsCode = match[0];
+      const remainingCode = code.replace(getStaticPathsRegex, '');
+      const lines = remainingCode.split('\n');
+      lines.forEach(line => {
+        if (line.trim().startsWith('import')) {
+          frontmatterImports.push(line);
+        } else {
+          frontmatterCode += line + '\n';
+        }
+      });
+    } else {
+      const lines = code.split('\n');
+      lines.forEach(line => {
+        if (line.trim().startsWith('import')) {
+          frontmatterImports.push(line);
+        } else {
+          frontmatterCode += line + '\n';
+        }
+      });
+    }
+  }
 
   // Add imports that are commonly needed
   parts.push(`// Auto-generated from ${filename}`);
+  
+  // Import buildHtml at the top
+  parts.push(`import { buildHtml } from 'minimal-astro/core/html-builder';`);
+
+  // Add frontmatter imports
+  if (frontmatterImports.length > 0) {
+    parts.push('');
+    parts.push('// Frontmatter imports');
+    parts.push(...frontmatterImports);
+  }
 
   // Import React/Preact if needed
   if (framework === 'react' && hasClientDirectives(ast)) {
@@ -75,17 +144,32 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`import { hydrate } from '@minimal-astro/runtime';`);
   }
 
-  // Add frontmatter code if present
-  if (frontmatter) {
-    parts.push('');
-    parts.push('// Frontmatter');
-    parts.push(frontmatter.code);
-  }
-
   // Create the render function
   parts.push('');
   parts.push('// Component render function');
   parts.push('export async function render(props = {}) {');
+  parts.push('  // Inject Astro global');
+  parts.push('  const Astro = {');
+  parts.push('    props,');
+  parts.push('    request: {},');
+  parts.push('    params: {},');
+  parts.push('    url: new URL("http://localhost:3000/"),');
+  parts.push('    slots: {}');
+  parts.push('  };');
+
+  // Add frontmatter code inside render function so it has access to Astro
+  if (frontmatterCode) {
+    parts.push('');
+    parts.push('  // Frontmatter execution');
+    // Strip TypeScript syntax from frontmatter code
+    const strippedCode = stripTypeScript(frontmatterCode);
+    // Indent the code for the render function
+    const indentedCode = strippedCode
+      .split('\n')
+      .map((line) => (line ? '  ' + line : ''))
+      .join('\n');
+    parts.push(indentedCode);
+  }
 
   const templateAst: FragmentNode = {
     type: 'Fragment',
@@ -111,13 +195,89 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     );
     parts.push('  return { html, hydrationData };');
   } else {
-    // Use simple HTML builder for vanilla components
-    const staticHtml = buildHtml(templateAst, { prettyPrint });
-    parts.push(`  const html = ${JSON.stringify(staticHtml)};`);
-    parts.push('  return { html };');
+    // Generate dynamic HTML at runtime
+    parts.push('  // Build HTML dynamically with Astro context');
+    parts.push('  try {');
+    parts.push(`    // Process AST to replace expressions with their evaluated values`);
+    parts.push(`    function processAstExpressions(node, context) {`);
+    parts.push(`      if (node.type === 'Expression') {`);
+    parts.push(`        try {`);
+    parts.push(`          // Create a function that has access to context variables`);
+    parts.push(`          const func = new Function(...Object.keys(context), 'return ' + node.code);`);
+    parts.push(`          const value = func(...Object.values(context));`);
+    parts.push(`          return { type: 'Text', value: String(value) };`);
+    parts.push(`        } catch (e) {`);
+    parts.push(``);
+    parts.push(`          return { type: 'Text', value: '' };`);
+    parts.push(`        }`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      // Process element/component attributes`);
+    parts.push(`      if ((node.type === 'Element' || node.type === 'Component') && node.attrs) {`);
+    parts.push(`        node.attrs = node.attrs.map(attr => {`);
+    parts.push(`          // Check if attribute value contains an expression`);
+    parts.push(`          if (typeof attr.value === 'string' && attr.value.startsWith('{') && attr.value.endsWith('}')) {`);
+    parts.push(`            try {`);
+    parts.push(`              const exprCode = attr.value.slice(1, -1);`);
+    parts.push(`              const func = new Function(...Object.keys(context), 'return ' + exprCode);`);
+    parts.push(`              const value = func(...Object.values(context));`);
+    parts.push(`              return { ...attr, value: String(value) };`);
+    parts.push(`            } catch (e) {`);
+    parts.push(``);
+    parts.push(`              return attr;`);
+    parts.push(`            }`);
+    parts.push(`          }`);
+    parts.push(`          return attr;`);
+    parts.push(`        });`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      // Process children recursively`);
+    parts.push(`      if (node.children) {`);
+    parts.push(`        node.children = node.children.map(child => processAstExpressions(child, context));`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      return node;`);
+    parts.push(`    }`);
+    parts.push(`    `);
+    parts.push(`    // Create context object with all variables in scope`);
+    parts.push(`    const evalContext = { Astro };`);
+    
+    // Add frontmatter variables to context
+    if (frontmatter) {
+      const varMatches = frontmatter.code.match(/(?:const|let|var)\s+(\w+)/g);
+      if (varMatches) {
+        varMatches.forEach(match => {
+          const varName = match.replace(/(?:const|let|var)\s+/, '');
+          parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
+        });
+      }
+    }
+    
+    
+    parts.push(`    `);
+    parts.push(`    // Clone the template AST and process expressions`);
+    parts.push(`    const processedAst = JSON.parse(JSON.stringify(${JSON.stringify(templateAst)}));`);
+    parts.push(`    processAstExpressions(processedAst, evalContext);`);
+    parts.push(`    `);
+    parts.push(`    const html = buildHtml(processedAst, {`);
+    parts.push(`      prettyPrint: ${prettyPrint},`);
+    parts.push(`      evaluateExpressions: false`);
+    parts.push(`    });`);
+    parts.push('    return { html };');
+    parts.push('  } catch (error) {');
+    parts.push('    console.error("Failed to build HTML:", error);');
+    parts.push('    return { html: "Error: " + error.message };');
+    parts.push('  }');
   }
 
   parts.push('}');
+
+  // Add getStaticPaths export if it exists
+  if (getStaticPathsCode) {
+    parts.push('');
+    parts.push('// Export getStaticPaths');
+    parts.push(getStaticPathsCode);
+  }
 
   // Add JSX component export if using React/Preact
   if (framework !== 'vanilla') {
@@ -146,7 +306,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Default export for easier imports
   parts.push('');
-  parts.push(`export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''} };`);
+  parts.push(`export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''}${getStaticPathsCode ? ', getStaticPaths' : ''} };`);
 
   const jsCode = parts.join('\n');
 

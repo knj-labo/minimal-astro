@@ -203,7 +203,7 @@ function extractPropsFromNode(node: ComponentNode): Record<string, unknown> {
 
     if (attr.value) {
       try {
-        if (attr.value.startsWith('{') || attr.value.startsWith('[')) {
+        if (typeof attr.value === 'string' && (attr.value.startsWith('{') || attr.value.startsWith('['))) {
           props[attr.name] = JSON.parse(attr.value);
         } else {
           props[attr.name] = attr.value;

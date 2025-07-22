@@ -7,6 +7,9 @@ export {
 } from './html-builder.js';
 export { tokenize } from './tokenizer.js';
 export { build } from '../cli/build.js';
+export { dev } from '../cli/dev.js';
+
+// Utility exports (removed duplicate, see below)
 
 // Vite plugin exports
 export { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
@@ -23,6 +26,7 @@ export {
 } from '../vite-plugin-astro/hmr.js';
 
 // Renderer exports
+// Re-export from integration packages
 export {
   createReactRenderer,
   createSSRRenderer,
@@ -31,13 +35,11 @@ export {
   type RenderResult,
   type HydrationData,
   type ClientDirective,
-} from './renderer/react.js';
+} from '@minimal-astro/react';
 export {
-  createJSXTransformer,
   astToJSX,
-  astToReactComponent,
   type JSXTransformOptions,
-} from './renderer/jsx-transform.js';
+} from '@minimal-astro/internal-helpers';
 
 // Runtime exports - moved to @minimal-astro/runtime package
 // import { createHydrationRuntime, autoHydrate, hydrate } from '@minimal-astro/runtime';
@@ -165,6 +167,7 @@ export type * from '../types/ast.js';
 export type { ParseOptions } from './parse.js';
 export type { HtmlBuilderOptions, StreamingOptions } from './html-builder.js';
 export type { BuildOptions } from '../cli/build.js';
+export type { DevOptions } from '../cli/dev.js';
 export type { AstroVitePluginOptions } from '../vite-plugin-astro/plugin.js';
 export type { TransformOptions } from '../vite-plugin-astro/transform.js';
 export type { HmrUpdateContext, AstroHmrState } from '../vite-plugin-astro/hmr.js';

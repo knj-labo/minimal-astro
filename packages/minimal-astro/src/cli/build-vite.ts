@@ -1,7 +1,10 @@
-import { existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
 import { createAssetOptimizer } from './assets/optimizer.js';
 import type { BuildOptions } from './types.js';
@@ -47,6 +50,8 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
         prettyPrint: false, // Disable for production builds
         extensions: ['.astro'],
       }),
+      vue(),
+      svelte(),
     ],
     build: {
       outDir,
@@ -64,7 +69,7 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
       // Optimize for static site generation
       cssCodeSplit: true,
       assetsInlineLimit: 4096, // Inline small assets
-      emptyOutDir: true,
+      emptyOutDir: false, // Don't clear the output directory - we've already rendered HTML files
     },
     server: {
       middlewareMode: true, // For SSR rendering during build
@@ -118,7 +123,7 @@ function calculateBuildStats(startTime: number, outputFiles: readonly string[]):
 async function renderPages(
   pages: readonly string[],
   viteConfig: InlineConfig,
-  _outDir: string
+  outDir: string
 ): Promise<void> {
   // Create a Vite dev server in middleware mode for SSR
   const server = await createServer({
@@ -126,19 +131,90 @@ async function renderPages(
     server: { middlewareMode: true },
   });
 
+  const absoluteOutDir = resolve(process.cwd(), outDir);
+  console.log(`  Base output directory: ${absoluteOutDir}`);
+
   try {
     for (const page of pages) {
       // Import and render each page
-      await server.ssrLoadModule(page);
+      console.log(`  Loading module: ${page}`);
+      const module = await server.ssrLoadModule(page);
+      console.log(`  Module type:`, typeof module);
+      console.log(`  Module is string?:`, typeof module === 'string');
 
       // Generate output path
       const relativePath = page
         .replace(join(viteConfig.root!, 'src', 'pages'), '')
-        .replace(/\.astro$/, '.html');
+        .replace(/\.astro$/, '.html')
+        .replace(/\/index\.html$/, '/index.html'); // Keep index.html at root
 
-      // Render the page (this will be implemented when we have SSR renderers)
-      // For now, we'll use the existing build logic
+      const outputPath = join(absoluteOutDir, 'pages', relativePath);
+
+      // Render the page
       console.log(`  Rendering: ${relativePath}`);
+      console.log(`  Output path: ${outputPath}`);
+
+      try {
+        // Log module structure for debugging
+        console.log(`  Module exports:`, Object.keys(module));
+        
+        // The transform generates: export default { render, metadata, Component }
+        const moduleExports = module.default || module;
+        console.log(`  Module default exports:`, moduleExports ? Object.keys(moduleExports) : 'none');
+        
+        // Check if the module has a render function
+        if (moduleExports && typeof moduleExports.render === 'function') {
+          console.log(`  Found render function, executing...`);
+          
+          // Call the render function with empty props for now
+          const result = await moduleExports.render({});
+          console.log(`  Render result type:`, typeof result);
+          console.log(`  Render result keys:`, result ? Object.keys(result) : 'none');
+
+          // Extract HTML from result
+          const html = result.html || result;
+          
+          if (!html || typeof html !== 'string') {
+            console.error(`  ❌ Render function returned invalid HTML:`, html);
+            continue;
+          }
+          
+          console.log(`  HTML length: ${html.length} characters`);
+          console.log(`  HTML preview: ${html.substring(0, 100)}...`);
+
+          // Ensure directory exists
+          const outputDir = dirname(outputPath);
+          console.log(`  Creating directory: ${outputDir}`);
+          await mkdir(outputDir, { recursive: true });
+
+          // Write HTML file using synchronous write for reliability
+          try {
+            console.log(`  Writing file to: ${outputPath}`);
+            
+            // Use synchronous operations for more reliable writes
+            mkdirSync(outputDir, { recursive: true });
+            writeFileSync(outputPath, html, 'utf-8');
+            
+            // Verify the file was written
+            if (existsSync(outputPath)) {
+              const { statSync } = await import('node:fs');
+              const stats = statSync(outputPath);
+              console.log(`  ✅ Generated: ${outputPath} (${stats.size} bytes)`);
+            } else {
+              console.error(`  ❌ File was not created: ${outputPath}`);
+            }
+          } catch (writeError) {
+            console.error(`  ❌ Failed to write file:`, writeError);
+            console.error(`  Stack trace:`, writeError instanceof Error ? writeError.stack : 'No stack');
+            throw writeError;
+          }
+        } else {
+          console.warn(`  ⚠️  No render function found in module`);
+          console.warn(`  Module structure:`, JSON.stringify(moduleExports, null, 2));
+        }
+      } catch (error) {
+        console.error(`  ❌ Failed to render ${relativePath}:`, error);
+      }
     }
   } finally {
     await server.close();
@@ -285,6 +361,7 @@ export async function buildWithVite(options: ViteBuildOptions): Promise<void> {
  * Main build entry point
  */
 export async function build(options: BuildOptions): Promise<void> {
+  console.log('🚀 Starting Minimal Astro build...');
   const viteBuildOptions: ViteBuildOptions = {
     root: options.root || process.cwd(),
     outDir: options.outDir || 'dist',

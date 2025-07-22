@@ -29,6 +29,7 @@ export enum Mode {
   Tag = 'Tag',
   Attribute = 'Attribute',
   Style = 'Style',
+  Script = 'Script',
 }
 
 interface TokenizerState {
@@ -170,8 +171,8 @@ function scanFrontmatter(state: TokenizerState): [TokenizerState, Token | null] 
 }
 
 function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
-  // Skip expression scanning when in Style mode (CSS content)
-  if (state.mode === Mode.Style) {
+  // Skip expression scanning when in Style/Script mode (raw content)
+  if (state.mode === Mode.Style || state.mode === Mode.Script) {
     return [state, null];
   }
 
@@ -204,10 +205,6 @@ function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
             },
           ];
         }
-      } else if (char === '<' && peekSequence(currentState, '</')) {
-        // Stop at closing tag to allow better error recovery
-        incomplete = true;
-        break;
       }
       currentState = advance(currentState);
     }
@@ -247,8 +244,10 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
       if (peek(currentState) === '>') {
         currentState = advance(currentState);
 
-        // If closing a style tag, exit Style mode
+        // If closing a style/script tag, exit the respective mode
         if (name === 'style' && state.mode === Mode.Style) {
+          currentState = { ...currentState, mode: Mode.HTML };
+        } else if (name === 'script' && state.mode === Mode.Script) {
           currentState = { ...currentState, mode: Mode.HTML };
         }
 
@@ -313,9 +312,11 @@ function scanAttribute(state: TokenizerState): [TokenizerState, Token | null] {
   if (peek(currentState) === '>') {
     currentState = advance(currentState);
 
-    // If closing a style tag, enter Style mode instead of popping to HTML
+    // If closing a style/script tag, enter the respective raw text mode
     if (state.currentTagName === 'style') {
       currentState = { ...popMode(currentState), mode: Mode.Style };
+    } else if (state.currentTagName === 'script') {
+      currentState = { ...popMode(currentState), mode: Mode.Script };
     } else {
       currentState = popMode(currentState);
     }
@@ -397,7 +398,84 @@ function scanText(state: TokenizerState): [TokenizerState, Token | null] {
   const start = getCurrentPosition(state);
   const startPos = state.position;
 
-  // Fast scan using indexOf for common delimiters
+  // Special handling for Style/Script modes - scan until closing tag
+  if (state.mode === Mode.Style || state.mode === Mode.Script) {
+    const source = state.source;
+    const closingTag = state.mode === Mode.Style ? '</style>' : '</script>';
+    const closingIndex = source.indexOf(closingTag, startPos);
+
+    if (closingIndex !== -1 && closingIndex > startPos) {
+      // Found closing tag, scan text up to it
+      const text = source.slice(startPos, closingIndex);
+
+      // Count newlines for position tracking
+      let line = state.line;
+      let column = state.column;
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '\n') {
+          line++;
+          column = 1;
+        } else {
+          column++;
+        }
+      }
+
+      const newState: TokenizerState = {
+        ...state,
+        position: closingIndex,
+        line,
+        column,
+      };
+
+      return [
+        newState,
+        {
+          type: TokenType.Text,
+          value: text,
+          loc: {
+            start,
+            end: getCurrentPosition(newState),
+          },
+        },
+      ];
+    } else if (closingIndex === -1) {
+      // No closing tag found, consume rest of content
+      const text = source.slice(startPos);
+
+      // Count newlines for position tracking
+      let line = state.line;
+      let column = state.column;
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '\n') {
+          line++;
+          column = 1;
+        } else {
+          column++;
+        }
+      }
+
+      const newState: TokenizerState = {
+        ...state,
+        position: source.length,
+        line,
+        column,
+      };
+
+      return [
+        newState,
+        {
+          type: TokenType.Text,
+          value: text,
+          loc: {
+            start,
+            end: getCurrentPosition(newState),
+          },
+        },
+      ];
+    }
+  }
+
+  // Normal text scanning for non-Style modes
   const source = state.source;
   let nextLt = source.indexOf('<', startPos);
   let nextBrace = source.indexOf('{', startPos);
@@ -527,12 +605,13 @@ function nextToken(state: TokenizerState): [TokenizerState, Token] {
       break;
     }
 
-    case Mode.Style: {
-      // Check for closing </style> tag
+    case Mode.Style:
+    case Mode.Script: {
+      // Check for closing tag
       const [tagState, tag] = scanTag(state);
       if (tag) return [tagState, tag];
 
-      // Otherwise, scan CSS content as text
+      // Otherwise, scan content as text
       const [textState, text] = scanText(state);
       if (text) return [textState, text];
       break;
@@ -670,6 +749,18 @@ function nextTokenOptimized(
       break;
     }
 
+    case Mode.Style:
+    case Mode.Script: {
+      // Check for closing tag
+      const [tagState, tag] = scanTag(state);
+      if (tag) return [tagState, tag];
+
+      // Otherwise, scan content as text
+      const [textState, text] = scanText(state);
+      if (text) return [textState, text];
+      break;
+    }
+
     case Mode.HTML: {
       // Use jump table for fast character dispatch
       const char = peek(state);
@@ -687,8 +778,17 @@ function nextTokenOptimized(
     }
   }
 
-  // Fallback: advance and try again
-  return nextTokenOptimized(advance(state), tokenPool);
+  // Fallback: advance position and return a text token for the character
+  const char = state.source[state.position];
+  const advancedState = advance(state);
+  const token = tokenPool.acquire();
+  token.type = TokenType.Text;
+  token.value = char;
+  token.loc = {
+    start: getCurrentPosition(state),
+    end: getCurrentPosition(advancedState),
+  };
+  return [advancedState, token];
 }
 
 // Legacy function for backward compatibility

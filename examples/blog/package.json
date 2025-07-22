@@ -1,21 +1,25 @@
 {
-  "name": "minimal-astro-blog-example",
+  "name": "blog-example",
   "version": "0.0.1",
-  "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "minimal-astro build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "dev": "node ../../packages/minimal-astro/dist/cli/index.js dev",
+    "build": "node ../../packages/minimal-astro/dist/cli/index.js build",
+    "preview": "node ../../packages/minimal-astro/dist/cli/index.js preview"
   },
   "dependencies": {
-    "minimal-astro": "workspace:*"
+    "minimal-astro": "workspace:*",
+    "@minimal-astro/react": "workspace:*",
+    "@minimal-astro/svelte": "workspace:*",
+    "@minimal-astro/vue": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "svelte": "^4.2.0",
+    "vue": "^3.3.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "typescript": "^5.4.0",
-    "vite": "^5.0.0"
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.2.0"
   }
 }

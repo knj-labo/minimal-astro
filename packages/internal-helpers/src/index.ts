@@ -80,3 +80,20 @@ export function slugify(text: string): string {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
+// JSX Transform utilities
+export {
+  astToJSX,
+  type JSXTransformOptions,
+} from './jsx-transform.js';
+
+// Universal SSR types
+export {
+  type FrameworkType,
+  type UniversalSSROptions,
+  type UniversalSSRResult,
+  type FrameworkRenderer,
+} from './universal-ssr-types.js';
+
+// AST type exports
+export type * from './types/ast.js';
