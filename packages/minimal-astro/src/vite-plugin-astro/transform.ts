@@ -127,6 +127,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Add imports that are commonly needed
   parts.push(`// Auto-generated from ${filename}`);
+  
+  // Import buildHtml at the top
+  parts.push(`import { buildHtml } from 'minimal-astro/core/html-builder';`);
 
   // Add frontmatter imports
   if (frontmatterImports.length > 0) {
@@ -195,9 +198,6 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     // Generate dynamic HTML at runtime
     parts.push('  // Build HTML dynamically with Astro context');
     parts.push('  try {');
-    parts.push('    console.log("[RENDER] Starting HTML build...");');
-    parts.push(`    const { buildHtml } = await import('minimal-astro/core/html-builder');`);
-    parts.push('    console.log("[RENDER] buildHtml imported:", typeof buildHtml);');
     parts.push(`    // Process AST to replace expressions with their evaluated values`);
     parts.push(`    function processAstExpressions(node, context) {`);
     parts.push(`      if (node.type === 'Expression') {`);
@@ -263,13 +263,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      prettyPrint: ${prettyPrint},`);
     parts.push(`      evaluateExpressions: false`);
     parts.push(`    });`);
-    parts.push('    console.log("[RENDER] HTML built, length:", html.length);');
-    parts.push('    console.log("[RENDER] HTML preview:", html.substring(0, 50) + "...");');
-    parts.push('    // Add marker to track if this HTML is from our render');
-    parts.push('    const markedHtml = "<!-- RENDERED BY MINIMAL-ASTRO -->\\n" + html;');
-    parts.push('    return { html: markedHtml };');
+    parts.push('    return { html };');
     parts.push('  } catch (error) {');
-    parts.push('    console.error("[RENDER] Failed to build HTML:", error);');
+    parts.push('    console.error("Failed to build HTML:", error);');
     parts.push('    return { html: "Error: " + error.message };');
     parts.push('  }');
   }

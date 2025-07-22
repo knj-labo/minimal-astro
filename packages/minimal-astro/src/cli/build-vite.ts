@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import svelte from '@sveltejs/vite-plugin-svelte';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
 import { createAssetOptimizer } from './assets/optimizer.js';
 import type { BuildOptions } from './types.js';
