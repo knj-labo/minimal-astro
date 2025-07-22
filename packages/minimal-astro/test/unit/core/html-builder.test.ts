@@ -4,9 +4,9 @@ import {
   createStreamingHtmlBuilder,
   escapeHtmlFast,
   escapeHtmlLegacy,
-} from '../../src/core/html-builder.js';
-import { parseAstro } from '../../src/core/parse.js';
-import type { FragmentNode } from '../../src/types/ast.js';
+} from '../../../src/core/html-builder.js';
+import { parseAstro } from '../../../src/core/parse.js';
+import type { FragmentNode } from '../../../src/types/ast.js';
 
 describe('HTML Builder', () => {
   describe('Basic HTML Generation', () => {

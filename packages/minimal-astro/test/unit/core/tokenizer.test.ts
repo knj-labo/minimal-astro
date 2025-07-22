@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { TokenType, tokenize } from '../../src/core/tokenizer.js';
+import { TokenType, tokenize } from '../../../src/core/tokenizer.js';
 
 describe('Tokenizer', () => {
   describe('HTML Mode', () => {

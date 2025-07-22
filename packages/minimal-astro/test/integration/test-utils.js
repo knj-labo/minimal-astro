@@ -10,7 +10,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const FIXTURES_DIR = resolve(__dirname, 'fixtures');
+const FIXTURES_DIR = resolve(__dirname, '../fixtures/integration');
 
 /**
  * Fixture management class
@@ -77,7 +77,7 @@ export class TestFixture {
       const process = spawn(
         'node',
         [
-          join(__dirname, '../dist/cli/index.js'),
+          join(__dirname, '../../dist/cli/index.js'),
           'build',
           ...Object.entries(buildOptions).flatMap(([key, value]) => [`--${key}`, value]),
         ],
@@ -135,7 +135,7 @@ export class TestFixture {
     return new Promise((resolve, reject) => {
       const process = spawn(
         'node',
-        [join(__dirname, '../dist/cli/index.js'), 'dev', '--port', port.toString()],
+        [join(__dirname, '../../dist/cli/index.js'), 'dev', '--port', port.toString()],
         {
           cwd: this.root,
           stdio: 'pipe',

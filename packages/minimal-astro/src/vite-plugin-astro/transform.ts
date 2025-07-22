@@ -93,9 +93,47 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Generate the module
   const parts: string[] = [];
+  const frontmatterImports: string[] = [];
+  let frontmatterCode = '';
+  let getStaticPathsCode = '';
+
+  if (frontmatter) {
+    const code = frontmatter.code;
+    const getStaticPathsRegex = /export\s+async\s+function\s+getStaticPaths\s*\([^)]*\)\s*\{[\s\S]*?^\}/m;
+    const match = code.match(getStaticPathsRegex);
+
+    if (match) {
+      getStaticPathsCode = match[0];
+      const remainingCode = code.replace(getStaticPathsRegex, '');
+      const lines = remainingCode.split('\n');
+      lines.forEach(line => {
+        if (line.trim().startsWith('import')) {
+          frontmatterImports.push(line);
+        } else {
+          frontmatterCode += line + '\n';
+        }
+      });
+    } else {
+      const lines = code.split('\n');
+      lines.forEach(line => {
+        if (line.trim().startsWith('import')) {
+          frontmatterImports.push(line);
+        } else {
+          frontmatterCode += line + '\n';
+        }
+      });
+    }
+  }
 
   // Add imports that are commonly needed
   parts.push(`// Auto-generated from ${filename}`);
+
+  // Add frontmatter imports
+  if (frontmatterImports.length > 0) {
+    parts.push('');
+    parts.push('// Frontmatter imports');
+    parts.push(...frontmatterImports);
+  }
 
   // Import React/Preact if needed
   if (framework === 'react' && hasClientDirectives(ast)) {
@@ -117,11 +155,11 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   parts.push('  };');
 
   // Add frontmatter code inside render function so it has access to Astro
-  if (frontmatter) {
+  if (frontmatterCode) {
     parts.push('');
     parts.push('  // Frontmatter execution');
     // Strip TypeScript syntax from frontmatter code
-    const strippedCode = stripTypeScript(frontmatter.code);
+    const strippedCode = stripTypeScript(frontmatterCode);
     // Indent the code for the render function
     const indentedCode = strippedCode
       .split('\n')
@@ -238,6 +276,13 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   parts.push('}');
 
+  // Add getStaticPaths export if it exists
+  if (getStaticPathsCode) {
+    parts.push('');
+    parts.push('// Export getStaticPaths');
+    parts.push(getStaticPathsCode);
+  }
+
   // Add JSX component export if using React/Preact
   if (framework !== 'vanilla') {
     parts.push('');
@@ -265,7 +310,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Default export for easier imports
   parts.push('');
-  parts.push(`export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''} };`);
+  parts.push(`export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''}${getStaticPathsCode ? ', getStaticPaths' : ''} };`);
 
   const jsCode = parts.join('\n');
 

@@ -21,7 +21,7 @@ const formattedDate = new Date(date).toLocaleDateString('ja-JP', {
     <p class="description">{description}</p>
     <div class="meta">
       <time datetime={date.toISOString()}>{formattedDate}</time>
-      {author && <span class="author">by {author}</span>}
+      {author && (<span class="author">by {author}</span>)}
     </div>
   </a>
 </article>

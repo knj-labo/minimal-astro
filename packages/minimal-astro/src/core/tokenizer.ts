@@ -205,10 +205,6 @@ function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
             },
           ];
         }
-      } else if (char === '<' && peekSequence(currentState, '</')) {
-        // Stop at closing tag to allow better error recovery
-        incomplete = true;
-        break;
       }
       currentState = advance(currentState);
     }
@@ -750,6 +746,18 @@ function nextTokenOptimized(
     case Mode.Tag: {
       const [attrState, attr] = scanAttribute(state);
       if (attr) return [attrState, attr];
+      break;
+    }
+
+    case Mode.Style:
+    case Mode.Script: {
+      // Check for closing tag
+      const [tagState, tag] = scanTag(state);
+      if (tag) return [tagState, tag];
+
+      // Otherwise, scan content as text
+      const [textState, text] = scanText(state);
+      if (text) return [textState, text];
       break;
     }
 

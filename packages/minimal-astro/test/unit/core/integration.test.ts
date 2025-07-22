@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { buildHtml } from '../../src/core/html-builder.js';
-import { parseAstro } from '../../src/core/parse.js';
-import { tokenize } from '../../src/core/tokenizer.js';
+import { buildHtml } from '../../../src/core/html-builder.js';
+import { parseAstro } from '../../../src/core/parse.js';
+import { tokenize } from '../../../src/core/tokenizer.js';
 
-const FIXTURES_DIR = resolve(import.meta.dir, '../fixtures');
+const FIXTURES_DIR = resolve(import.meta.dir, '../../fixtures/unit');
 
 describe('Integration: Tokenizer → Parser → HTML Builder', () => {
   describe('End-to-End Pipeline', () => {
