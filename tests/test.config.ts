@@ -6,16 +6,16 @@ export default defineConfig({
 
   // Test patterns
   patterns: {
-    unit: 'packages/minimal-astro/test/unit/**/*.test.ts',
-    integration: 'packages/minimal-astro/test/fixtures/**/test.ts',
-    e2e: 'packages/minimal-astro/test/e2e/**/*.test.ts',
+    unit: 'packages/**/test/unit/**/*.test.ts',
+    integration: 'tests/fixtures/**/test.ts',
+    e2e: 'tests/e2e/**/*.test.ts',
   },
 
   // Coverage configuration
   coverage: {
     enabled: process.env.COVERAGE === 'true',
     reporter: ['text', 'json', 'html'],
-    exclude: ['**/node_modules/**', '**/test/**', '**/*.test.ts', '**/fixtures/**'],
+    exclude: ['**/node_modules/**', '**/test/**', '**/*.test.ts', '**/fixtures/**', 'tests/**'],
     thresholds: {
       global: {
         statements: 80,

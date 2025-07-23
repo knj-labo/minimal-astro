@@ -11,9 +11,6 @@ import {
   type LoggerOptions,
 } from './types.js';
 
-function _shouldLog(logLevel: LogLevel): boolean {
-  return logLevel >= currentLevel;
-}
 /**
  * Create a logger instance with specified options
  */
@@ -22,10 +19,6 @@ export function createLogger(options: LoggerOptions = {}): Logger {
   const prefix = options.prefix ?? '[minimal-astro]';
   const enableColors = options.enableColors ?? shouldEnableColors();
   const enableTimestamp = options.enableTimestamp ?? false;
-
-  function _shouldLog(logLevel: LogLevel): boolean {
-    return logLevel >= currentLevel;
-  }
 
   function formatMessage(entry: LogEntry): string {
     const parts: string[] = [];
@@ -56,8 +49,6 @@ export function createLogger(options: LoggerOptions = {}): Logger {
   }
 
   function log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
-    if (!shouldLog(level)) return;
-
     const entry: LogEntry = {
       level,
       message,
