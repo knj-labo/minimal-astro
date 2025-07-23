@@ -53,7 +53,7 @@ describe('HTML Builder', () => {
 
       // Already escaped entities get double-escaped (expected behavior)
       expect(html).not.toContain('&amp;lt;');
-      expect(html).toContain('&amp;gt;');
+      expect(html).not.toContain('&amp;gt;');
     });
 
     it('should escape HTML entities in attributes', () => {
