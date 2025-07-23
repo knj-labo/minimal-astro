@@ -14,7 +14,9 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "knip:production": "knip --production",
-    "knip:dependencies": "knip --dependencies"
+    "knip:dependencies": "knip --dependencies",
+    "test:unit": "vitest run",
+    "test:integration": "vitest run -c vitest.integration.config.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.0",
@@ -27,9 +29,9 @@
     "packages/minimal-astro",
     "packages/create-minimal-astro",
     "packages/internal-helpers",
-    "packages/integrations/react",
-    "packages/integrations/vue",
-    "packages/integrations/svelte",
+    "packages/renderer-react",
+    "packages/renderer-vue",
+    "packages/renderer-svelte",
     "packages/markdown/remark",
     "packages/compiler",
     "packages/vite-plugin",
