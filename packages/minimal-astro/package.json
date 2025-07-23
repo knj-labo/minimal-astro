@@ -37,6 +37,9 @@
     "build": "tsc",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:unit": "bun test test/unit",
+    "test:integration": "bun test test/fixtures",
+    "test:coverage": "COVERAGE=true bun test --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write ."
