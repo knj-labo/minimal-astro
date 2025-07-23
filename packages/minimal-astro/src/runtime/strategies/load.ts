@@ -11,7 +11,7 @@ import type { PendingHydration } from '../types.js';
  */
 const requestIdleCallback =
   (typeof window !== 'undefined' && 'requestIdleCallback' in window
-    ? (window as any).requestIdleCallback
+    ? (window as { requestIdleCallback?: typeof window.requestIdleCallback }).requestIdleCallback
     : null) ||
   ((
     callback: (deadline: {

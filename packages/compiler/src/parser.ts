@@ -10,7 +10,7 @@ import type {
   ParseResult,
   SourceSpan,
   TextNode,
-} from '../../types/src/ast.js';
+} from '@minimal-astro/types/ast';
 import { type Token, TokenType, tokenize } from './tokenizer.js';
 import { safeExecute } from './utils.js';
 

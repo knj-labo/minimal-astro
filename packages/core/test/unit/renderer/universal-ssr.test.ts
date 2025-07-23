@@ -17,7 +17,8 @@ describe('Universal SSR', () => {
     it('should register a framework renderer', () => {
       const mockRenderer = {
         name: 'test-framework',
-        check: (Component: unknown) => (Component as any)._isTestFramework === true,
+        check: (Component: unknown) =>
+          Boolean((Component as { _isTestFramework?: boolean })._isTestFramework),
         renderToString: async (Component: unknown, props: unknown) => {
           return `<div>${Component.name} with ${JSON.stringify(props)}</div>`;
         },
@@ -129,8 +130,8 @@ describe('Universal SSR', () => {
       // Register mock renderers
       registerFramework({
         name: 'react',
-        check: (Component: any) => Component._isReact === true,
-        renderToString: async (Component: unknown, props: unknown) => {
+        check: (Component: unknown) => Boolean((Component as { _isReact?: boolean })._isReact),
+        renderToString: async (Component: unknown, _props: unknown) => {
           return `<react>${Component.name}</react>`;
         },
       });
@@ -138,7 +139,7 @@ describe('Universal SSR', () => {
       registerFramework({
         name: 'vue',
         check: (Component: unknown) => (Component as { _isVue: boolean })._isVue === true,
-        renderToString: async (Component: unknown, props: unknown) => {
+        renderToString: async (Component: unknown, _props: unknown) => {
           return `<vue>${Component.name}</vue>`;
         },
       });

@@ -8,7 +8,7 @@ import type {
   Node,
   RawHTMLNode,
   TextNode,
-} from '../../types/src/ast.js';
+} from '@minimal-astro/types/ast';
 
 export interface HtmlBuilderOptions {
   prettyPrint?: boolean;
@@ -167,7 +167,7 @@ function formatAttributes(attrs: Attr[], context?: EvaluationContext): string {
  * Expression evaluation context for safe evaluation
  */
 interface EvaluationContext {
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
 }
 
 /**

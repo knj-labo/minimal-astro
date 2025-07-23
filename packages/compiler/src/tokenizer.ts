@@ -1,4 +1,4 @@
-import type { Position, SourceSpan } from '../../types/src/ast.js';
+import type { Position, SourceSpan } from '@minimal-astro/types/ast';
 
 export enum TokenType {
   Text = 'Text',
@@ -454,7 +454,8 @@ function scanText(state: TokenizerState): [TokenizerState, Token | null] {
 
       return [
         newState,
-        {n          type: TokenType.Text,
+        {
+          type: TokenType.Text,
           value: text,
           loc: {
             start,

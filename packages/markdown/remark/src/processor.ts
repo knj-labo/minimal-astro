@@ -29,12 +29,12 @@ export interface MarkdownProcessorOptions {
   /**
    * Custom remark plugins
    */
-  remarkPlugins?: any[];
+  remarkPlugins?: unknown[];
 
   /**
    * Custom rehype plugins
    */
-  rehypePlugins?: any[];
+  rehypePlugins?: unknown[];
 
   /**
    * Generate table of contents
@@ -56,7 +56,7 @@ export interface ProcessedMarkdown {
   /**
    * Extracted frontmatter
    */
-  frontmatter: Record<string, any>;
+  frontmatter: Record<string, unknown>;
 
   /**
    * Generated table of contents
@@ -148,9 +148,9 @@ function calculateReadingTime(text: string, wordsPerMinute = 200): number {
 function extractHeadings(html: string): Heading[] {
   const headings: Heading[] = [];
   const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h[1-6]>/gi;
-  let match;
+  let match: RegExpExecArray | null = headingRegex.exec(html);
 
-  while ((match = headingRegex.exec(html)) !== null) {
+  while (match !== null) {
     const level = Number.parseInt(match[1], 10);
     const text = match[2].replace(/<[^>]*>/g, '').trim();
     const slug = generateSlug(text);
@@ -160,6 +160,7 @@ function extractHeadings(html: string): Heading[] {
       level,
       slug,
     });
+    match = headingRegex.exec(html);
   }
 
   return headings;
@@ -209,8 +210,8 @@ function generateToc(headings: Heading[]): TocEntry[] {
  * Plugin to add IDs to headings
  */
 function rehypeHeadingIds() {
-  return (tree: any) => {
-    const visit = (node: any) => {
+  return (tree: unknown) => {
+    const visit = (node: unknown) => {
       if (node.type === 'element' && /^h[1-6]$/.test(node.tagName)) {
         const text = getTextContent(node);
         const slug = generateSlug(text);
@@ -233,7 +234,7 @@ function rehypeHeadingIds() {
 /**
  * Get text content from a node
  */
-function getTextContent(node: any): string {
+function getTextContent(node: unknown): string {
   if (node.type === 'text') {
     return node.value;
   }

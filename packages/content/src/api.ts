@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 // Content collection exports
-export function defineCollection(config: any) {
+export interface CollectionConfig {
+  schema?: unknown;
+  [key: string]: unknown;
+}
+
+export function defineCollection(config: CollectionConfig): CollectionConfig {
   return config;
 }
 
@@ -14,7 +19,7 @@ export async function getCollection(_collectionName: string) {
   return [];
 }
 
-export async function getEntry(collectionName: string, entryId: string) {
+export async function getEntry(_collectionName: string, _entryId: string) {
   // Mock implementation for now
   return null;
 }

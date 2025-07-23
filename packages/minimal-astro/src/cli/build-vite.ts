@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
+import { astroVitePlugin } from '@minimal-astro/vite-plugin';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import vue from '@vitejs/plugin-vue';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
-import { astroVitePlugin } from '../../vite-plugin/src/plugin.js';
 import { createAssetOptimizer } from './assets/optimizer.js';
 import type { BuildOptions } from './types.js';
 import { discoverAstroFiles } from './utils/file-discovery.js';
@@ -147,12 +147,12 @@ async function renderPages(
       // Import and render each page
       console.log(`  Loading module: ${page}`);
       const module = await server.ssrLoadModule(page);
-      console.log(`  Module type:`, typeof module);
-      console.log(`  Module is string?:`, typeof module === 'string');
+      console.log('  Module type:', typeof module);
+      console.log('  Module is string?:', typeof module === 'string');
 
       // Generate output path
       const relativePath = page
-        .replace(join(viteConfig.root!, 'src', 'pages'), '')
+        .replace(join(viteConfig.root || '', 'src', 'pages'), '')
         .replace(/\.astro$/, '.html')
         .replace(/\/index\.html$/, '/index.html'); // Keep index.html at root
 
@@ -164,29 +164,29 @@ async function renderPages(
 
       try {
         // Log module structure for debugging
-        console.log(`  Module exports:`, Object.keys(module));
+        console.log('  Module exports:', Object.keys(module));
 
         // The transform generates: export default { render, metadata, Component }
         const moduleExports = module.default || module;
         console.log(
-          `  Module default exports:`,
+          '  Module default exports:',
           moduleExports ? Object.keys(moduleExports) : 'none'
         );
 
         // Check if the module has a render function
         if (moduleExports && typeof moduleExports.render === 'function') {
-          console.log(`  Found render function, executing...`);
+          console.log('  Found render function, executing...');
 
           // Call the render function with empty props for now
           const result = await moduleExports.render({});
-          console.log(`  Render result type:`, typeof result);
-          console.log(`  Render result keys:`, result ? Object.keys(result) : 'none');
+          console.log('  Render result type:', typeof result);
+          console.log('  Render result keys:', result ? Object.keys(result) : 'none');
 
           // Extract HTML from result
           const html = result.html || result;
 
           if (!html || typeof html !== 'string') {
-            console.error(`  ❌ Render function returned invalid HTML:`, html);
+            console.error('  ❌ Render function returned invalid HTML:', html);
             continue;
           }
 
@@ -215,16 +215,16 @@ async function renderPages(
               console.error(`  ❌ File was not created: ${outputPath}`);
             }
           } catch (writeError) {
-            console.error(`  ❌ Failed to write file:`, writeError);
+            console.error('  ❌ Failed to write file:', writeError);
             console.error(
-              `  Stack trace:`,
+              '  Stack trace:',
               writeError instanceof Error ? writeError.stack : 'No stack'
             );
             throw writeError;
           }
         } else {
-          console.warn(`  ⚠️  No render function found in module`);
-          console.warn(`  Module structure:`, JSON.stringify(moduleExports, null, 2));
+          console.warn('  ⚠️  No render function found in module');
+          console.warn('  Module structure:', JSON.stringify(moduleExports, null, 2));
         }
       } catch (error) {
         console.error(`  ❌ Failed to render ${relativePath}:`, error);

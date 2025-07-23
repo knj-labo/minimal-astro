@@ -14,7 +14,7 @@ export interface VueSSROptions {
   /**
    * Component registry for resolving imports
    */
-  components?: Map<string, any>;
+  components?: Map<string, unknown>;
 
   /**
    * Props to pass to components
@@ -84,7 +84,7 @@ export interface VueHydrationData {
  */
 export function renderVueComponent(
   componentName: string,
-  _componentDefinition: any,
+  _componentDefinition: unknown,
   props: Record<string, unknown> = {},
   options: VueSSROptions = {}
 ): VueSSRResult {
@@ -276,7 +276,7 @@ export function createVueSSRRenderer(options: VueSSROptions = {}) {
     /**
      * Register a component
      */
-    register(name: string, component: any): void {
+    register(name: string, component: unknown): void {
       if (!options.components) {
         options.components = new Map();
       }
@@ -286,7 +286,7 @@ export function createVueSSRRenderer(options: VueSSROptions = {}) {
     /**
      * Get all registered components
      */
-    getComponents(): Map<string, any> {
+    getComponents(): Map<string, unknown> {
       return options.components || new Map();
     },
   };

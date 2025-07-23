@@ -6,12 +6,22 @@
 import type { createEventSystem } from '../event-system.js';
 import type { PendingHydration } from '../types.js';
 
+type IdleDeadline = {
+  didTimeout: boolean;
+  timeRemaining: () => number;
+};
+
+type IdleRequestCallback = (
+  callback: (deadline: IdleDeadline) => void,
+  options?: { timeout?: number }
+) => number;
+
 /**
  * RequestIdleCallback polyfill
  */
-const requestIdleCallback =
+const requestIdleCallback: IdleRequestCallback =
   (typeof window !== 'undefined' && 'requestIdleCallback' in window
-    ? (window as any).requestIdleCallback
+    ? (window as Window & { requestIdleCallback: IdleRequestCallback }).requestIdleCallback
     : null) ||
   ((
     callback: (deadline: {
@@ -46,7 +56,7 @@ export function scheduleIdle(
     directive: 'idle',
   });
 
-  (requestIdleCallback as any)(
+  requestIdleCallback(
     () => {
       try {
         performHydration(pending);

@@ -11,7 +11,7 @@ import type { PendingHydration } from '../types.js';
  */
 const requestIdleCallback =
   (typeof window !== 'undefined' && 'requestIdleCallback' in window
-    ? (window as any).requestIdleCallback
+    ? (window as { requestIdleCallback?: typeof window.requestIdleCallback }).requestIdleCallback
     : null) ||
   ((
     callback: (deadline: {
@@ -46,7 +46,7 @@ export function scheduleIdle(
     directive: 'idle',
   });
 
-  (requestIdleCallback as any)(
+  (requestIdleCallback as typeof window.requestIdleCallback)(
     () => {
       try {
         performHydration(pending);

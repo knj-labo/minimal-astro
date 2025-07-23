@@ -6,7 +6,12 @@ import {
 } from '../../../../src/core/utils/logger.js';
 
 describe('Logger', () => {
-  let mockConsole: any;
+  let mockConsole: {
+    log: jest.Mock;
+    error: jest.Mock;
+    warn: jest.Mock;
+    info: jest.Mock;
+  };
 
   beforeEach(() => {
     // Mock console methods
@@ -19,7 +24,7 @@ describe('Logger', () => {
     };
 
     // Replace global console
-    global.console = mockConsole as any;
+    global.console = mockConsole as unknown as Console;
   });
 
   describe('createContextualLogger', () => {

@@ -24,7 +24,7 @@ export interface LoadFixtureOptions {
  */
 export interface BuildOptions {
   timeout?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -169,7 +169,7 @@ export class TestFixture {
       const entries = await readdir(dir, { withFileTypes: true });
       for (const entry of entries) {
         const fullPath = join(dir, entry.name);
-        const relativePath = fullPath.replace(this.outDir + '/', '');
+        const relativePath = fullPath.replace(`${this.outDir}/`, '');
 
         if (entry.isDirectory()) {
           await walkDir(fullPath);

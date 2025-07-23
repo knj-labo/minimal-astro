@@ -3,7 +3,7 @@
  */
 
 export interface AstroConfig {
-  integrations?: any[];
+  integrations?: unknown[];
   output?: 'static' | 'server';
   build?: {
     inlineStylesheets?: 'auto' | 'always' | 'never';

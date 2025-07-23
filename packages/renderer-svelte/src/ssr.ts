@@ -14,7 +14,7 @@ export interface SvelteSSROptions {
   /**
    * Component registry for resolving imports
    */
-  components?: Map<string, any>;
+  components?: Map<string, unknown>;
 
   /**
    * Props to pass to components
@@ -88,7 +88,7 @@ export interface SvelteHydrationData {
  */
 export function renderSvelteComponent(
   componentName: string,
-  SvelteComponent: any,
+  SvelteComponent: unknown,
   props: Record<string, unknown> = {},
   options: SvelteSSROptions = {}
 ): SvelteSSRResult {
@@ -291,7 +291,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Register a component
      */
-    register(name: string, component: any): void {
+    register(name: string, component: unknown): void {
       if (!options.components) {
         options.components = new Map();
       }
@@ -301,7 +301,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Get all registered components
      */
-    getComponents(): Map<string, any> {
+    getComponents(): Map<string, unknown> {
       return options.components || new Map();
     },
   };

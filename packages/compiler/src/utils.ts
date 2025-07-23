@@ -1,4 +1,4 @@
-import type { Diagnostic } from '../../types/src/ast.js';
+import type { Diagnostic } from '@minimal-astro/types/ast';
 
 /**
  * Utility to safely execute a function and handle errors gracefully.

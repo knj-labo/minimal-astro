@@ -1,6 +1,6 @@
 import { parseAstro } from '@minimal-astro/compiler';
+import type { Diagnostic, FragmentNode } from '@minimal-astro/types/ast';
 import type { ModuleNode, Plugin } from 'vite';
-import type { Diagnostic, FragmentNode } from '../types/src/ast.js';
 import {
   type AstroHmrState,
   analyzeAstForHmr,
@@ -252,7 +252,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
     // Configure dev server to handle page requests
     configureServer(server) {
       // Define our middleware handler
-      const astroDevHandler = async (req: any, res: any, next: any) => {
+      const astroDevHandler = async (req: unknown, res: unknown, next: unknown) => {
         const url = req.url ?? '/';
 
         // Only handle GET requests to pages (not assets)
@@ -310,7 +310,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
               }
 
               break;
-            } catch (e) {
+            } catch (_e) {
               // Try next path
             }
           }
@@ -322,7 +322,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
             const urlParts = url.split('/').filter(Boolean);
             if (urlParts.length > 0) {
               const basePath = urlParts.slice(0, -1).join('/');
-              const dynamicPath = `/src/pages/${basePath ? basePath + '/' : ''}[slug].astro`;
+              const dynamicPath = `/src/pages/${basePath ? `${basePath}/` : ''}[slug].astro`;
 
               logger.debug(`Checking dynamic route: ${dynamicPath} for URL: ${url}`);
 
@@ -331,7 +331,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
                 astroModule = await server.ssrLoadModule(resolvedPath);
                 // Extract the slug parameter
                 params = { slug: urlParts[urlParts.length - 1] };
-                logger.debug(`Dynamic route matched! Slug: ${params['slug']}`);
+                logger.debug(`Dynamic route matched! Slug: ${params.slug}`);
               } catch (e) {
                 logger.debug(`Dynamic route not found: ${e.message}`);
               }

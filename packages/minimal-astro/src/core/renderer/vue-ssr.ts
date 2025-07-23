@@ -3,7 +3,7 @@
  * Implements server-side rendering with Vue 3
  */
 
-import type { ComponentNode } from '../../types/ast.js';
+import type { ComponentNode } from '@minimal-astro/types/ast';
 import { createContextualLogger } from '../utils/logger.js';
 
 // ============================================================================
@@ -14,7 +14,7 @@ export interface VueSSROptions {
   /**
    * Component registry for resolving imports
    */
-  components?: Map<string, any>;
+  components?: Map<string, unknown>;
 
   /**
    * Props to pass to components
@@ -84,7 +84,7 @@ export interface VueHydrationData {
  */
 export async function renderVueComponent(
   componentName: string,
-  VueComponent: any,
+  VueComponent: unknown,
   props: Record<string, unknown> = {},
   options: VueSSROptions = {}
 ): Promise<VueSSRResult> {
@@ -107,8 +107,8 @@ export async function renderVueComponent(
     // Try to use Vue's SSR if available
     try {
       // Dynamic import to avoid hard dependency
-      const vueModule = await import('vue' as any);
-      const vueServerRenderer = await import('@vue/server-renderer' as any);
+      const vueModule = await import('vue');
+      const vueServerRenderer = await import('@vue/server-renderer');
       const { createSSRApp, h } = vueModule;
       const { renderToString } = vueServerRenderer;
 
@@ -323,7 +323,7 @@ export function createVueSSRRenderer(options: VueSSROptions = {}) {
     /**
      * Register a component
      */
-    register(name: string, component: any): void {
+    register(name: string, component: unknown): void {
       if (!options.components) {
         options.components = new Map();
       }
@@ -333,7 +333,7 @@ export function createVueSSRRenderer(options: VueSSROptions = {}) {
     /**
      * Get all registered components
      */
-    getComponents(): Map<string, any> {
+    getComponents(): Map<string, unknown> {
       return options.components || new Map();
     },
   };

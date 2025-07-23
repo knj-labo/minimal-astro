@@ -197,7 +197,7 @@ export class TestFixture {
     }
 
     return new Promise((resolve, reject) => {
-      const process = spawn('node', [join(__dirname, '../../examples/blog/serve.js')], {
+      const _childProcess = spawn('node', [join(__dirname, '../../examples/blog/serve.js')], {
         cwd: this.root,
         stdio: 'pipe',
         env: {
@@ -301,11 +301,9 @@ export class TestFixture {
  * Load a test fixture
  */
 export function loadFixture(options) {
-  if (typeof options === 'string') {
-    options = { fixture: options };
-  }
+  const fixtureOptions = typeof options === 'string' ? { fixture: options } : options;
 
-  const { fixture } = options;
+  const { fixture } = fixtureOptions;
   const fixturePath = join(FIXTURES_DIR, fixture);
 
   if (!existsSync(fixturePath)) {
@@ -340,7 +338,7 @@ export function waitFor(condition, timeout = 5000, interval = 100) {
           resolve(result);
           return;
         }
-      } catch (error) {
+      } catch (_error) {
         // Continue checking
       }
 

@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { astroVitePlugin } from '@minimal-astro/vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import { createServer } from 'vite';
-import { astroVitePlugin } from '../../vite-plugin/src/plugin.js';
 
 export interface DevOptions {
   root: string;

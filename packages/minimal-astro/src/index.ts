@@ -50,4 +50,4 @@ export {
 } from '@minimal-astro/core';
 
 // Type exports
-export type { ParseOptions, HtmlBuilderOptions } from '../../compiler/src/index.js';
+export type { ParseOptions, HtmlBuilderOptions } from '@minimal-astro/compiler';

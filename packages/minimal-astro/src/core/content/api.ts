@@ -1,20 +1,30 @@
 import { z } from 'zod';
 
 // Content collection exports
-export function defineCollection(config: any) {
+export interface CollectionConfig {
+  schema?: z.ZodType<unknown>;
+  [key: string]: unknown;
+}
+
+export function defineCollection(config: CollectionConfig): CollectionConfig {
   return config;
 }
 
-export function defineConfig(config: any) {
+export interface Config {
+  collections?: Record<string, CollectionConfig>;
+  [key: string]: unknown;
+}
+
+export function defineConfig(config: Config): Config {
   return config;
 }
 
-export async function getCollection(collectionName: string) {
+export async function getCollection(_collectionName: string) {
   // Mock implementation for now
   return [];
 }
 
-export async function getEntry(collectionName: string, entryId: string) {
+export async function getEntry(_collectionName: string, _entryId: string) {
   // Mock implementation for now
   return null;
 }
@@ -26,9 +36,11 @@ export { z };
 export const collections = {};
 export const queries = {};
 
-export type ContentManagerOptions = any;
+export interface ContentManagerOptions {
+  [key: string]: unknown;
+}
 
-export function createContentManager(options?: ContentManagerOptions) {
+export function createContentManager(_options?: ContentManagerOptions) {
   return {};
 }
 

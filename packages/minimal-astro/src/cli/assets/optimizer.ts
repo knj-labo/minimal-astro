@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join } from 'node:path';
-import { createContextualLogger } from '../../core/utils/logger.js';
+import { createContextualLogger } from '@minimal-astro/core/logger';
 
 // ============================================================================
 // TYPES
@@ -252,7 +252,7 @@ async function optimizeAsset(
       ? filePath.slice(outDir.length).replace(/^\//, '')
       : filePath;
     const finalOutputPath = options.fingerprint
-      ? createFingerprintedName(relativePath, hash!)
+      ? createFingerprintedName(relativePath, hash || '')
       : relativePath;
     const outputFilePath = join(outDir, finalOutputPath);
 

@@ -3,7 +3,7 @@
  * Implements server-side rendering with Svelte
  */
 
-import type { ComponentNode } from '../../types/ast.js';
+import type { ComponentNode } from '@minimal-astro/types/ast';
 import { createContextualLogger } from '../utils/logger.js';
 
 // ============================================================================
@@ -14,7 +14,7 @@ export interface SvelteSSROptions {
   /**
    * Component registry for resolving imports
    */
-  components?: Map<string, any>;
+  components?: Map<string, unknown>;
 
   /**
    * Props to pass to components
@@ -88,7 +88,7 @@ export interface SvelteHydrationData {
  */
 export async function renderSvelteComponent(
   componentName: string,
-  SvelteComponent: any,
+  SvelteComponent: unknown,
   props: Record<string, unknown> = {},
   options: SvelteSSROptions = {}
 ): Promise<SvelteSSRResult> {
@@ -128,11 +128,7 @@ export async function renderSvelteComponent(
         const result = SvelteComponent.render(componentProps);
         html = result.html;
         css = result.css?.code;
-      } else if (
-        SvelteComponent &&
-        SvelteComponent.default &&
-        typeof SvelteComponent.default.render === 'function'
-      ) {
+      } else if (SvelteComponent?.default && typeof SvelteComponent.default.render === 'function') {
         // Handle default export
         const result = SvelteComponent.default.render(componentProps);
         html = result.html;
@@ -322,7 +318,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Register a component
      */
-    register(name: string, component: any): void {
+    register(name: string, component: unknown): void {
       if (!options.components) {
         options.components = new Map();
       }
@@ -332,7 +328,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Get all registered components
      */
-    getComponents(): Map<string, any> {
+    getComponents(): Map<string, unknown> {
       return options.components || new Map();
     },
   };

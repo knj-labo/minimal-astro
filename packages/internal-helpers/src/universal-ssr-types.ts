@@ -9,9 +9,9 @@ export interface UniversalSSROptions {
    * Component registries for each framework
    */
   components?: {
-    react?: Map<string, any>;
-    vue?: Map<string, any>;
-    svelte?: Map<string, any>;
+    react?: Map<string, unknown>;
+    vue?: Map<string, unknown>;
+    svelte?: Map<string, unknown>;
   };
 
   /**
@@ -43,6 +43,6 @@ export interface UniversalSSRResult {
 }
 
 export interface FrameworkRenderer {
-  renderComponent: (component: any, props: any) => Promise<string>;
+  renderComponent: (component: unknown, props: unknown) => Promise<string>;
   createRenderer: (options: unknown) => unknown;
 }

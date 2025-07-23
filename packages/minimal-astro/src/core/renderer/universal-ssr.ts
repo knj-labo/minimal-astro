@@ -3,7 +3,7 @@
  * Automatically detects framework and renders accordingly
  */
 
-import type { ComponentNode } from '../../types/ast.js';
+import type { ComponentNode } from '@minimal-astro/types/ast';
 import { createContextualLogger } from '../utils/logger.js';
 import { createReactSSRRenderer, renderReactComponent } from './react-ssr.js';
 import { createSvelteSSRRenderer, renderSvelteComponent } from './svelte-ssr.js';
@@ -19,9 +19,9 @@ export interface UniversalSSROptions {
   /**
    * Component registries for each framework
    */
-  reactComponents?: Map<string, React.ComponentType<any>>;
-  vueComponents?: Map<string, any>;
-  svelteComponents?: Map<string, any>;
+  reactComponents?: Map<string, React.ComponentType<unknown>>;
+  vueComponents?: Map<string, unknown>;
+  svelteComponents?: Map<string, unknown>;
 
   /**
    * Default framework when auto-detection fails
@@ -58,7 +58,7 @@ export interface UniversalSSRResult {
   /**
    * Hydration data
    */
-  hydrationData?: any;
+  hydrationData?: unknown;
 
   /**
    * Error that occurred during rendering
@@ -315,7 +315,7 @@ export function createUniversalSSRRenderer(options: UniversalSSROptions = {}) {
      */
     registerComponent(
       name: string,
-      component: any,
+      component: unknown,
       framework: Exclude<FrameworkType, 'auto'>
     ): void {
       switch (framework) {
@@ -351,9 +351,9 @@ export function createUniversalSSRRenderer(options: UniversalSSROptions = {}) {
      * Get all registered components across frameworks
      */
     getAllComponents(): {
-      react: Map<string, React.ComponentType<any>>;
-      vue: Map<string, any>;
-      svelte: Map<string, any>;
+      react: Map<string, React.ComponentType<unknown>>;
+      vue: Map<string, unknown>;
+      svelte: Map<string, unknown>;
     } {
       return {
         react: reactRenderer.getComponents(),

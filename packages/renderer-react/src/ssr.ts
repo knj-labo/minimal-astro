@@ -16,7 +16,7 @@ export interface ReactSSROptions {
   /**
    * Component registry for resolving imports
    */
-  components?: Map<string, React.ComponentType<any>>;
+  components?: Map<string, React.ComponentType<unknown>>;
 
   /**
    * Props to pass to components
@@ -84,7 +84,7 @@ export interface HydrationData {
  * Creates a wrapper component for hydration
  */
 function createHydrationWrapper(
-  Component: React.ComponentType<any>,
+  Component: React.ComponentType<unknown>,
   props: Record<string, unknown>,
   hydrationData?: HydrationData
 ): React.ReactElement {
@@ -166,7 +166,7 @@ class SSRErrorBoundary extends React.Component<
  */
 export function renderReactComponent(
   componentName: string,
-  componentExport: React.ComponentType<any>,
+  componentExport: React.ComponentType<unknown>,
   props: Record<string, unknown> = {},
   options: ReactSSROptions = {}
 ): SSRResult {
@@ -188,10 +188,7 @@ export function renderReactComponent(
     const element = createHydrationWrapper(componentExport, props, hydrationData);
 
     // Wrap in error boundary for SSR safety
-    const wrappedElement = React.createElement(SSRErrorBoundary, {
-      componentName,
-      children: element,
-    });
+    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName }, element);
 
     // Render to string
     const html = renderToString(wrappedElement);
@@ -340,7 +337,7 @@ export function createReactSSRRenderer(options: ReactSSROptions = {}) {
     /**
      * Register a component
      */
-    register(name: string, component: React.ComponentType<any>): void {
+    register(name: string, component: React.ComponentType<unknown>): void {
       if (!options.components) {
         options.components = new Map();
       }
@@ -350,7 +347,7 @@ export function createReactSSRRenderer(options: ReactSSROptions = {}) {
     /**
      * Get all registered components
      */
-    getComponents(): Map<string, React.ComponentType<any>> {
+    getComponents(): Map<string, React.ComponentType<unknown>> {
       return options.components || new Map();
     },
   };
