@@ -12,25 +12,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./vite-plugin-astro": {
-      "types": "./dist/vite-plugin-astro/index.d.ts",
-      "import": "./dist/vite-plugin-astro/index.js"
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js"
     },
-    "./runtime": {
-      "types": "./dist/runtime/index.d.ts",
-      "import": "./dist/runtime/index.js"
-    },
-    "./core/html-builder": {
-      "types": "./dist/core/html-builder.d.ts",
-      "import": "./dist/core/html-builder.js"
-    },
-    "./core/renderer/universal-ssr": {
-      "types": "./dist/core/renderer/universal-ssr.d.ts",
-      "import": "./dist/core/renderer/universal-ssr.js"
-    },
-    "./content": {
-      "types": "./dist/core/content/api.d.ts",
-      "import": "./dist/core/content/api.js"
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
     }
   },
   "scripts": {
@@ -45,10 +33,16 @@
     "format": "biome format --write ."
   },
   "dependencies": {
+    "@minimal-astro/compiler": "workspace:*",
+    "@minimal-astro/content": "workspace:*",
+    "@minimal-astro/core": "workspace:*",
     "@minimal-astro/internal-helpers": "workspace:*",
-    "@minimal-astro/react": "workspace:*",
-    "@minimal-astro/svelte": "workspace:*",
-    "@minimal-astro/vue": "workspace:*",
+    "@minimal-astro/renderer-react": "workspace:*",
+    "@minimal-astro/renderer-svelte": "workspace:*",
+    "@minimal-astro/renderer-vue": "workspace:*",
+    "@minimal-astro/runtime": "workspace:*",
+    "@minimal-astro/types": "workspace:*",
+    "@minimal-astro/vite-plugin": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^6.1.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "react": "^18.0.0",

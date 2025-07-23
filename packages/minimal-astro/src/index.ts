@@ -4,13 +4,7 @@
  */
 
 // Core compiler exports
-export { parseAstro } from './core/parse.js';
-export {
-  buildHtml,
-  buildHtmlToStream,
-  createStreamingHtmlBuilder,
-} from './core/html-builder.js';
-export { tokenize } from './core/tokenizer.js';
+export { parseAstro, buildHtml, tokenize } from '@minimal-astro/compiler';
 
 // Renderer exports
 // Re-export from integration packages
@@ -22,7 +16,7 @@ export {
   type RenderResult,
   type HydrationData,
   type ClientDirective,
-} from '@minimal-astro/react';
+} from '@minimal-astro/renderer-react';
 export {
   astToJSX,
   type JSXTransformOptions,
@@ -30,47 +24,30 @@ export {
 
 // Content Collections exports
 export {
+  defineCollection,
+  defineConfig,
+  getCollection,
+  getEntry,
   createContentManager,
   initializeContentAPI,
   getContentAPI,
-  collections,
-  queries,
-  defineConfig,
-  type ContentManagerOptions,
-} from './core/content/api.js';
-export {
+  z,
   createSchemaValidator,
   validateContentEntry,
-  z,
-  type ValidationResult,
-  type ValidationError,
-} from './core/content/schema.js';
-export {
-  createMarkdownLoader,
-  createJsonLoader,
-  createYamlLoader,
-  createAutoLoader,
-  parseFrontmatter,
-  generateSlug,
-  extractHeadings,
-  calculateReadingTime,
-  type LoaderOptions,
-  type MarkdownRenderer,
-} from './core/content/loader.js';
+  loadContentModule,
+  loadCollection,
+  loadEntry,
+  resolveContentPath,
+} from '@minimal-astro/content';
 
 // Utility exports
 export {
-  createLogger,
   createContextualLogger,
-  logger,
-  LogLevel,
-  type LogEntry,
-  type LoggerOptions,
-} from './core/utils/logger.js';
+  safeExecute,
+  type LogLevel,
+  type LogContext,
+  type Logger,
+} from '@minimal-astro/core';
 
 // Type exports
-export type { ParseOptions } from './core/parse.js';
-export type {
-  HtmlBuilderOptions,
-  StreamingOptions,
-} from './core/html-builder.js';
+export type { ParseOptions, HtmlBuilderOptions } from '@minimal-astro/compiler';

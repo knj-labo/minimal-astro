@@ -31,6 +31,9 @@
     "packages/integrations/vue",
     "packages/integrations/svelte",
     "packages/markdown/remark",
+    "packages/compiler",
+    "packages/vite-plugin",
+    "packages/runtime",
     "examples/*"
   ],
   "engines": {

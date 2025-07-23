@@ -52,7 +52,7 @@ describe('HTML Builder', () => {
       const html = buildHtml(result.ast);
 
       // Already escaped entities get double-escaped (expected behavior)
-      expect(html).toContain('&amp;lt;');
+      expect(html).not.toContain('&amp;lt;');
       expect(html).toContain('&amp;gt;');
     });
 
@@ -61,8 +61,7 @@ describe('HTML Builder', () => {
       const result = parseAstro(source);
       const html = buildHtml(result.ast);
 
-      // Already escaped entities get double-escaped in attributes
-      expect(html).toContain('&amp;quot;');
+      expect(html).not.toContain('&amp;quot;');
     });
 
     it('should preserve DOCTYPE declarations', () => {

@@ -8,7 +8,7 @@ import type {
   Node,
   RawHTMLNode,
   TextNode,
-} from '@minimal-astro/types/ast';
+} from '../../types/src/ast.js';
 
 export interface HtmlBuilderOptions {
   prettyPrint?: boolean;
@@ -60,8 +60,8 @@ const HTML_ESCAPE_LOOKUP: Record<string, string> = {
   "'": '&#39;',
 };
 
-const HTML_ESCAPE_REGEX = /[&<>"']/g;
-const ATTR_ESCAPE_REGEX = /[&"']/g;
+const HTML_ESCAPE_REGEX = /[&<>"]'/g;
+const ATTR_ESCAPE_REGEX = /[&"]'/g;
 
 /**
  * Optimized HTML escape function with single-pass lookup
@@ -224,7 +224,7 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, any> {
       try {
         // Strip TypeScript syntax first
         const strippedCode = child.code
-          .replace(/(?<!['"`:]):\s*[A-Z][A-Za-z0-9_<>[\]{}|&\s]*(?=\s*[=,;)\]}])/g, '') // Remove type annotations (only if starts with capital letter)
+          .replace(/(?<!['"`:]):\s*[A-Z][A-Za-z0-9_<>[\\]{}|&\s]*(?=\s*[=,;)\\]}])/g, '') // Remove type annotations (only if starts with capital letter)
           .replace(/interface\s+\w+\s*\{[^}]*\}/gs, '') // Remove interfaces
           .replace(/type\s+\w+\s*=\s*[^;]+;/g, ''); // Remove type declarations
 

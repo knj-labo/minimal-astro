@@ -1,4 +1,4 @@
-import type { Position, SourceSpan } from '@minimal-astro/types/ast';
+import type { Position, SourceSpan } from '../../types/src/ast.js';
 
 export enum TokenType {
   Text = 'Text',
