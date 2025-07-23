@@ -39,6 +39,9 @@ importers:
       '@minimal-astro/vue':
         specifier: workspace:*
         version: link:../../packages/integrations/vue
+      '@vue/server-renderer':
+        specifier: ^3.5.18
+        version: 3.5.18(vue@3.5.17)
       minimal-astro:
         specifier: workspace:*
         version: link:../../packages/minimal-astro
@@ -52,7 +55,7 @@ importers:
         specifier: ^4.2.0
         version: 4.2.20
       vue:
-        specifier: ^3.3.0
+        specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
     devDependencies:
       '@types/react':
@@ -1109,11 +1112,28 @@ packages:
       source-map-js: 1.2.1
     dev: false
 
+  /@vue/compiler-core@3.5.18:
+    resolution: {integrity: sha512-3slwjQrrV1TO8MoXgy3aynDQ7lslj5UqDxuHnrzHtpON5CBinhWjJETciPngpin/T3OuW3tXUf86tEurusnztw==}
+    dependencies:
+      '@babel/parser': 7.28.0
+      '@vue/shared': 3.5.18
+      entities: 4.5.0
+      estree-walker: 2.0.2
+      source-map-js: 1.2.1
+    dev: false
+
   /@vue/compiler-dom@3.5.17:
     resolution: {integrity: sha512-+2UgfLKoaNLhgfhV5Ihnk6wB4ljyW1/7wUIog2puUqajiC29Lp5R/IKDdkebh9jTbTogTbsgB+OY9cEWzG95JQ==}
     dependencies:
       '@vue/compiler-core': 3.5.17
       '@vue/shared': 3.5.17
+    dev: false
+
+  /@vue/compiler-dom@3.5.18:
+    resolution: {integrity: sha512-RMbU6NTU70++B1JyVJbNbeFkK+A+Q7y9XKE2EM4NLGm2WFR8x9MbAtWxPPLdm0wUkuZv9trpwfSlL6tjdIa1+A==}
+    dependencies:
+      '@vue/compiler-core': 3.5.18
+      '@vue/shared': 3.5.18
     dev: false
 
   /@vue/compiler-sfc@3.5.17:
@@ -1135,6 +1155,13 @@ packages:
     dependencies:
       '@vue/compiler-dom': 3.5.17
       '@vue/shared': 3.5.17
+    dev: false
+
+  /@vue/compiler-ssr@3.5.18:
+    resolution: {integrity: sha512-xM16Ak7rSWHkM3m22NlmcdIM+K4BMyFARAfV9hYFl+SFuRzrZ3uGMNW05kA5pmeMa0X9X963Kgou7ufdbpOP9g==}
+    dependencies:
+      '@vue/compiler-dom': 3.5.18
+      '@vue/shared': 3.5.18
     dev: false
 
   /@vue/reactivity@3.5.17:
@@ -1169,8 +1196,22 @@ packages:
       vue: 3.5.17(typescript@5.8.3)
     dev: false
 
+  /@vue/server-renderer@3.5.18(vue@3.5.17):
+    resolution: {integrity: sha512-PvIHLUoWgSbDG7zLHqSqaCoZvHi6NNmfVFOqO+OnwvqMz/tqQr3FuGWS8ufluNddk7ZLBJYMrjcw1c6XzR12mA==}
+    peerDependencies:
+      vue: 3.5.18
+    dependencies:
+      '@vue/compiler-ssr': 3.5.18
+      '@vue/shared': 3.5.18
+      vue: 3.5.17(typescript@5.8.3)
+    dev: false
+
   /@vue/shared@3.5.17:
     resolution: {integrity: sha512-CabR+UN630VnsJO/jHWYBC1YVXyMq94KKp6iF5MQgZJs5I8cmjw6oVMO1oDbtBkENSHSSn/UadWlW/OAgdmKrg==}
+    dev: false
+
+  /@vue/shared@3.5.18:
+    resolution: {integrity: sha512-cZy8Dq+uuIXbxCZpuLd2GJdeSO/lIzIspC2WtkqIpje5QyFbvLaI5wZtdUjLHjGZrlVX6GilejatWwVYYRc8tA==}
     dev: false
 
   /acorn@8.15.0:

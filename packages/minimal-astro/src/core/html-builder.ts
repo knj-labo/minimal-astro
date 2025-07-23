@@ -7,6 +7,7 @@ import type {
   FrontmatterNode,
   Node,
   TextNode,
+  RawHTMLNode,
 } from '../types/ast.js';
 
 export interface HtmlBuilderOptions {
@@ -15,6 +16,7 @@ export interface HtmlBuilderOptions {
   streaming?: boolean;
   chunkSize?: number;
   evaluateExpressions?: boolean;
+  escapeHtml?: boolean;
 }
 
 export interface StreamingOptions {
@@ -28,6 +30,7 @@ const DEFAULT_OPTIONS: HtmlBuilderOptions = {
   streaming: false,
   chunkSize: 16384, // 16KB chunks
   evaluateExpressions: false,
+  escapeHtml: true,
 };
 
 // HTML void elements that should not have closing tags
@@ -285,6 +288,10 @@ function buildNodeHtml(
     case 'Expression':
       return buildExpressionHtml(node as ExpressionNode, options, depth, context);
 
+    case 'RawHTML':
+      // Handle raw HTML from component rendering
+      return (node as RawHTMLNode).value || '';
+
     default:
       // Unknown node type, skip it
       return '';
@@ -406,8 +413,14 @@ function buildTextHtml(
 ): string {
   const indent = options.prettyPrint ? (options.indent ?? '').repeat(depth) : '';
 
-  // Don't escape DOCTYPE declarations
-  const text = node.value.trim().startsWith('<!DOCTYPE') ? node.value : escapeHtml(node.value);
+  // Don't escape DOCTYPE declarations or if escaping is disabled
+  // Also check for the special case where '<' and '!DOCTYPE' are split
+  const text = (node.value.trim().startsWith('<!DOCTYPE') || 
+                node.value.trim().startsWith('!DOCTYPE') ||
+                node.value === '<' ||
+                options.escapeHtml === false) 
+    ? node.value 
+    : escapeHtml(node.value);
 
   // Skip indentation for text nodes that are part of inline content
   if (text.trim() === '') {
@@ -581,8 +594,12 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
       const buildTextToStream = async (node: TextNode, depth: number): Promise<void> => {
         const indent = opts.prettyPrint ? (opts.indent?.repeat(depth) ?? '') : '';
 
-        // Don't escape DOCTYPE declarations
-        const text = node.value.trim().startsWith('<!DOCTYPE')
+        // Don't escape DOCTYPE declarations or if escaping is disabled
+        // Also check for the special case where '<' and '!DOCTYPE' are split
+        const text = (node.value.trim().startsWith('<!DOCTYPE') || 
+                      node.value.trim().startsWith('!DOCTYPE') ||
+                      node.value === '<' ||
+                      opts.escapeHtml === false)
           ? node.value
           : escapeHtml(node.value);
 

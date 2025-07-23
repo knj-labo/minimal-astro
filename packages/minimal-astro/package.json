@@ -24,6 +24,10 @@
       "types": "./dist/core/html-builder.d.ts",
       "import": "./dist/core/html-builder.js"
     },
+    "./core/renderer/universal-ssr": {
+      "types": "./dist/core/renderer/universal-ssr.d.ts",
+      "import": "./dist/core/renderer/universal-ssr.js"
+    },
     "./content": {
       "types": "./dist/core/content/api.d.ts",
       "import": "./dist/core/content/api.js"

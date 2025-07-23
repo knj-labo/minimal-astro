@@ -103,6 +103,11 @@ export interface CommentNode extends BaseNode {
   readonly content: string;
 }
 
+export interface RawHTMLNode extends BaseNode {
+  readonly type: 'RawHTML';
+  readonly value: string;
+}
+
 // ============================================================================
 // UNION TYPES
 // ============================================================================
@@ -114,7 +119,8 @@ export type Node =
   | ElementNode
   | TextNode
   | ExpressionNode
-  | CommentNode;
+  | CommentNode
+  | RawHTMLNode;
 
 // Legacy alias
 export type AstroNode = Node;

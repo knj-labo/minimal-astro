@@ -117,12 +117,12 @@ function detectFramework(componentName: string, options: UniversalSSROptions): F
 /**
  * Renders a component using the appropriate framework
  */
-export function renderUniversalComponent(
+export async function renderUniversalComponent(
   componentName: string,
   props: Record<string, unknown> = {},
   framework: FrameworkType = 'auto',
   options: UniversalSSROptions = {}
-): UniversalSSRResult {
+): Promise<UniversalSSRResult> {
   const logger = createContextualLogger({ module: 'universal-ssr' });
 
   try {
@@ -160,7 +160,7 @@ export function renderUniversalComponent(
           return { html: `<!-- ${error.message} -->`, framework: actualFramework, error };
         }
 
-        const result = renderVueComponent(componentName, component, props, {
+        const result = await renderVueComponent(componentName, component, props, {
           generateHydrationData: options.generateHydrationData,
           dev: options.dev,
         });
@@ -180,7 +180,7 @@ export function renderUniversalComponent(
           return { html: `<!-- ${error.message} -->`, framework: actualFramework, error };
         }
 
-        const result = renderSvelteComponent(componentName, component, props, {
+        const result = await renderSvelteComponent(componentName, component, props, {
           generateHydrationData: options.generateHydrationData,
           dev: options.dev,
         });
@@ -218,10 +218,10 @@ export function renderUniversalComponent(
 /**
  * Renders a component from AST node using universal renderer
  */
-export function renderUniversalComponentFromNode(
+export async function renderUniversalComponentFromNode(
   node: ComponentNode,
   options: UniversalSSROptions = {}
-): UniversalSSRResult {
+): Promise<UniversalSSRResult> {
   const componentName = node.tag;
 
   // Extract props from node attributes
@@ -292,18 +292,18 @@ export function createUniversalSSRRenderer(options: UniversalSSROptions = {}) {
     /**
      * Render a component by name
      */
-    render(
+    async render(
       componentName: string,
       props: Record<string, unknown> = {},
       framework: FrameworkType = 'auto'
-    ): UniversalSSRResult {
+    ): Promise<UniversalSSRResult> {
       return renderUniversalComponent(componentName, props, framework, options);
     },
 
     /**
      * Render from AST node
      */
-    renderNode(node: ComponentNode): UniversalSSRResult {
+    async renderNode(node: ComponentNode): Promise<UniversalSSRResult> {
       return renderUniversalComponentFromNode(node, options);
     },
 
