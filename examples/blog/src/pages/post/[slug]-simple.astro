@@ -1,0 +1,15 @@
+---
+const { slug } = Astro.params;
+const pageTitle = `Post: ${slug}`;
+---
+
+<html>
+  <head>
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <h1>Dynamic Route Working!</h1>
+    <p>Slug from params: {slug}</p>
+    <p>Full params: {JSON.stringify(Astro.params)}</p>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+---
+import Layout from '../../components/Layout.astro';
+
+const { slug } = Astro.params;
+const title = `Post: ${slug || 'unknown'}`;
+---
+
+<Layout title={title}>
+  <article>
+    <h1>Dynamic Route Test</h1>
+    <p>Current slug: {slug}</p>
+    <p>This page tests dynamic route handling.</p>
+    
+    <div>
+      <h2>Dynamic Routes Status</h2>
+      <ul>
+        <li>Route pattern: /post/[slug].astro</li>
+        <li>Received slug: {slug}</li>
+        <li>Astro.params: {JSON.stringify(Astro.params)}</li>
+      </ul>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  article {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+</style>

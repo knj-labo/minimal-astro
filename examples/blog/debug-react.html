@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Counter Debug</title>
+</head>
+<body>
+  <h1>React Counter Debug Test</h1>
+  
+  <div id="test-counter"></div>
+  
+  <script type="module">
+    async function testReactCounter() {
+      console.log('Starting React counter test...');
+      
+      try {
+        // Test importing React
+        console.log('Importing React...');
+        const React = await import('react');
+        console.log('React imported:', React);
+        
+        // Test importing ReactDOM
+        console.log('Importing ReactDOM...');
+        const ReactDOM = await import('react-dom/client');
+        console.log('ReactDOM imported:', ReactDOM);
+        
+        // Test importing the Counter component
+        console.log('Importing Counter component...');
+        const CounterModule = await import('/src/components/Counter.jsx');
+        console.log('Counter module:', CounterModule);
+        
+        // Create and render the component
+        const container = document.getElementById('test-counter');
+        const root = ReactDOM.createRoot(container);
+        const Counter = CounterModule.default || CounterModule;
+        
+        console.log('Creating React element...');
+        const element = React.createElement(Counter, {});
+        
+        console.log('Rendering component...');
+        root.render(element);
+        
+        console.log('Successfully rendered React counter!');
+      } catch (error) {
+        console.error('React counter test failed:', error);
+        console.error('Error stack:', error.stack);
+      }
+    }
+    
+    // Run test when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', testReactCounter);
+    } else {
+      testReactCounter();
+    }
+  </script>
+</body>
+</html>

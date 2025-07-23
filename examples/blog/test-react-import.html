@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test React Import</title>
+</head>
+<body>
+  <h1>Test React Import</h1>
+  <div id="root"></div>
+  
+  <script type="module">
+    // Test different ways of importing React
+    async function testImports() {
+      try {
+        console.log('Method 1: Direct import');
+        const React1 = await import('/node_modules/.vite/deps/react.js?v=daf6fad3');
+        console.log('React1:', React1);
+        
+        console.log('\nMethod 2: Bare specifier');
+        const React2 = await import('react');
+        console.log('React2:', React2);
+        
+        console.log('\nMethod 3: Check default export');
+        console.log('React2.default:', React2.default);
+        console.log('React2.createElement:', React2.createElement);
+        
+        console.log('\nTesting ReactDOM import...');
+        const ReactDOM = await import('react-dom/client');
+        console.log('ReactDOM:', ReactDOM);
+        console.log('ReactDOM.createRoot:', ReactDOM.createRoot);
+        
+      } catch (error) {
+        console.error('Import test failed:', error);
+      }
+    }
+    
+    testImports();
+  </script>
+</body>
+</html>

@@ -485,10 +485,15 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`    `);
     parts.push(`    try {`);
     parts.push(`    if (type === 'react') {`);
+    parts.push(`      console.log('Hydrating React component...');`);
     parts.push(`      const React = await import('react');`);
+    parts.push(`      console.log('React loaded:', React);`);
     parts.push(`      const ReactDOM = await import('react-dom/client');`);
+    parts.push(`      console.log('ReactDOM loaded:', ReactDOM);`);
     parts.push(`      const root = ReactDOM.createRoot(island);`);
-    parts.push(`      root.render(React.createElement(Component.default || Component, props));`);
+    parts.push(`      const ReactComponent = Component.default || Component;`);
+    parts.push(`      console.log('Creating element with component:', ReactComponent, 'props:', props);`);
+    parts.push(`      root.render(React.createElement(ReactComponent, props));`);
     parts.push(`    } else if (type === 'vue') {`);
     parts.push(`      const { createApp } = await import('vue');`);
     parts.push(`      if (directive === 'only') island.innerHTML = '';`);
