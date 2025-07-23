@@ -232,6 +232,31 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
   if (peek(state) === '<') {
     let currentState = advance(state);
 
+    // Check for DOCTYPE declaration
+    if (peekSequence(state, '<!DOCTYPE')) {
+      // Consume the entire DOCTYPE declaration as text
+      const [newState, doctypeContent] = consumeWhile(state, (c) => c !== '>' && c !== '\0');
+      currentState = newState;
+      
+      // Consume the closing '>'
+      if (peek(currentState) === '>') {
+        currentState = advance(currentState);
+      }
+      
+      // Return the entire DOCTYPE as a text token
+      return [
+        currentState,
+        {
+          type: TokenType.Text,
+          value: state.source.slice(state.position, currentState.position),
+          loc: {
+            start,
+            end: getCurrentPosition(currentState),
+          },
+        },
+      ];
+    }
+
     // Check for closing tag
     if (peek(currentState) === '/') {
       currentState = advance(currentState);

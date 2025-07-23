@@ -86,12 +86,12 @@ export interface SvelteHydrationData {
 /**
  * Renders a Svelte component to HTML string with optional hydration data
  */
-export function renderSvelteComponent(
+export async function renderSvelteComponent(
   componentName: string,
   SvelteComponent: any,
   props: Record<string, unknown> = {},
   options: SvelteSSROptions = {}
-): SvelteSSRResult {
+): Promise<SvelteSSRResult> {
   const logger = createContextualLogger({ module: 'svelte-ssr' });
 
   try {
@@ -109,16 +109,37 @@ export function renderSvelteComponent(
     let html: string;
     let css: string | undefined;
 
-    // Check if this is a real Svelte component with render method
-    if (SvelteComponent && typeof SvelteComponent.render === 'function') {
-      // Real Svelte SSR
-      const result = SvelteComponent.render(props);
-      html = result.html;
-      css = result.css?.code;
-    } else {
-      // Fallback for when Svelte isn't available or component isn't compiled
+    // Try to use Svelte's SSR if available
+    try {
+      // Filter out client directives from props
+      const componentProps = Object.entries(props).reduce((acc, [key, value]) => {
+        if (!key.startsWith('client:')) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, unknown>);
+      
+      // Check if this is a real Svelte component with render method
+      if (SvelteComponent && typeof SvelteComponent.render === 'function') {
+        // Real Svelte SSR - Svelte components compiled for SSR have a render method
+        const result = SvelteComponent.render(componentProps);
+        html = result.html;
+        css = result.css?.code;
+      } else if (SvelteComponent && SvelteComponent.default && typeof SvelteComponent.default.render === 'function') {
+        // Handle default export
+        const result = SvelteComponent.default.render(componentProps);
+        html = result.html;
+        css = result.css?.code;
+      } else {
+        throw new Error('Not a valid Svelte SSR component');
+      }
+    } catch (svelteError) {
+      // Fallback to simplified rendering if Svelte SSR not available
+      logger.debug(`Svelte SSR not available, using fallback for ${componentName}`, svelteError);
+      
       const componentTag = componentName.toLowerCase().replace(/([A-Z])/g, '-$1');
       const propsString = Object.entries(props)
+        .filter(([key]) => !key.startsWith('client:'))
         .map(([key, value]) => {
           if (typeof value === 'string') {
             return `${key}="${escapeHtml(value)}"`;
@@ -163,10 +184,10 @@ export function renderSvelteComponent(
 /**
  * Renders a Svelte component from AST node
  */
-export function renderSvelteComponentFromNode(
+export async function renderSvelteComponentFromNode(
   node: ComponentNode,
   options: SvelteSSROptions = {}
-): SvelteSSRResult {
+): Promise<SvelteSSRResult> {
   const { components = new Map() } = options;
   const componentName = node.tag;
 
@@ -266,7 +287,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Render a component by name
      */
-    render(componentName: string, props: Record<string, unknown> = {}): SvelteSSRResult {
+    async render(componentName: string, props: Record<string, unknown> = {}): Promise<SvelteSSRResult> {
       const Component = options.components?.get(componentName);
       if (!Component) {
         return {
@@ -281,7 +302,7 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Render from AST node
      */
-    renderNode(node: ComponentNode): SvelteSSRResult {
+    async renderNode(node: ComponentNode): Promise<SvelteSSRResult> {
       return renderSvelteComponentFromNode(node, options);
     },
 

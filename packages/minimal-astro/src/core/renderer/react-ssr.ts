@@ -173,19 +173,27 @@ export function renderReactComponent(
   const logger = createContextualLogger({ module: 'react-ssr' });
 
   try {
+    // Filter out client directives from props
+    const componentProps = Object.entries(props).reduce((acc, [key, value]) => {
+      if (!key.startsWith('client:')) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, unknown>);
+
     // Generate hydration data if requested
     let hydrationData: HydrationData | undefined;
     if (options.generateHydrationData) {
       hydrationData = {
         id: generateComponentId(componentName),
         component: componentName,
-        props,
+        props: componentProps, // Use filtered props
         directive: extractClientDirective(props),
       };
     }
 
-    // Create the component element
-    const element = createHydrationWrapper(componentExport, props, hydrationData);
+    // Create the component element with filtered props
+    const element = createHydrationWrapper(componentExport, componentProps, hydrationData);
 
     // Wrap in error boundary for SSR safety
     const wrappedElement = React.createElement(SSRErrorBoundary, { componentName, children: element });

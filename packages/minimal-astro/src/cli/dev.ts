@@ -27,6 +27,7 @@ export async function dev(options: DevOptions) {
     server: {
       port: 3000,
       open: true,
+      middlewareMode: false, // We're running a full server, not middleware-only mode
     },
     optimizeDeps: {
       include: ['react', 'react-dom', 'vue', 'svelte'],

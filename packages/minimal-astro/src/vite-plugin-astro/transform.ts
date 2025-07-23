@@ -94,6 +94,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   // Generate the module
   const parts: string[] = [];
   const frontmatterImports: string[] = [];
+  const componentImports: Map<string, string> = new Map(); // component name -> import path
   let frontmatterCode = '';
   let getStaticPathsCode = '';
 
@@ -109,6 +110,11 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
       lines.forEach(line => {
         if (line.trim().startsWith('import')) {
           frontmatterImports.push(line);
+          // Extract component imports
+          const componentMatch = line.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
+          if (componentMatch && (componentMatch[2].endsWith('.astro') || componentMatch[2].endsWith('.jsx') || componentMatch[2].endsWith('.vue') || componentMatch[2].endsWith('.svelte'))) {
+            componentImports.set(componentMatch[1], componentMatch[2]);
+          }
         } else {
           frontmatterCode += line + '\n';
         }
@@ -118,6 +124,11 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
       lines.forEach(line => {
         if (line.trim().startsWith('import')) {
           frontmatterImports.push(line);
+          // Extract component imports
+          const componentMatch = line.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
+          if (componentMatch && (componentMatch[2].endsWith('.astro') || componentMatch[2].endsWith('.jsx') || componentMatch[2].endsWith('.vue') || componentMatch[2].endsWith('.svelte'))) {
+            componentImports.set(componentMatch[1], componentMatch[2]);
+          }
         } else {
           frontmatterCode += line + '\n';
         }
@@ -130,6 +141,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   
   // Import buildHtml at the top
   parts.push(`import { buildHtml } from 'minimal-astro/core/html-builder';`);
+  parts.push(`import { renderUniversalComponent } from 'minimal-astro/core/renderer/universal-ssr';`);
 
   // Add frontmatter imports
   if (frontmatterImports.length > 0) {
@@ -138,24 +150,48 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(...frontmatterImports);
   }
 
-  // Import React/Preact if needed
-  if (framework === 'react' && hasClientDirectives(ast)) {
-    parts.push(`import React from 'react';`);
-    parts.push(`import { hydrate } from '@minimal-astro/runtime';`);
-  }
+  // Track component paths for client-side hydration
+  const componentPaths: Record<string, string> = {};
+  frontmatterImports.forEach(imp => {
+    const match = imp.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
+    if (match) {
+      const [, name, path] = match;
+      // Convert relative paths for Vite client-side imports
+      if (path.startsWith('.')) {
+        // Find the project root (where blog example is)
+        const projectRoot = filename.split('/examples/blog/')[0] + '/examples/blog';
+        const fileDir = filename.substring(projectRoot.length).substring(0, filename.substring(projectRoot.length).lastIndexOf('/'));
+        
+        // Resolve the relative path
+        let resolved = path;
+        if (path.startsWith('../')) {
+          // Go up one directory from /src/pages to /src
+          resolved = '/src/' + path.substring(3);
+        } else if (path.startsWith('./')) {
+          resolved = fileDir + '/' + path.substring(2);
+        }
+        
+        componentPaths[name] = resolved;
+      } else {
+        componentPaths[name] = path;
+      }
+    }
+  });
 
   // Create the render function
   parts.push('');
   parts.push('// Component render function');
   parts.push('export async function render(props = {}) {');
-  parts.push('  // Inject Astro global');
-  parts.push('  const Astro = {');
-  parts.push('    props,');
+  parts.push('  // Extract Astro from props or create default');
+  parts.push('  const Astro = props.Astro || {');
+  parts.push('    props: props,');
   parts.push('    request: {},');
   parts.push('    params: {},');
   parts.push('    url: new URL("http://localhost:3000/"),');
   parts.push('    slots: {}');
   parts.push('  };');
+  parts.push('  // Ensure props are accessible via Astro.props');
+  parts.push('  if (!Astro.props) Astro.props = props;');
 
   // Add frontmatter code inside render function so it has access to Astro
   if (frontmatterCode) {
@@ -198,8 +234,30 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     // Generate dynamic HTML at runtime
     parts.push('  // Build HTML dynamically with Astro context');
     parts.push('  try {');
-    parts.push(`    // Process AST to replace expressions with their evaluated values`);
-    parts.push(`    function processAstExpressions(node, context) {`);
+    
+    // Add component registry
+    parts.push(`    // Component registry for rendering`);
+    parts.push(`    const components = {};`);
+    parts.push(`    const componentTypes = {};`);
+    
+    // Register imported components with their types
+    for (const [name, path] of componentImports) {
+      parts.push(`    components['${name}'] = ${name};`);
+      // Detect component type from path
+      if (path.endsWith('.jsx') || path.endsWith('.tsx')) {
+        parts.push(`    componentTypes['${name}'] = 'react';`);
+      } else if (path.endsWith('.vue')) {
+        parts.push(`    componentTypes['${name}'] = 'vue';`);
+      } else if (path.endsWith('.svelte')) {
+        parts.push(`    componentTypes['${name}'] = 'svelte';`);
+      } else {
+        parts.push(`    componentTypes['${name}'] = 'astro';`);
+      }
+    }
+    
+    parts.push(`    `);
+    parts.push(`    // Process AST to replace expressions and render components`);
+    parts.push(`    async function processAstNode(node, context) {`);
     parts.push(`      if (node.type === 'Expression') {`);
     parts.push(`        try {`);
     parts.push(`          // Create a function that has access to context variables`);
@@ -207,14 +265,111 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`          const value = func(...Object.values(context));`);
     parts.push(`          return { type: 'Text', value: String(value) };`);
     parts.push(`        } catch (e) {`);
-    parts.push(``);
     parts.push(`          return { type: 'Text', value: '' };`);
     parts.push(`        }`);
     parts.push(`      }`);
     parts.push(`      `);
+    parts.push(`      // Handle Component nodes`);
+    parts.push(`      if (node.type === 'Component') {`);
+    parts.push(`        const Component = components[node.tag];`);
+    parts.push(`        const componentType = componentTypes[node.tag] || 'astro';`);
+    parts.push(`        `);
+    parts.push(`        if (Component) {`);
+    parts.push(`          // Process component attributes`);
+    parts.push(`          const props = {};`);
+    parts.push(`          let hasClientDirective = false;`);
+    parts.push(`          `);
+    parts.push(`          if (node.attrs) {`);
+    parts.push(`            for (const attr of node.attrs) {`);
+    parts.push(`              let value = attr.value;`);
+    parts.push(`              // Check for client directives`);
+    parts.push(`              if (attr.name.startsWith('client:')) {`);
+    parts.push(`                hasClientDirective = true;`);
+    parts.push(`                props[attr.name] = value || true;`);
+    parts.push(`                continue;`);
+    parts.push(`              }`);
+    parts.push(`              // Evaluate expression attributes`);
+    parts.push(`              if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {`);
+    parts.push(`                try {`);
+    parts.push(`                  const exprCode = value.slice(1, -1);`);
+    parts.push(`                  const func = new Function(...Object.keys(context), 'return ' + exprCode);`);
+    parts.push(`                  value = func(...Object.values(context));`);
+    parts.push(`                } catch (e) {`);
+    parts.push(`                  // Keep original value on error`);
+    parts.push(`                }`);
+    parts.push(`              }`);
+    parts.push(`              props[attr.name] = value;`);
+    parts.push(`            }`);
+    parts.push(`          }`);
+    parts.push(`          `);
+    parts.push(`          // Handle different component types`);
+    parts.push(`          if (componentType === 'astro' && typeof Component.render === 'function') {`);
+    parts.push(`            // Astro component - handle slots`);
+    parts.push(`            const slotFunction = async () => {`);
+    parts.push(`              if (!node.children || node.children.length === 0) return '';`);
+    parts.push(`              `);
+    parts.push(`              const childContext = { ...context };`);
+    parts.push(`              const processedChildren = [];`);
+    parts.push(`              `);
+    parts.push(`              for (const child of node.children) {`);
+    parts.push(`                const processed = await processAstNode(child, childContext);`);
+    parts.push(`                if (processed.type === 'Text' && !processed.value.trim()) continue;`);
+    parts.push(`                processedChildren.push(processed);`);
+    parts.push(`              }`);
+    parts.push(`              `);
+    parts.push(`              const html = buildHtml({ type: 'Fragment', children: processedChildren }, {`);
+    parts.push(`                prettyPrint: false,`);
+    parts.push(`                evaluateExpressions: false,`);
+    parts.push(`                escapeHtml: false`);
+    parts.push(`              });`);
+    parts.push(`              return html;`);
+    parts.push(`            };`);
+    parts.push(`            `);
+    parts.push(`            const componentAstro = {`);
+    parts.push(`              ...context.Astro,`);
+    parts.push(`              props: props,`);
+    parts.push(`              slots: { default: slotFunction }`);
+    parts.push(`            };`);
+    parts.push(`            `);
+    parts.push(`            const result = await Component.render({ ...props, Astro: componentAstro });`);
+    parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
+    parts.push(`          } else {`);
+    parts.push(`            // Framework component (React/Vue/Svelte)`);
+    parts.push(`            const registries = {`);
+    parts.push(`              react: new Map([[node.tag, Component]]),`);
+    parts.push(`              vue: new Map([[node.tag, Component]]),`);
+    parts.push(`              svelte: new Map([[node.tag, Component]])`);
+    parts.push(`            };`);
+    parts.push(`            `);
+    parts.push(`            const result = await renderUniversalComponent(node.tag, props, componentType, {`);
+    parts.push(`              reactComponents: componentType === 'react' ? registries.react : undefined,`);
+    parts.push(`              vueComponents: componentType === 'vue' ? registries.vue : undefined,`);
+    parts.push(`              svelteComponents: componentType === 'svelte' ? registries.svelte : undefined,`);
+    parts.push(`              generateHydrationData: hasClientDirective,`);
+    parts.push(`              dev: ${dev}`);
+    parts.push(`            });`);
+    parts.push(`            `);
+    parts.push(`            return { type: 'RawHTML', value: result.html };`);
+    parts.push(`          }`);
+    parts.push(`        }`);
+    parts.push(`        // If component not found, return comment`);
+    parts.push(`        return { type: 'Text', value: '<!-- Component: ' + node.tag + ' -->' };`);
+    parts.push(`      }`);
+    parts.push(`      `);
+    parts.push(`      // Handle slot elements`);
+    parts.push(`      if (node.type === 'Element' && node.tag === 'slot') {`);
+    parts.push(`        const slotName = node.attrs?.find(attr => attr.name === 'name')?.value || 'default';`);
+    parts.push(`        if (context.Astro && context.Astro.slots && typeof context.Astro.slots[slotName] === 'function') {`);
+    parts.push(`          const slotContent = await context.Astro.slots[slotName]();`);
+    parts.push(`          return { type: 'RawHTML', value: slotContent };`);
+    parts.push(`        }`);
+    parts.push(`        // Return empty if no slot content`);
+    parts.push(`        return { type: 'Text', value: '' };`);
+    parts.push(`      }`);
+    parts.push(`      `);
     parts.push(`      // Process element/component attributes`);
-    parts.push(`      if ((node.type === 'Element' || node.type === 'Component') && node.attrs) {`);
-    parts.push(`        node.attrs = node.attrs.map(attr => {`);
+    parts.push(`      if (node.type === 'Element' && node.attrs) {`);
+    parts.push(`        node.attrs = await Promise.all(node.attrs.map(async attr => {`);
     parts.push(`          // Check if attribute value contains an expression`);
     parts.push(`          if (typeof attr.value === 'string' && attr.value.startsWith('{') && attr.value.endsWith('}')) {`);
     parts.push(`            try {`);
@@ -223,17 +378,16 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`              const value = func(...Object.values(context));`);
     parts.push(`              return { ...attr, value: String(value) };`);
     parts.push(`            } catch (e) {`);
-    parts.push(``);
     parts.push(`              return attr;`);
     parts.push(`            }`);
     parts.push(`          }`);
     parts.push(`          return attr;`);
-    parts.push(`        });`);
+    parts.push(`        }));`);
     parts.push(`      }`);
     parts.push(`      `);
     parts.push(`      // Process children recursively`);
     parts.push(`      if (node.children) {`);
-    parts.push(`        node.children = node.children.map(child => processAstExpressions(child, context));`);
+    parts.push(`        node.children = await Promise.all(node.children.map(child => processAstNode(child, context)));`);
     parts.push(`      }`);
     parts.push(`      `);
     parts.push(`      return node;`);
@@ -244,11 +398,34 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     
     // Add frontmatter variables to context
     if (frontmatter) {
+      // Match regular variable declarations
       const varMatches = frontmatter.code.match(/(?:const|let|var)\s+(\w+)/g);
       if (varMatches) {
         varMatches.forEach(match => {
           const varName = match.replace(/(?:const|let|var)\s+/, '');
           parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
+        });
+      }
+      
+      // Match destructured variables
+      const destructureMatches = frontmatter.code.match(/(?:const|let|var)\s*\{([^}]+)\}\s*=/g);
+      if (destructureMatches) {
+        destructureMatches.forEach(match => {
+          // Extract variable names from destructuring
+          const varsSection = match.match(/\{([^}]+)\}/)?.[1];
+          if (varsSection) {
+            // Split by comma and extract variable names (handling renaming and defaults)
+            const vars = varsSection.split(',').map(v => {
+              // Handle: varName, varName: renamed, varName = default
+              const trimmed = v.trim();
+              const varName = trimmed.split(/[:=]/)[0].trim();
+              return varName;
+            }).filter(v => v);
+            
+            vars.forEach(varName => {
+              parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
+            });
+          }
         });
       }
     }
@@ -257,12 +434,159 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`    `);
     parts.push(`    // Clone the template AST and process expressions`);
     parts.push(`    const processedAst = JSON.parse(JSON.stringify(${JSON.stringify(templateAst)}));`);
-    parts.push(`    processAstExpressions(processedAst, evalContext);`);
+    parts.push(`    // Pass Astro context directly to processAstNode`);
+    parts.push(`    const fullContext = { ...evalContext, Astro };`);
+    parts.push(`    await processAstNode(processedAst, fullContext);`);
     parts.push(`    `);
-    parts.push(`    const html = buildHtml(processedAst, {`);
+    parts.push(`    let html = buildHtml(processedAst, {`);
     parts.push(`      prettyPrint: ${prettyPrint},`);
-    parts.push(`      evaluateExpressions: false`);
+    parts.push(`      evaluateExpressions: false,`);
+    parts.push(`      escapeHtml: false`);
     parts.push(`    });`);
+    parts.push(`    `);
+    parts.push(`    // Add hydration script if there are any client components`);
+    parts.push(`    const hasClientComponents = Object.keys(componentTypes).some(name => {`);
+    parts.push(`      return componentTypes[name] !== 'astro';`);
+    parts.push(`    });`);
+    parts.push(`    `);
+    parts.push(`    `);
+    parts.push(`    if (hasClientComponents && html.includes('astro-island')) {`);
+    parts.push(`      const hydrationScript = \`<script type="module">`);
+    parts.push(`// Simple hydration script for minimal-astro`);
+    parts.push(`(function() {`);
+    parts.push(`  const componentModules = {};`);
+    parts.push(`  const componentTypes = \${JSON.stringify(componentTypes)};`);
+    parts.push(`  const componentPaths = \${JSON.stringify(${JSON.stringify(componentPaths)})};`);
+    parts.push(`  `);
+    parts.push(`  async function hydrateComponent(island) {`);
+    parts.push(`    const componentName = island.getAttribute('component-export');`);
+    parts.push(`    const propsStr = island.getAttribute('component-props');`);
+    parts.push(`    const directive = island.getAttribute('client-directive');`);
+    parts.push(`    `);
+    parts.push(`    if (!componentName || !directive) return;`);
+    parts.push(`    `);
+    parts.push(`    console.log('Hydrating component:', componentName, 'with directive:', directive);`);
+    parts.push(`    `);
+    parts.push(`    let props = {};`);
+    parts.push(`    try {`);
+    parts.push(`      props = propsStr ? JSON.parse(propsStr) : {};`);
+    parts.push(`    } catch (e) {`);
+    parts.push(`      console.error('Failed to parse props:', e);`);
+    parts.push(`    }`);
+    parts.push(`    `);
+    parts.push(`    const Component = componentModules[componentName];`);
+    parts.push(`    if (!Component) {`);
+    parts.push(`      console.error('Component not loaded:', componentName);`);
+    parts.push(`      return;`);
+    parts.push(`    }`);
+    parts.push(`    `);
+    parts.push(`    const type = componentTypes[componentName];`);
+    parts.push(`    console.log('Component type:', type);`);
+    parts.push(`    `);
+    parts.push(`    try {`);
+    parts.push(`    if (type === 'react') {`);
+    parts.push(`      console.log('Hydrating React component...');`);
+    parts.push(`      const React = await import('react');`);
+    parts.push(`      console.log('React loaded:', React);`);
+    parts.push(`      const ReactDOM = await import('react-dom/client');`);
+    parts.push(`      console.log('ReactDOM loaded:', ReactDOM);`);
+    parts.push(`      const root = ReactDOM.createRoot(island);`);
+    parts.push(`      const ReactComponent = Component.default || Component;`);
+    parts.push(`      console.log('Creating element with component:', ReactComponent, 'props:', props);`);
+    parts.push(`      root.render(React.createElement(ReactComponent, props));`);
+    parts.push(`    } else if (type === 'vue') {`);
+    parts.push(`      const { createApp } = await import('vue');`);
+    parts.push(`      if (directive === 'only') island.innerHTML = '';`);
+    parts.push(`      const app = createApp(Component.default || Component, props);`);
+    parts.push(`      app.mount(island);`);
+    parts.push(`    } else if (type === 'svelte') {`);
+    parts.push(`      if (directive === 'only') island.innerHTML = '';`);
+    parts.push(`      new (Component.default || Component)({`);
+    parts.push(`        target: island,`);
+    parts.push(`        props,`);
+    parts.push(`        hydrate: directive !== 'only'`);
+    parts.push(`      });`);
+    parts.push(`    }`);
+    parts.push(`    } catch (e) {`);
+    parts.push(`      console.error('Failed to hydrate component:', componentName, e);`);
+    parts.push(`    }`);
+    parts.push(`  }`);
+    parts.push(`  `);
+    parts.push(`  // Hydration strategies`);
+    parts.push(`  async function setupHydration() {`);
+    parts.push(`    console.log('Setting up hydration with paths:', componentPaths);`);
+    parts.push(`    // Load components first`);
+    parts.push(`    const imports = [];`);
+    parts.push(`    for (const [name, path] of Object.entries(componentPaths)) {`);
+    parts.push(`      if (componentTypes[name] && componentTypes[name] !== 'astro') {`);
+    parts.push(`        console.log('Loading component:', name, 'from:', path);`);
+    parts.push(`        imports.push(`);
+    parts.push(`          import(/* @vite-ignore */ path)`);
+    parts.push(`            .then(m => {`);
+    parts.push(`              componentModules[name] = m;`);
+    parts.push(`              console.log('Loaded component:', name, m);`);
+    parts.push(`              return m;`);
+    parts.push(`            })`);
+    parts.push(`            .catch(e => {`);
+    parts.push(`              console.error('Failed to load component:', name, 'from path:', path, e);`);
+    parts.push(`              // Try with .default export`);
+    parts.push(`              return import(/* @vite-ignore */ path + '?t=' + Date.now());`);
+    parts.push(`            })`);
+    parts.push(`        );`);
+    parts.push(`      }`);
+    parts.push(`    }`);
+    parts.push(`    await Promise.all(imports);`);
+    parts.push(`    console.log('All components loaded:', componentModules);`);
+    parts.push(`    `);
+    parts.push(`    // client:load`);
+    parts.push(`    document.querySelectorAll('astro-island[client-directive="load"]').forEach(hydrateComponent);`);
+    parts.push(`    `);
+    parts.push(`    // client:only`);
+    parts.push(`    document.querySelectorAll('astro-island[client-directive="only"]').forEach(hydrateComponent);`);
+    parts.push(`    `);
+    parts.push(`    // client:idle`);
+    parts.push(`    const idleIslands = document.querySelectorAll('astro-island[client-directive="idle"]');`);
+    parts.push(`    if (idleIslands.length > 0) {`);
+    parts.push(`      if ('requestIdleCallback' in window) {`);
+    parts.push(`        idleIslands.forEach(island => requestIdleCallback(() => hydrateComponent(island)));`);
+    parts.push(`      } else {`);
+    parts.push(`        setTimeout(() => idleIslands.forEach(hydrateComponent), 200);`);
+    parts.push(`      }`);
+    parts.push(`    }`);
+    parts.push(`    `);
+    parts.push(`    // client:visible`);
+    parts.push(`    const visibleIslands = document.querySelectorAll('astro-island[client-directive="visible"]');`);
+    parts.push(`    if (visibleIslands.length > 0 && 'IntersectionObserver' in window) {`);
+    parts.push(`      const observer = new IntersectionObserver((entries) => {`);
+    parts.push(`        entries.forEach(entry => {`);
+    parts.push(`          if (entry.isIntersecting) {`);
+    parts.push(`            hydrateComponent(entry.target);`);
+    parts.push(`            observer.unobserve(entry.target);`);
+    parts.push(`          }`);
+    parts.push(`        });`);
+    parts.push(`      });`);
+    parts.push(`      visibleIslands.forEach(island => observer.observe(island));`);
+    parts.push(`    } else {`);
+    parts.push(`      visibleIslands.forEach(hydrateComponent);`);
+    parts.push(`    }`);
+    parts.push(`  }`);
+    parts.push(`  `);
+    parts.push(`  if (document.readyState === 'loading') {`);
+    parts.push(`    document.addEventListener('DOMContentLoaded', setupHydration);`);
+    parts.push(`  } else {`);
+    parts.push(`    setupHydration();`);
+    parts.push(`  }`);
+    parts.push(`})();`);
+    parts.push(`</script>\`;`);
+    parts.push(`      `);
+    parts.push(`      // Inject script before closing body tag`);
+    parts.push(`      if (html.includes('</body>')) {`);
+    parts.push(`        html = html.replace('</body>', hydrationScript + '</body>');`);
+    parts.push(`      } else {`);
+    parts.push(`        html += hydrationScript;`);
+    parts.push(`      }`);
+    parts.push(`    }`);
+    parts.push(`    `);
     parts.push('    return { html };');
     parts.push('  } catch (error) {');
     parts.push('    console.error("Failed to build HTML:", error);');

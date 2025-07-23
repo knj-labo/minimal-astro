@@ -251,105 +251,132 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
     // Configure dev server to handle page requests
     configureServer(server) {
-      // Return a function to run middleware AFTER Vite's internal middlewares
-      return () => {
-        console.log('[PLUGIN] Post-hook function called, adding middleware');
-        server.middlewares.use(async (req, res, next) => {
-          console.log(`[MIDDLEWARE] Request: ${req.method} ${req.url}`);
-          // Only handle GET requests to pages (not assets)
-          if (req.method !== 'GET' || !req.url) {
-            return next();
+      // Define our middleware handler
+      const astroDevHandler = async (req: any, res: any, next: any) => {
+        const url = req.url ?? '/';
+        
+        // Only handle GET requests to pages (not assets)
+        if (req.method !== 'GET') {
+          return next();
+        }
+
+        // Skip Vite special requests
+        if (url.startsWith('/@')) {
+          return next();
+        }
+        
+        // Skip asset requests (files with extensions, except .html)
+        const hasExtension = url.includes('.') && !url.endsWith('.html');
+        if (hasExtension) {
+          return next();
+        }
+        
+        // Simple test endpoint
+        if (url === '/ping') {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end('pong from minimal-astro');
+          return; // Never call next() after sending response
+        }
+
+        try {
+          // Set status early to prevent Vite's 404 from taking over
+          res.statusCode = 200;
+          
+          // Map URL to page file path
+          let pagePath = url === '/' ? '/index' : url;
+          pagePath = pagePath.replace(/\/$/, ''); // Remove trailing slash
+          
+          // Try to find the corresponding .astro file
+          const possiblePaths = [
+            `/src/pages${pagePath}.astro`,
+            `/src/pages${pagePath}/index.astro`
+          ];
+
+          let astroModule = null;
+          let resolvedPath = '';
+
+          for (const path of possiblePaths) {
+            try {
+              resolvedPath = server.config.root + path;
+              
+              // Force the file through Vite's transform pipeline first
+              const module = server.moduleGraph.getModuleById(resolvedPath);
+              if (!module || !module.ssrModule) {
+                // Load the module which will trigger our transform
+                astroModule = await server.ssrLoadModule(resolvedPath);
+              } else {
+                astroModule = module.ssrModule;
+              }
+              
+              break;
+            } catch (e) {
+              // Try next path
+            }
           }
 
-          // Skip if this is an asset request or Vite special requests
-          if (req.url.includes('.') && !req.url.endsWith('.html') || req.url.startsWith('/@')) {
-            return next();
-          }
-
-          try {
-            // Map URL to page file path
-            let pagePath = req.url === '/' ? '/index' : req.url;
-            pagePath = pagePath.replace(/\/$/, ''); // Remove trailing slash
-            
-            console.log(`[MIDDLEWARE] Looking for page: ${pagePath}`);
-            
-            // Try to find the corresponding .astro file
-            const possiblePaths = [
-              `/src/pages${pagePath}.astro`,
-              `/src/pages${pagePath}/index.astro`
-            ];
-            console.log(`[MIDDLEWARE] Possible paths:`, possiblePaths);
-
-            let astroModule = null;
-            let resolvedPath = '';
-
-            for (const path of possiblePaths) {
+          // If no exact match, check for dynamic routes
+          let params = {};
+          if (!astroModule) {
+            // Simple dynamic route matching for [slug].astro
+            const urlParts = url.split('/').filter(Boolean);
+            if (urlParts.length > 0) {
+              const basePath = urlParts.slice(0, -1).join('/');
+              const dynamicPath = `/src/pages/${basePath ? basePath + '/' : ''}[slug].astro`;
+              
+              logger.debug(`Checking dynamic route: ${dynamicPath} for URL: ${url}`);
+              
               try {
-                resolvedPath = server.config.root + path;
-                
-                // Force the file through Vite's transform pipeline first
-                const module = server.moduleGraph.getModuleById(resolvedPath);
-                if (!module || !module.ssrModule) {
-                  // Load the module which will trigger our transform
-                  astroModule = await server.ssrLoadModule(resolvedPath);
-                } else {
-                  astroModule = module.ssrModule;
-                }
-                
-                break;
+                resolvedPath = server.config.root + dynamicPath;
+                astroModule = await server.ssrLoadModule(resolvedPath);
+                // Extract the slug parameter
+                params = { slug: urlParts[urlParts.length - 1] };
+                logger.debug(`Dynamic route matched! Slug: ${params['slug']}`);
               } catch (e) {
-                // Try next path
+                logger.debug(`Dynamic route not found: ${e.message}`);
               }
             }
-
-            // If no exact match, check for dynamic routes
-            if (!astroModule) {
-              // Simple dynamic route matching for [slug].astro
-              const urlParts = req.url.split('/').filter(Boolean);
-              if (urlParts.length > 0) {
-                const basePath = urlParts.slice(0, -1).join('/');
-                const dynamicPath = `/src/pages/${basePath ? basePath + '/' : ''}[slug].astro`;
-                try {
-                  resolvedPath = server.config.root + dynamicPath;
-                  astroModule = await server.ssrLoadModule(resolvedPath);
-                } catch (e) {
-                  // Not found
-                }
-              }
-            }
-
-            if (!astroModule || !astroModule.render) {
-              console.log(`[MIDDLEWARE] No module found for ${req.url}`);
-              return next();
-            }
-            
-            console.log(`[MIDDLEWARE] Found module, rendering...`);
-            // Render the page
-            const result = await astroModule.render({
-              // Pass any props/params here
-              slug: req.url.split('/').pop() || undefined
-            });
-
-            // Send HTML response
-            console.log(`[MIDDLEWARE] Sending response, html length: ${result.html?.length}`);
-            console.log(`[MIDDLEWARE] Response already sent? ${res.headersSent}`);
-            
-            if (res.headersSent) {
-              console.log(`[MIDDLEWARE] Headers already sent, skipping response`);
-              return;
-            }
-            
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/html');
-            res.end(result.html);
-            console.log(`[MIDDLEWARE] Response sent!`);
-            return; // Ensure we don't call next()
-          } catch (error) {
-            logger.error('Error rendering page', error as Error, { url: req.url });
-            next(error);
           }
-        });
+
+          if (!astroModule || !astroModule.render) {
+            // Reset status code since we didn't find a page
+            res.statusCode = 404;
+            return next();
+          }
+          
+          // Create Astro object with proper params and request info
+          const Astro = {
+            props: {},
+            params,
+            request: {
+              url,
+              method: req.method,
+              headers: req.headers
+            },
+            url: new URL(url, `http://${req.headers.host || 'localhost:3000'}`),
+            slots: {}
+          };
+          
+          // Render the page with Astro context
+          const result = await astroModule.render({ Astro });
+
+          // Send HTML response
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.end(result.html);
+          return; // Never call next() after sending response
+        } catch (error) {
+          logger.error('Error rendering page', error as Error, { url });
+          next(error);
+        }
       };
+      
+      // Force our handler to be FIRST in the middleware stack
+      server.middlewares.stack.unshift({
+        route: '',
+        handle: astroDevHandler
+      });
+      
+      logger.info('Minimal Astro dev middleware registered at front of stack');
     },
 
     // Handle .astro files
