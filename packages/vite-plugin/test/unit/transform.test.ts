@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test'
-import { transformAstroToJs } from '../../src/transform'
-import type { FragmentNode } from '@minimal-astro/types/ast'
+import { describe, expect, test } from 'bun:test';
+import type { FragmentNode } from '../../../src/types/ast';
+import { transformAstroToJs } from '../../../src/vite-plugin-astro/transform';
 
 describe('transformAstroToJs', () => {
   test('transforms empty AST', () => {
@@ -10,15 +10,15 @@ describe('transformAstroToJs', () => {
       start: 0,
       end: 0,
       children: [],
-    }
+    };
 
     const result = transformAstroToJs(ast, {
       filename: 'test.astro',
-    })
+    });
 
-    expect(result.code).toContain('export function render')
-    expect(result.code).toContain('return { html }')
-  })
+    expect(result.code).toContain('export function render');
+    expect(result.code).toContain('return { html }');
+  });
 
   test('includes source map comment in dev mode', () => {
     const ast: FragmentNode = {
@@ -27,16 +27,16 @@ describe('transformAstroToJs', () => {
       start: 0,
       end: 0,
       children: [],
-    }
+    };
 
     const result = transformAstroToJs(ast, {
       filename: 'test.astro',
       dev: true,
       sourceMap: true,
-    })
+    });
 
-    expect(result.code).toContain('//# sourceMappingURL=')
-  })
+    expect(result.code).toContain('//# sourceMappingURL=');
+  });
 
   test('generates valid source map', () => {
     const ast: FragmentNode = {
@@ -45,19 +45,19 @@ describe('transformAstroToJs', () => {
       start: 0,
       end: 0,
       children: [],
-    }
+    };
 
     const result = transformAstroToJs(ast, {
       filename: 'test.astro',
       sourceMap: true,
-    })
+    });
 
-    expect(result.map).toBeDefined()
-    const mapObj = JSON.parse(result.map!)
-    expect(mapObj.version).toBe(3)
-    expect(mapObj.file).toBe('test.astro')
-    expect(mapObj.sources).toContain('test.astro')
-  })
+    expect(result.map).toBeDefined();
+    const mapObj = JSON.parse(result.map!);
+    expect(mapObj.version).toBe(3);
+    expect(mapObj.file).toBe('test.astro');
+    expect(mapObj.sources).toContain('test.astro');
+  });
 
   test('handles frontmatter', () => {
     const ast: FragmentNode = {
@@ -75,15 +75,15 @@ describe('transformAstroToJs', () => {
           code: 'const title = "Test"',
         },
       ],
-    }
+    };
 
     const result = transformAstroToJs(ast, {
       filename: 'test.astro',
-    })
+    });
 
-    expect(result.code).toContain('const title = "Test"')
-    expect(result.code).toContain('// Auto-generated from test.astro')
-  })
+    expect(result.code).toContain('const title = "Test"');
+    expect(result.code).toContain('// Auto-generated from test.astro');
+  });
 
   test('applies pretty print when enabled', () => {
     const ast: FragmentNode = {
@@ -92,21 +92,19 @@ describe('transformAstroToJs', () => {
       start: 0,
       end: 0,
       children: [],
-    }
+    };
 
     const pretty = transformAstroToJs(ast, {
       filename: 'test.astro',
       prettyPrint: true,
-    })
+    });
 
     const minified = transformAstroToJs(ast, {
       filename: 'test.astro',
       prettyPrint: false,
-    })
+    });
 
     // Pretty printed code should have more whitespace
-    expect(pretty.code.split('\n').length).toBeGreaterThan(
-      minified.code.split('\n').length
-    )
-  })
-})
+    expect(pretty.code.split('\n').length).toBeGreaterThan(minified.code.split('\n').length);
+  });
+});

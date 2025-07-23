@@ -37,8 +37,5 @@
     "bun-types": "latest",
     "typescript": "^5.4.0"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ]
+  "files": ["dist", "README.md"]
 }

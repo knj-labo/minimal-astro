@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "types": ["bun-types", "vite/client"]
+    "types": ["bun-types", "vite/client"],
+    "paths": {
+      "@minimal-astro/*": ["../*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]

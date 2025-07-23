@@ -1,11 +1,11 @@
-import { tokenize, TokenType } from '../../src/tokenizer';
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { TokenType, tokenize } from '../../src/tokenizer';
 
 describe('Tokenizer', () => {
   it('should tokenize simple html', () => {
     const input = '<h1>Hello</h1>';
     const tokens = tokenize(input);
-    expect(tokens.map(t => t.type)).toEqual([
+    expect(tokens.map((t) => t.type)).toEqual([
       TokenType.TagOpen,
       TokenType.TagClose,
       TokenType.Text,

@@ -18,12 +18,12 @@ module.exports = {
         'categories:accessibility': ['warn', { minScore: 0.9 }],
         'categories:best-practices': ['warn', { minScore: 0.9 }],
         'categories:seo': ['warn', { minScore: 0.9 }],
-        
+
         // Core Web Vitals
         'largest-contentful-paint': ['warn', { maxNumericValue: 2500 }],
         'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
         'total-blocking-time': ['warn', { maxNumericValue: 300 }],
-        
+
         // Resource optimization
         'uses-responsive-images': 'warn',
         'uses-optimized-images': 'warn',

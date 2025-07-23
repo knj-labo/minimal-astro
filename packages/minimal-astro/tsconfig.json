@@ -15,7 +15,19 @@
     "skipLibCheck": true,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "@minimal-astro/compiler": ["../compiler/src/index.js"],
+      "@minimal-astro/content": ["../content/src/index.js"],
+      "@minimal-astro/core": ["../core/src/index.js"],
+      "@minimal-astro/internal-helpers": ["../internal-helpers/src/index.js"],
+      "@minimal-astro/renderer-react": ["../renderer-react/src/index.js"],
+      "@minimal-astro/renderer-svelte": ["../renderer-svelte/src/index.js"],
+      "@minimal-astro/renderer-vue": ["../renderer-vue/src/index.js"],
+      "@minimal-astro/runtime": ["../runtime/src/index.js"],
+      "@minimal-astro/types": ["../types/src/index.js"],
+      "@minimal-astro/vite-plugin": ["../vite-plugin/src/index.js"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

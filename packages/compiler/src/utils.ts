@@ -39,10 +39,13 @@ export function safeExecute<T>(
     };
 
     // Log the error with more details for debugging
-    console.error(`[${options.operation}] Internal Error in ${options.filename ?? 'unknown file'}:`, {
-      error,
-      context: options.context,
-    });
+    console.error(
+      `[${options.operation}] Internal Error in ${options.filename ?? 'unknown file'}:`,
+      {
+        error,
+        context: options.context,
+      }
+    );
 
     // If the fallback value is an object with a diagnostics array, add the error
     if (

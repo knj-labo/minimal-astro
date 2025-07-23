@@ -3,42 +3,28 @@
  * Provides different log levels and environment-based filtering
  */
 
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-  SILENT = 4,
-}
+import {
+  type LogContext,
+  type LogEntry,
+  LogLevel,
+  type Logger,
+  type LoggerOptions,
+} from './types.js';
 
-export interface LogEntry {
-  level: LogLevel;
-  message: string;
-  timestamp: number;
-  context?: Record<string, unknown>;
-  error?: Error;
+function shouldLog(logLevel: LogLevel): boolean {
+  return logLevel >= currentLevel;
 }
-
-export interface LoggerOptions {
-  level?: LogLevel;
-  prefix?: string;
-  enableColors?: boolean;
-  enableTimestamp?: boolean;
-}
-
 /**
  * Create a logger instance with specified options
  */
-export function createLogger(options: LoggerOptions = {}) {
-  const {
-    level = getDefaultLogLevel(),
-    prefix = '[minimal-astro]',
-    enableColors = shouldEnableColors(),
-    enableTimestamp = false,
-  } = options;
+export function createLogger(options: LoggerOptions = {}): Logger {
+  let currentLevel = options.level ?? getDefaultLogLevel();
+  const prefix = options.prefix ?? '[minimal-astro]';
+  const enableColors = options.enableColors ?? shouldEnableColors();
+  const enableTimestamp = options.enableTimestamp ?? false;
 
   function shouldLog(logLevel: LogLevel): boolean {
-    return logLevel >= level;
+    return logLevel >= currentLevel;
   }
 
   function formatMessage(entry: LogEntry): string {
@@ -69,12 +55,7 @@ export function createLogger(options: LoggerOptions = {}) {
     return parts.join(' ');
   }
 
-  function log(
-    level: LogLevel,
-    message: string,
-    context?: Record<string, unknown>,
-    error?: Error
-  ): void {
+  function log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
     if (!shouldLog(level)) return;
 
     const entry: LogEntry = {
@@ -105,23 +86,19 @@ export function createLogger(options: LoggerOptions = {}) {
   }
 
   return {
-    debug(message: string, context?: Record<string, unknown>): void {
+    debug(message: string, context?: LogContext): void {
       log(LogLevel.DEBUG, message, context);
     },
 
-    info(message: string, context?: Record<string, unknown>): void {
+    info(message: string, context?: LogContext): void {
       log(LogLevel.INFO, message, context);
     },
 
-    warn(message: string, context?: Record<string, unknown>): void {
+    warn(message: string, context?: LogContext): void {
       log(LogLevel.WARN, message, context);
     },
 
-    error(
-      message: string,
-      errorOrContext?: Error | Record<string, unknown>,
-      context?: Record<string, unknown>
-    ): void {
+    error(message: string, errorOrContext?: Error | LogContext, context?: LogContext): void {
       if (errorOrContext instanceof Error) {
         log(LogLevel.ERROR, message, context, errorOrContext);
       } else {
@@ -129,13 +106,16 @@ export function createLogger(options: LoggerOptions = {}) {
       }
     },
 
-    setLevel(_newLevel: LogLevel): void {
-      // Note: This would require storing level in a mutable way
-      // For now, create a new logger if you need different levels
+    setLevel(newLevel: LogLevel): void {
+      currentLevel = newLevel;
     },
 
     getLevel(): LogLevel {
-      return level;
+      return currentLevel;
+    },
+
+    child(context: LogContext): Logger {
+      return createContextualLogger(context, { ...options, level: currentLevel });
     },
   };
 }
@@ -143,7 +123,7 @@ export function createLogger(options: LoggerOptions = {}) {
 /**
  * Default logger instance for convenience
  */
-export const logger = createLogger();
+export const logger: Logger = createLogger();
 
 /**
  * Get default log level from environment
@@ -197,10 +177,7 @@ function colorizeLevel(levelName: string, level: LogLevel): string {
 /**
  * Create a contextual logger with additional context
  */
-export function createContextualLogger(
-  baseContext: Record<string, unknown>,
-  options?: LoggerOptions
-) {
+export function createContextualLogger(baseContext: LogContext, options?: LoggerOptions): Logger {
   const baseLogger = createLogger(options);
 
   return {

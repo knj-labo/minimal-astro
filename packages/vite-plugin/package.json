@@ -24,6 +24,7 @@
   "dependencies": {
     "@minimal-astro/compiler": "workspace:*",
     "@minimal-astro/internal-helpers": "workspace:*",
+    "@minimal-astro/core": "workspace:*",
     "@minimal-astro/types": "workspace:*",
     "vite": "^5.0.0"
   },
@@ -35,8 +36,5 @@
   "peerDependencies": {
     "vite": "^5.0.0"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ]
+  "files": ["dist", "README.md"]
 }

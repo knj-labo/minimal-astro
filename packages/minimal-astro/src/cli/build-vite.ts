@@ -5,7 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import vue from '@vitejs/plugin-vue';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
-import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
+import { astroVitePlugin } from '../../vite-plugin/src/plugin.js';
 import { createAssetOptimizer } from './assets/optimizer.js';
 import type { BuildOptions } from './types.js';
 import { discoverAstroFiles } from './utils/file-discovery.js';
@@ -52,10 +52,14 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
       }),
       vue(),
       // Only add Svelte plugin if not in test environment
-      ...(process.env.NODE_ENV !== 'test' ? [svelte({
-        emitCss: true,
-        preprocess: [],
-      })] : []),
+      ...(process.env.NODE_ENV !== 'test'
+        ? [
+            svelte({
+              emitCss: true,
+              preprocess: [],
+            }),
+          ]
+        : []),
     ],
     build: {
       outDir,

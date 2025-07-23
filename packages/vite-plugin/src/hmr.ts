@@ -1,5 +1,5 @@
-import type { HmrContext, ModuleNode } from 'vite';
 import type { FragmentNode, Node, TextNode } from '@minimal-astro/types/ast';
+import type { HmrContext, ModuleNode } from 'vite';
 import { hasClientDirectives } from './transform.js';
 
 export interface HmrUpdateContext {

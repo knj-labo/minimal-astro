@@ -1,14 +1,15 @@
+import { buildHtml } from '@minimal-astro/compiler';
+import { safeExecute } from '@minimal-astro/core';
 import { astToJSX } from '@minimal-astro/internal-helpers';
 import { createSSRRenderer } from '@minimal-astro/react';
-import { buildHtml } from '@minimal-astro/compiler';
-// import { safeExecute } from '../core/utils/error-boundary.js';
+import { renderUniversalComponent } from '@minimal-astro/runtime';
 import type {
   ComponentNode,
   ElementNode,
   FragmentNode,
   FrontmatterNode,
   Node,
-} from '../../types/src/ast.js';
+} from '../types/src/ast.js';
 // type HydrationData available if needed
 import { injectHmrCode } from './hmr.js';
 
@@ -20,6 +21,7 @@ export interface TransformOptions {
   framework?: 'react' | 'preact' | 'vanilla';
   components?: Map<string, unknown>;
   sourceMap?: boolean;
+  renderers?: Record<string, any>;
 }
 
 export interface TransformResult {
@@ -232,21 +234,23 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   if (framework !== 'vanilla' && hasClientDirectives(ast)) {
     // Use React renderer for components with client directives
-    const renderer = createSSRRenderer({
-      hydrate: true,
-      components,
-      props: {},
-    });
-
     parts.push('  // SSR with hydration support');
-    parts.push(`  const renderResult = ${JSON.stringify(renderer.render(templateAst))};`);
-    parts.push('  const { output, hydrationData, scripts } = renderResult;');
+    parts.push(
+      '  const renderResult = await renderUniversalComponent(Component, props, componentType, {'
+    );
+    parts.push('    // Pass renderers to the universal component renderer');
+    parts.push('    renderers: options.renderers,');
+    parts.push('    hydrate: true,');
+    parts.push('    components,');
+    parts.push('    props: {},');
+    parts.push('  });');
+    parts.push('  const { html, hydrationData, scripts } = renderResult;');
     parts.push('');
     parts.push('  // Combine HTML with hydration scripts');
     parts.push(
-      '  const html = output + (scripts ? scripts.map(s => `<script>${s}</script>`).join("") : "");'
+      '  const finalHtml = html + (scripts ? scripts.map(s => `<script>${s}</script>`).join("") : "");'
     );
-    parts.push('  return { html, hydrationData };');
+    parts.push('  return { html: finalHtml, hydrationData };');
   } else {
     // Generate dynamic HTML at runtime
     parts.push('  // Build HTML dynamically with Astro context');

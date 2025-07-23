@@ -1,4 +1,4 @@
-import { defineConfig } from 'bun:test'
+import { defineConfig } from 'bun:test';
 
 export default defineConfig({
   // Test timeout in milliseconds
@@ -15,12 +15,7 @@ export default defineConfig({
   coverage: {
     enabled: process.env.COVERAGE === 'true',
     reporter: ['text', 'json', 'html'],
-    exclude: [
-      '**/node_modules/**',
-      '**/test/**',
-      '**/*.test.ts',
-      '**/fixtures/**',
-    ],
+    exclude: ['**/node_modules/**', '**/test/**', '**/*.test.ts', '**/fixtures/**'],
     thresholds: {
       global: {
         statements: 80,
@@ -34,7 +29,7 @@ export default defineConfig({
   // Global setup/teardown
   setup: async () => {
     // Set up test environment
-    process.env.NODE_ENV = 'test'
+    process.env.NODE_ENV = 'test';
   },
 
   teardown: async () => {
@@ -46,4 +41,4 @@ export default defineConfig({
 
   // Bail on first test failure in CI
   bail: process.env.CI === 'true',
-})
+});

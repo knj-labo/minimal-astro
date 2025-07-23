@@ -361,6 +361,9 @@ importers:
       '@minimal-astro/compiler':
         specifier: workspace:*
         version: link:../compiler
+      '@minimal-astro/core':
+        specifier: workspace:*
+        version: link:../core
       '@minimal-astro/internal-helpers':
         specifier: workspace:*
         version: link:../internal-helpers

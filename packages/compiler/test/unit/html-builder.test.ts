@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import type { FragmentNode } from '@minimal-astro/types/ast';
 import {
   buildHtml,
   createStreamingHtmlBuilder,
@@ -6,7 +7,6 @@ import {
   escapeHtmlLegacy,
 } from '../../src/html-builder.js';
 import { parseAstro } from '../../src/parser.js';
-import type { FragmentNode } from '@minimal-astro/types/ast';
 
 describe('HTML Builder', () => {
   describe('Basic HTML Generation', () => {

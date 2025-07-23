@@ -101,6 +101,15 @@ export interface ContentEntry<T = Record<string, unknown>> {
   render?: () => Promise<ContentRenderResult>;
 }
 
+export interface ContentModule {
+  default: unknown;
+  frontmatter: Record<string, unknown>;
+  url: string;
+  rawContent: string;
+  compiledContent: string;
+  getStaticPaths?: () => Promise<any[]>;
+}
+
 export interface ContentRenderResult {
   /**
    * Rendered HTML content
