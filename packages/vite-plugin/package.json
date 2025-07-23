@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@minimal-astro/compiler": "workspace:*",
+    "@minimal-astro/internal-helpers": "workspace:*",
     "@minimal-astro/types": "workspace:*",
     "vite": "^5.0.0"
   },

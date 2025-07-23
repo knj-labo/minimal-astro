@@ -1,7 +1,7 @@
 import type { ModuleNode, Plugin } from 'vite';
 import { parseAstro } from '@minimal-astro/compiler';
 import { createContextualLogger } from './logger.js';
-import type { Diagnostic, FragmentNode } from '@minimal-astro/types/ast';
+import type { Diagnostic, FragmentNode } from '../../types/src/ast.js';
 import {
   type AstroHmrState,
   analyzeAstForHmr,

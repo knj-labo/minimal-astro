@@ -8,7 +8,7 @@ import type {
   FragmentNode,
   FrontmatterNode,
   Node,
-} from '@minimal-astro/types/ast';
+} from '../../types/src/ast.js';
 // type HydrationData available if needed
 import { injectHmrCode } from './hmr.js';
 
