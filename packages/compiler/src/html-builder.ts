@@ -216,8 +216,8 @@ function evaluateExpression(code: string, context: EvaluationContext): string {
 /**
  * Extract frontmatter variables from AST
  */
-function extractFrontmatterVariables(ast: FragmentNode): Record<string, any> {
-  const variables: Record<string, any> = {};
+function extractFrontmatterVariables(ast: FragmentNode): Record<string, unknown> {
+  const variables: Record<string, unknown> = {};
 
   for (const child of ast.children) {
     if (child.type === 'Frontmatter') {
@@ -462,7 +462,7 @@ export function buildHtml(ast: FragmentNode, options: HtmlBuilderOptions = {}): 
 
   // Extract evaluation context if expression evaluation is enabled
   let context: EvaluationContext | undefined;
-  const debugInfo = '';
+  const _debugInfo = '';
   if (opts.evaluateExpressions) {
     const variables = extractFrontmatterVariables(ast);
     context = { variables };

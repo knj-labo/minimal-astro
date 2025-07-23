@@ -53,7 +53,7 @@ describe('transformAstroToJs', () => {
     });
 
     expect(result.map).toBeDefined();
-    const mapObj = JSON.parse(result.map!);
+    const mapObj = JSON.parse(result.map as string);
     expect(mapObj.version).toBe(3);
     expect(mapObj.file).toBe('test.astro');
     expect(mapObj.sources).toContain('test.astro');

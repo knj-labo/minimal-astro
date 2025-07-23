@@ -21,7 +21,7 @@ export interface TransformOptions {
   framework?: 'react' | 'preact' | 'vanilla';
   components?: Map<string, unknown>;
   sourceMap?: boolean;
-  renderers?: Record<string, any>;
+  renderers?: Record<string, unknown>;
 }
 
 export interface TransformResult {

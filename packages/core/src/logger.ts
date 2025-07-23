@@ -11,7 +11,7 @@ import {
   type LoggerOptions,
 } from './types.js';
 
-function shouldLog(logLevel: LogLevel): boolean {
+function _shouldLog(logLevel: LogLevel): boolean {
   return logLevel >= currentLevel;
 }
 /**
@@ -23,7 +23,7 @@ export function createLogger(options: LoggerOptions = {}): Logger {
   const enableColors = options.enableColors ?? shouldEnableColors();
   const enableTimestamp = options.enableTimestamp ?? false;
 
-  function shouldLog(logLevel: LogLevel): boolean {
+  function _shouldLog(logLevel: LogLevel): boolean {
     return logLevel >= currentLevel;
   }
 

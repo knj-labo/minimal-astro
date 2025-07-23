@@ -44,5 +44,5 @@ export interface UniversalSSRResult {
 
 export interface FrameworkRenderer {
   renderComponent: (component: any, props: any) => Promise<string>;
-  createRenderer: (options: any) => any;
+  createRenderer: (options: unknown) => unknown;
 }

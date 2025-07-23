@@ -107,7 +107,7 @@ export interface ContentModule {
   url: string;
   rawContent: string;
   compiledContent: string;
-  getStaticPaths?: () => Promise<any[]>;
+  getStaticPaths?: () => Promise<unknown[]>;
 }
 
 export interface ContentRenderResult {

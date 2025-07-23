@@ -16,6 +16,7 @@ export default function Counter() {
       }}
     >
       <button
+        type="button"
         onClick={() => setCount(count - 1)}
         style={{
           padding: '0.5rem 1rem',
@@ -39,6 +40,7 @@ export default function Counter() {
         {count}
       </span>
       <button
+        type="button"
         onClick={() => setCount(count + 1)}
         style={{
           padding: '0.5rem 1rem',

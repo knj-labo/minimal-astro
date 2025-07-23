@@ -16,7 +16,7 @@ export function safeExecute<T>(
   options: {
     operation: string;
     filename?: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
   },
   fallback: {
     fallbackValue: T;

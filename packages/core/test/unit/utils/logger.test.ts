@@ -211,7 +211,7 @@ describe('Logger', () => {
 
     it('should handle circular references in objects', () => {
       const logger = createContextualLogger('test');
-      const obj: any = { a: 1 };
+      const obj: Record<string, unknown> = { a: 1 };
       obj.circular = obj;
 
       // Should not throw

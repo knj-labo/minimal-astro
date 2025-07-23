@@ -5,11 +5,11 @@ export function defineCollection(config: any) {
   return config;
 }
 
-export function defineConfig(config: any) {
+export function defineConfig(config: unknown) {
   return config;
 }
 
-export async function getCollection(collectionName: string) {
+export async function getCollection(_collectionName: string) {
   // Mock implementation for now
   return [];
 }
@@ -26,9 +26,9 @@ export { z };
 export const collections = {};
 export const queries = {};
 
-export type ContentManagerOptions = any;
+export type ContentManagerOptions = unknown;
 
-export function createContentManager(options?: ContentManagerOptions) {
+export function createContentManager(_options?: ContentManagerOptions) {
   return {};
 }
 

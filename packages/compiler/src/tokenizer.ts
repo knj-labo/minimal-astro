@@ -235,7 +235,7 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
     // Check for DOCTYPE declaration
     if (peekSequence(state, '<!DOCTYPE')) {
       // Consume the entire DOCTYPE declaration as text
-      const [newState, doctypeContent] = consumeWhile(state, (c) => c !== '>' && c !== '\0');
+      const [newState, _doctypeContent] = consumeWhile(state, (c) => c !== '>' && c !== '\0');
       currentState = newState;
 
       // Consume the closing '>'
@@ -454,42 +454,7 @@ function scanText(state: TokenizerState): [TokenizerState, Token | null] {
 
       return [
         newState,
-        {
-          type: TokenType.Text,
-          value: text,
-          loc: {
-            start,
-            end: getCurrentPosition(newState),
-          },
-        },
-      ];
-    } else if (closingIndex === -1) {
-      // No closing tag found, consume rest of content
-      const text = source.slice(startPos);
-
-      // Count newlines for position tracking
-      let line = state.line;
-      let column = state.column;
-      for (let i = 0; i < text.length; i++) {
-        if (text[i] === '\n') {
-          line++;
-          column = 1;
-        } else {
-          column++;
-        }
-      }
-
-      const newState: TokenizerState = {
-        ...state,
-        position: source.length,
-        line,
-        column,
-      };
-
-      return [
-        newState,
-        {
-          type: TokenType.Text,
+        {n          type: TokenType.Text,
           value: text,
           loc: {
             start,
@@ -498,6 +463,19 @@ function scanText(state: TokenizerState): [TokenizerState, Token | null] {
         },
       ];
     }
+    // If no closing tag found, consume rest of content
+    const [newState, content] = consumeWhile(state, (c) => c !== '\0');
+    return [
+      newState,
+      {
+        type: TokenType.Text,
+        value: content,
+        loc: {
+          start,
+          end: getCurrentPosition(newState),
+        },
+      },
+    ];
   }
 
   // Normal text scanning for non-Style modes

@@ -17,8 +17,8 @@ describe('Universal SSR', () => {
     it('should register a framework renderer', () => {
       const mockRenderer = {
         name: 'test-framework',
-        check: (Component: any) => Component._isTestFramework === true,
-        renderToString: async (Component: any, props: any) => {
+        check: (Component: unknown) => (Component as any)._isTestFramework === true,
+        renderToString: async (Component: unknown, props: unknown) => {
           return `<div>${Component.name} with ${JSON.stringify(props)}</div>`;
         },
       };
@@ -130,15 +130,15 @@ describe('Universal SSR', () => {
       registerFramework({
         name: 'react',
         check: (Component: any) => Component._isReact === true,
-        renderToString: async (Component: any, props: any) => {
+        renderToString: async (Component: unknown, props: unknown) => {
           return `<react>${Component.name}</react>`;
         },
       });
 
       registerFramework({
         name: 'vue',
-        check: (Component: any) => Component._isVue === true,
-        renderToString: async (Component: any, props: any) => {
+        check: (Component: unknown) => (Component as { _isVue: boolean })._isVue === true,
+        renderToString: async (Component: unknown, props: unknown) => {
           return `<vue>${Component.name}</vue>`;
         },
       });
@@ -167,7 +167,7 @@ describe('Universal SSR', () => {
       registerFramework({
         name: 'test',
         check: () => true,
-        renderToString: async (Component: any, props: any) => {
+        renderToString: async (Component: unknown, props: unknown) => {
           return JSON.stringify({ component: Component.name, props });
         },
       });
@@ -187,7 +187,7 @@ describe('Universal SSR', () => {
       registerFramework({
         name: 'async-test',
         check: () => true,
-        renderToString: async (Component: any) => {
+        renderToString: async (Component: unknown) => {
           // Simulate async work
           await new Promise((resolve) => setTimeout(resolve, 10));
           return `<div>Async ${Component.name}</div>`;

@@ -223,10 +223,10 @@ describe('Content Schema', () => {
       expect(result.errors.length).toBeGreaterThan(0);
 
       // Check error structure
-      result.errors.forEach((error) => {
+      for (const error of result.errors) {
         expect(error.path).toBeDefined();
         expect(error.message).toBeDefined();
-      });
+      }
     });
 
     it('should handle union types', () => {

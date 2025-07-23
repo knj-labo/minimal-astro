@@ -51,10 +51,10 @@ describe('astroVitePlugin', () => {
       const ctx = {
         file: 'file.js',
         modules: [],
-        server: {} as any,
+        server: {} as import('vite').ViteDevServer,
         read: async () => '',
       };
-      const result = await plugin.handleHotUpdate?.(ctx as any);
+      const result = await plugin.handleHotUpdate?.(ctx as import('vite').HmrContext);
       expect(result).toBeUndefined();
     });
 
@@ -63,10 +63,10 @@ describe('astroVitePlugin', () => {
       const ctx = {
         file: 'file.astro',
         modules: [],
-        server: {} as any,
+        server: {} as import('vite').ViteDevServer,
         read: async () => '',
       };
-      const result = await plugin.handleHotUpdate?.(ctx as any);
+      const result = await plugin.handleHotUpdate?.(ctx as import('vite').HmrContext);
       expect(result).toEqual([]);
     });
   });
@@ -76,14 +76,14 @@ describe('astroVitePlugin', () => {
       const plugin = astroVitePlugin();
       const server = {
         middlewares: {
-          stack: [] as any[],
+          stack: [] as import('connect').HandleFunction[],
         },
         config: {
           root: '/test',
         },
       };
 
-      plugin.configureServer?.(server as any);
+      plugin.configureServer?.(server as import('vite').ViteDevServer);
 
       expect(server.middlewares.stack.length).toBe(1);
       expect(server.middlewares.stack[0].route).toBe('');

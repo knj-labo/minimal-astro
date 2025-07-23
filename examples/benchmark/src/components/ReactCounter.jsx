@@ -6,7 +6,9 @@ export default function ReactCounter() {
   return (
     <div style={{ padding: '10px' }}>
       <p>React Counter: {count}</p>
-      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <button type="button" onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
     </div>
   );
 }

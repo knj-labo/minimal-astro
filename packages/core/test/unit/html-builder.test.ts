@@ -101,10 +101,10 @@ describe('HTML Builder', () => {
         ],
       ];
 
-      testCases.forEach(([input, expected]) => {
+      for (const [input, expected] of testCases) {
         expect(escapeHtmlFast(input)).toBe(expected);
         expect(escapeHtmlLegacy(input)).toBe(expected);
-      });
+      }
     });
   });
 
