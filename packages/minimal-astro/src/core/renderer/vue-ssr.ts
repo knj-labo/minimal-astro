@@ -103,7 +103,7 @@ export async function renderVueComponent(
     }
 
     let html: string;
-    
+
     // Try to use Vue's SSR if available
     try {
       // Dynamic import to avoid hard dependency
@@ -111,29 +111,31 @@ export async function renderVueComponent(
       const vueServerRenderer = await import('@vue/server-renderer' as any);
       const { createSSRApp, h } = vueModule;
       const { renderToString } = vueServerRenderer;
-      
+
       // Filter out client directives from props
-      const componentProps = Object.entries(props).reduce((acc, [key, value]) => {
-        if (!key.startsWith('client:')) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, unknown>);
-      
+      const componentProps = Object.entries(props).reduce(
+        (acc, [key, value]) => {
+          if (!key.startsWith('client:')) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+
       // Create Vue SSR app
       const app = createSSRApp({
         render() {
           return h(VueComponent, componentProps);
-        }
+        },
       });
-      
+
       // Render to string
       html = await renderToString(app);
-      
     } catch (vueError) {
       // Fallback to simplified rendering if Vue SSR not available
       logger.debug(`Vue SSR not available, using fallback for ${componentName}`, vueError);
-      
+
       const componentTag = componentName.toLowerCase().replace(/([A-Z])/g, '-$1');
       const propsString = Object.entries(props)
         .filter(([key]) => !key.startsWith('client:'))
@@ -144,20 +146,23 @@ export async function renderVueComponent(
           return `${key}="${escapeHtml(JSON.stringify(value))}"`;
         })
         .join(' ');
-      
+
       html = `<${componentTag}${propsString ? ` ${propsString}` : ''}></${componentTag}>`;
     }
 
     // Wrap with hydration island if needed
     if (hydrationData) {
       // Include hydration wrapper
-      const propsWithoutDirectives = Object.entries(props).reduce((acc, [key, value]) => {
-        if (!key.startsWith('client:')) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, unknown>);
-      
+      const propsWithoutDirectives = Object.entries(props).reduce(
+        (acc, [key, value]) => {
+          if (!key.startsWith('client:')) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+
       html = `<astro-island component-export="${componentName}" component-props="${escapeHtml(JSON.stringify(propsWithoutDirectives))}" client-directive="${hydrationData.directive?.type || ''}" data-astro-cid="${hydrationData.id}">
 				${html}
 			</astro-island>`;
@@ -227,7 +232,10 @@ function extractPropsFromNode(node: ComponentNode): Record<string, unknown> {
 
     if (attr.value) {
       try {
-        if (typeof attr.value === 'string' && (attr.value.startsWith('{') || attr.value.startsWith('['))) {
+        if (
+          typeof attr.value === 'string' &&
+          (attr.value.startsWith('{') || attr.value.startsWith('['))
+        ) {
           props[attr.name] = JSON.parse(attr.value);
         } else {
           props[attr.name] = attr.value;
@@ -290,7 +298,10 @@ export function createVueSSRRenderer(options: VueSSROptions = {}) {
     /**
      * Render a component by name
      */
-    async render(componentName: string, props: Record<string, unknown> = {}): Promise<VueSSRResult> {
+    async render(
+      componentName: string,
+      props: Record<string, unknown> = {}
+    ): Promise<VueSSRResult> {
       const Component = options.components?.get(componentName);
       if (!Component) {
         return {

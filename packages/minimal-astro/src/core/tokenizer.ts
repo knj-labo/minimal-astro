@@ -182,7 +182,7 @@ function scanExpression(state: TokenizerState): [TokenizerState, Token | null] {
     let currentState = advance(state); // Skip {
 
     let depth = 1;
-    let incomplete = false;
+    const incomplete = false;
 
     while (currentState.position < currentState.source.length && depth > 0) {
       const char = peek(currentState);
@@ -237,12 +237,12 @@ function scanTag(state: TokenizerState): [TokenizerState, Token | null] {
       // Consume the entire DOCTYPE declaration as text
       const [newState, doctypeContent] = consumeWhile(state, (c) => c !== '>' && c !== '\0');
       currentState = newState;
-      
+
       // Consume the closing '>'
       if (peek(currentState) === '>') {
         currentState = advance(currentState);
       }
-      
+
       // Return the entire DOCTYPE as a text token
       return [
         currentState,

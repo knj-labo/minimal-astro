@@ -88,11 +88,11 @@ export {
 } from './jsx-transform.js';
 
 // Universal SSR types
-export {
-  type FrameworkType,
-  type UniversalSSROptions,
-  type UniversalSSRResult,
-  type FrameworkRenderer,
+export type {
+  FrameworkType,
+  UniversalSSROptions,
+  UniversalSSRResult,
+  FrameworkRenderer,
 } from './universal-ssr-types.js';
 
 // AST type exports

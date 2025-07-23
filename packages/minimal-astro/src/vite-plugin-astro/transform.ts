@@ -1,6 +1,6 @@
-import { buildHtml } from '../core/html-builder.js';
 import { astToJSX } from '@minimal-astro/internal-helpers';
 import { createSSRRenderer } from '@minimal-astro/react';
+import { buildHtml } from '../core/html-builder.js';
 import { safeExecute } from '../core/utils/error-boundary.js';
 import type {
   ComponentNode,
@@ -100,19 +100,26 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   if (frontmatter) {
     const code = frontmatter.code;
-    const getStaticPathsRegex = /export\s+async\s+function\s+getStaticPaths\s*\([^)]*\)\s*\{[\s\S]*?^\}/m;
+    const getStaticPathsRegex =
+      /export\s+async\s+function\s+getStaticPaths\s*\([^)]*\)\s*\{[\s\S]*?^\}/m;
     const match = code.match(getStaticPathsRegex);
 
     if (match) {
       getStaticPathsCode = match[0];
       const remainingCode = code.replace(getStaticPathsRegex, '');
       const lines = remainingCode.split('\n');
-      lines.forEach(line => {
+      lines.forEach((line) => {
         if (line.trim().startsWith('import')) {
           frontmatterImports.push(line);
           // Extract component imports
           const componentMatch = line.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
-          if (componentMatch && (componentMatch[2].endsWith('.astro') || componentMatch[2].endsWith('.jsx') || componentMatch[2].endsWith('.vue') || componentMatch[2].endsWith('.svelte'))) {
+          if (
+            componentMatch &&
+            (componentMatch[2].endsWith('.astro') ||
+              componentMatch[2].endsWith('.jsx') ||
+              componentMatch[2].endsWith('.vue') ||
+              componentMatch[2].endsWith('.svelte'))
+          ) {
             componentImports.set(componentMatch[1], componentMatch[2]);
           }
         } else {
@@ -121,12 +128,18 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
       });
     } else {
       const lines = code.split('\n');
-      lines.forEach(line => {
+      lines.forEach((line) => {
         if (line.trim().startsWith('import')) {
           frontmatterImports.push(line);
           // Extract component imports
           const componentMatch = line.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
-          if (componentMatch && (componentMatch[2].endsWith('.astro') || componentMatch[2].endsWith('.jsx') || componentMatch[2].endsWith('.vue') || componentMatch[2].endsWith('.svelte'))) {
+          if (
+            componentMatch &&
+            (componentMatch[2].endsWith('.astro') ||
+              componentMatch[2].endsWith('.jsx') ||
+              componentMatch[2].endsWith('.vue') ||
+              componentMatch[2].endsWith('.svelte'))
+          ) {
             componentImports.set(componentMatch[1], componentMatch[2]);
           }
         } else {
@@ -138,10 +151,12 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Add imports that are commonly needed
   parts.push(`// Auto-generated from ${filename}`);
-  
+
   // Import buildHtml at the top
   parts.push(`import { buildHtml } from 'minimal-astro/core/html-builder';`);
-  parts.push(`import { renderUniversalComponent } from 'minimal-astro/core/renderer/universal-ssr';`);
+  parts.push(
+    `import { renderUniversalComponent } from 'minimal-astro/core/renderer/universal-ssr';`
+  );
 
   // Add frontmatter imports
   if (frontmatterImports.length > 0) {
@@ -152,7 +167,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Track component paths for client-side hydration
   const componentPaths: Record<string, string> = {};
-  frontmatterImports.forEach(imp => {
+  frontmatterImports.forEach((imp) => {
     const match = imp.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
     if (match) {
       const [, name, path] = match;
@@ -160,8 +175,10 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
       if (path.startsWith('.')) {
         // Find the project root (where blog example is)
         const projectRoot = filename.split('/examples/blog/')[0] + '/examples/blog';
-        const fileDir = filename.substring(projectRoot.length).substring(0, filename.substring(projectRoot.length).lastIndexOf('/'));
-        
+        const fileDir = filename
+          .substring(projectRoot.length)
+          .substring(0, filename.substring(projectRoot.length).lastIndexOf('/'));
+
         // Resolve the relative path
         let resolved = path;
         if (path.startsWith('../')) {
@@ -170,7 +187,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
         } else if (path.startsWith('./')) {
           resolved = fileDir + '/' + path.substring(2);
         }
-        
+
         componentPaths[name] = resolved;
       } else {
         componentPaths[name] = path;
@@ -234,12 +251,12 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     // Generate dynamic HTML at runtime
     parts.push('  // Build HTML dynamically with Astro context');
     parts.push('  try {');
-    
+
     // Add component registry
     parts.push(`    // Component registry for rendering`);
     parts.push(`    const components = {};`);
     parts.push(`    const componentTypes = {};`);
-    
+
     // Register imported components with their types
     for (const [name, path] of componentImports) {
       parts.push(`    components['${name}'] = ${name};`);
@@ -254,14 +271,16 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
         parts.push(`    componentTypes['${name}'] = 'astro';`);
       }
     }
-    
+
     parts.push(`    `);
     parts.push(`    // Process AST to replace expressions and render components`);
     parts.push(`    async function processAstNode(node, context) {`);
     parts.push(`      if (node.type === 'Expression') {`);
     parts.push(`        try {`);
     parts.push(`          // Create a function that has access to context variables`);
-    parts.push(`          const func = new Function(...Object.keys(context), 'return ' + node.code);`);
+    parts.push(
+      `          const func = new Function(...Object.keys(context), 'return ' + node.code);`
+    );
     parts.push(`          const value = func(...Object.values(context));`);
     parts.push(`          return { type: 'Text', value: String(value) };`);
     parts.push(`        } catch (e) {`);
@@ -289,10 +308,14 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`                continue;`);
     parts.push(`              }`);
     parts.push(`              // Evaluate expression attributes`);
-    parts.push(`              if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {`);
+    parts.push(
+      `              if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {`
+    );
     parts.push(`                try {`);
     parts.push(`                  const exprCode = value.slice(1, -1);`);
-    parts.push(`                  const func = new Function(...Object.keys(context), 'return ' + exprCode);`);
+    parts.push(
+      `                  const func = new Function(...Object.keys(context), 'return ' + exprCode);`
+    );
     parts.push(`                  value = func(...Object.values(context));`);
     parts.push(`                } catch (e) {`);
     parts.push(`                  // Keep original value on error`);
@@ -303,7 +326,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`          }`);
     parts.push(`          `);
     parts.push(`          // Handle different component types`);
-    parts.push(`          if (componentType === 'astro' && typeof Component.render === 'function') {`);
+    parts.push(
+      `          if (componentType === 'astro' && typeof Component.render === 'function') {`
+    );
     parts.push(`            // Astro component - handle slots`);
     parts.push(`            const slotFunction = async () => {`);
     parts.push(`              if (!node.children || node.children.length === 0) return '';`);
@@ -313,11 +338,15 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`              `);
     parts.push(`              for (const child of node.children) {`);
     parts.push(`                const processed = await processAstNode(child, childContext);`);
-    parts.push(`                if (processed.type === 'Text' && !processed.value.trim()) continue;`);
+    parts.push(
+      `                if (processed.type === 'Text' && !processed.value.trim()) continue;`
+    );
     parts.push(`                processedChildren.push(processed);`);
     parts.push(`              }`);
     parts.push(`              `);
-    parts.push(`              const html = buildHtml({ type: 'Fragment', children: processedChildren }, {`);
+    parts.push(
+      `              const html = buildHtml({ type: 'Fragment', children: processedChildren }, {`
+    );
     parts.push(`                prettyPrint: false,`);
     parts.push(`                evaluateExpressions: false,`);
     parts.push(`                escapeHtml: false`);
@@ -331,7 +360,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`              slots: { default: slotFunction }`);
     parts.push(`            };`);
     parts.push(`            `);
-    parts.push(`            const result = await Component.render({ ...props, Astro: componentAstro });`);
+    parts.push(
+      `            const result = await Component.render({ ...props, Astro: componentAstro });`
+    );
     parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
     parts.push(`          } else {`);
     parts.push(`            // Framework component (React/Vue/Svelte)`);
@@ -341,10 +372,18 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`              svelte: new Map([[node.tag, Component]])`);
     parts.push(`            };`);
     parts.push(`            `);
-    parts.push(`            const result = await renderUniversalComponent(node.tag, props, componentType, {`);
-    parts.push(`              reactComponents: componentType === 'react' ? registries.react : undefined,`);
-    parts.push(`              vueComponents: componentType === 'vue' ? registries.vue : undefined,`);
-    parts.push(`              svelteComponents: componentType === 'svelte' ? registries.svelte : undefined,`);
+    parts.push(
+      `            const result = await renderUniversalComponent(node.tag, props, componentType, {`
+    );
+    parts.push(
+      `              reactComponents: componentType === 'react' ? registries.react : undefined,`
+    );
+    parts.push(
+      `              vueComponents: componentType === 'vue' ? registries.vue : undefined,`
+    );
+    parts.push(
+      `              svelteComponents: componentType === 'svelte' ? registries.svelte : undefined,`
+    );
     parts.push(`              generateHydrationData: hasClientDirective,`);
     parts.push(`              dev: ${dev}`);
     parts.push(`            });`);
@@ -358,8 +397,12 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      `);
     parts.push(`      // Handle slot elements`);
     parts.push(`      if (node.type === 'Element' && node.tag === 'slot') {`);
-    parts.push(`        const slotName = node.attrs?.find(attr => attr.name === 'name')?.value || 'default';`);
-    parts.push(`        if (context.Astro && context.Astro.slots && typeof context.Astro.slots[slotName] === 'function') {`);
+    parts.push(
+      `        const slotName = node.attrs?.find(attr => attr.name === 'name')?.value || 'default';`
+    );
+    parts.push(
+      `        if (context.Astro && context.Astro.slots && typeof context.Astro.slots[slotName] === 'function') {`
+    );
     parts.push(`          const slotContent = await context.Astro.slots[slotName]();`);
     parts.push(`          return { type: 'RawHTML', value: slotContent };`);
     parts.push(`        }`);
@@ -371,10 +414,14 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      if (node.type === 'Element' && node.attrs) {`);
     parts.push(`        node.attrs = await Promise.all(node.attrs.map(async attr => {`);
     parts.push(`          // Check if attribute value contains an expression`);
-    parts.push(`          if (typeof attr.value === 'string' && attr.value.startsWith('{') && attr.value.endsWith('}')) {`);
+    parts.push(
+      `          if (typeof attr.value === 'string' && attr.value.startsWith('{') && attr.value.endsWith('}')) {`
+    );
     parts.push(`            try {`);
     parts.push(`              const exprCode = attr.value.slice(1, -1);`);
-    parts.push(`              const func = new Function(...Object.keys(context), 'return ' + exprCode);`);
+    parts.push(
+      `              const func = new Function(...Object.keys(context), 'return ' + exprCode);`
+    );
     parts.push(`              const value = func(...Object.values(context));`);
     parts.push(`              return { ...attr, value: String(value) };`);
     parts.push(`            } catch (e) {`);
@@ -387,7 +434,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      `);
     parts.push(`      // Process children recursively`);
     parts.push(`      if (node.children) {`);
-    parts.push(`        node.children = await Promise.all(node.children.map(child => processAstNode(child, context)));`);
+    parts.push(
+      `        node.children = await Promise.all(node.children.map(child => processAstNode(child, context)));`
+    );
     parts.push(`      }`);
     parts.push(`      `);
     parts.push(`      return node;`);
@@ -395,45 +444,49 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`    `);
     parts.push(`    // Create context object with all variables in scope`);
     parts.push(`    const evalContext = { Astro };`);
-    
+
     // Add frontmatter variables to context
     if (frontmatter) {
       // Match regular variable declarations
       const varMatches = frontmatter.code.match(/(?:const|let|var)\s+(\w+)/g);
       if (varMatches) {
-        varMatches.forEach(match => {
+        varMatches.forEach((match) => {
           const varName = match.replace(/(?:const|let|var)\s+/, '');
           parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
         });
       }
-      
+
       // Match destructured variables
       const destructureMatches = frontmatter.code.match(/(?:const|let|var)\s*\{([^}]+)\}\s*=/g);
       if (destructureMatches) {
-        destructureMatches.forEach(match => {
+        destructureMatches.forEach((match) => {
           // Extract variable names from destructuring
           const varsSection = match.match(/\{([^}]+)\}/)?.[1];
           if (varsSection) {
             // Split by comma and extract variable names (handling renaming and defaults)
-            const vars = varsSection.split(',').map(v => {
-              // Handle: varName, varName: renamed, varName = default
-              const trimmed = v.trim();
-              const varName = trimmed.split(/[:=]/)[0].trim();
-              return varName;
-            }).filter(v => v);
-            
-            vars.forEach(varName => {
+            const vars = varsSection
+              .split(',')
+              .map((v) => {
+                // Handle: varName, varName: renamed, varName = default
+                const trimmed = v.trim();
+                const varName = trimmed.split(/[:=]/)[0].trim();
+                return varName;
+              })
+              .filter((v) => v);
+
+            vars.forEach((varName) => {
               parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
             });
           }
         });
       }
     }
-    
-    
+
     parts.push(`    `);
     parts.push(`    // Clone the template AST and process expressions`);
-    parts.push(`    const processedAst = JSON.parse(JSON.stringify(${JSON.stringify(templateAst)}));`);
+    parts.push(
+      `    const processedAst = JSON.parse(JSON.stringify(${JSON.stringify(templateAst)}));`
+    );
     parts.push(`    // Pass Astro context directly to processAstNode`);
     parts.push(`    const fullContext = { ...evalContext, Astro };`);
     parts.push(`    await processAstNode(processedAst, fullContext);`);
@@ -465,7 +518,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`    `);
     parts.push(`    if (!componentName || !directive) return;`);
     parts.push(`    `);
-    parts.push(`    console.log('Hydrating component:', componentName, 'with directive:', directive);`);
+    parts.push(
+      `    console.log('Hydrating component:', componentName, 'with directive:', directive);`
+    );
     parts.push(`    `);
     parts.push(`    let props = {};`);
     parts.push(`    try {`);
@@ -492,7 +547,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      console.log('ReactDOM loaded:', ReactDOM);`);
     parts.push(`      const root = ReactDOM.createRoot(island);`);
     parts.push(`      const ReactComponent = Component.default || Component;`);
-    parts.push(`      console.log('Creating element with component:', ReactComponent, 'props:', props);`);
+    parts.push(
+      `      console.log('Creating element with component:', ReactComponent, 'props:', props);`
+    );
     parts.push(`      root.render(React.createElement(ReactComponent, props));`);
     parts.push(`    } else if (type === 'vue') {`);
     parts.push(`      const { createApp } = await import('vue');`);
@@ -528,7 +585,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`              return m;`);
     parts.push(`            })`);
     parts.push(`            .catch(e => {`);
-    parts.push(`              console.error('Failed to load component:', name, 'from path:', path, e);`);
+    parts.push(
+      `              console.error('Failed to load component:', name, 'from path:', path, e);`
+    );
     parts.push(`              // Try with .default export`);
     parts.push(`              return import(/* @vite-ignore */ path + '?t=' + Date.now());`);
     parts.push(`            })`);
@@ -539,23 +598,33 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`    console.log('All components loaded:', componentModules);`);
     parts.push(`    `);
     parts.push(`    // client:load`);
-    parts.push(`    document.querySelectorAll('astro-island[client-directive="load"]').forEach(hydrateComponent);`);
+    parts.push(
+      `    document.querySelectorAll('astro-island[client-directive="load"]').forEach(hydrateComponent);`
+    );
     parts.push(`    `);
     parts.push(`    // client:only`);
-    parts.push(`    document.querySelectorAll('astro-island[client-directive="only"]').forEach(hydrateComponent);`);
+    parts.push(
+      `    document.querySelectorAll('astro-island[client-directive="only"]').forEach(hydrateComponent);`
+    );
     parts.push(`    `);
     parts.push(`    // client:idle`);
-    parts.push(`    const idleIslands = document.querySelectorAll('astro-island[client-directive="idle"]');`);
+    parts.push(
+      `    const idleIslands = document.querySelectorAll('astro-island[client-directive="idle"]');`
+    );
     parts.push(`    if (idleIslands.length > 0) {`);
     parts.push(`      if ('requestIdleCallback' in window) {`);
-    parts.push(`        idleIslands.forEach(island => requestIdleCallback(() => hydrateComponent(island)));`);
+    parts.push(
+      `        idleIslands.forEach(island => requestIdleCallback(() => hydrateComponent(island)));`
+    );
     parts.push(`      } else {`);
     parts.push(`        setTimeout(() => idleIslands.forEach(hydrateComponent), 200);`);
     parts.push(`      }`);
     parts.push(`    }`);
     parts.push(`    `);
     parts.push(`    // client:visible`);
-    parts.push(`    const visibleIslands = document.querySelectorAll('astro-island[client-directive="visible"]');`);
+    parts.push(
+      `    const visibleIslands = document.querySelectorAll('astro-island[client-directive="visible"]');`
+    );
     parts.push(`    if (visibleIslands.length > 0 && 'IntersectionObserver' in window) {`);
     parts.push(`      const observer = new IntersectionObserver((entries) => {`);
     parts.push(`        entries.forEach(entry => {`);
@@ -630,7 +699,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
 
   // Default export for easier imports
   parts.push('');
-  parts.push(`export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''}${getStaticPathsCode ? ', getStaticPaths' : ''} };`);
+  parts.push(
+    `export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''}${getStaticPathsCode ? ', getStaticPaths' : ''} };`
+  );
 
   const jsCode = parts.join('\n');
 

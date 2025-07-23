@@ -6,8 +6,8 @@ import type {
   FragmentNode,
   FrontmatterNode,
   Node,
-  TextNode,
   RawHTMLNode,
+  TextNode,
 } from '../types/ast.js';
 
 export interface HtmlBuilderOptions {
@@ -224,10 +224,10 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, any> {
       try {
         // Strip TypeScript syntax first
         const strippedCode = child.code
-          .replace(/:\s*[A-Za-z0-9_<>[\]{}|&\s]+(?=\s*[=,;)\]}])/g, '') // Remove type annotations
+          .replace(/(?<!['"`:]):\s*[A-Z][A-Za-z0-9_<>[\]{}|&\s]*(?=\s*[=,;)\]}])/g, '') // Remove type annotations (only if starts with capital letter)
           .replace(/interface\s+\w+\s*\{[^}]*\}/gs, '') // Remove interfaces
           .replace(/type\s+\w+\s*=\s*[^;]+;/g, ''); // Remove type declarations
-        
+
         // Create a safer evaluation context
         const func = new Function(`
           ${strippedCode}
@@ -415,12 +415,13 @@ function buildTextHtml(
 
   // Don't escape DOCTYPE declarations or if escaping is disabled
   // Also check for the special case where '<' and '!DOCTYPE' are split
-  const text = (node.value.trim().startsWith('<!DOCTYPE') || 
-                node.value.trim().startsWith('!DOCTYPE') ||
-                node.value === '<' ||
-                options.escapeHtml === false) 
-    ? node.value 
-    : escapeHtml(node.value);
+  const text =
+    node.value.trim().startsWith('<!DOCTYPE') ||
+    node.value.trim().startsWith('!DOCTYPE') ||
+    node.value === '<' ||
+    options.escapeHtml === false
+      ? node.value
+      : escapeHtml(node.value);
 
   // Skip indentation for text nodes that are part of inline content
   if (text.trim() === '') {
@@ -461,7 +462,7 @@ export function buildHtml(ast: FragmentNode, options: HtmlBuilderOptions = {}): 
 
   // Extract evaluation context if expression evaluation is enabled
   let context: EvaluationContext | undefined;
-  let debugInfo = '';
+  const debugInfo = '';
   if (opts.evaluateExpressions) {
     const variables = extractFrontmatterVariables(ast);
     context = { variables };
@@ -596,12 +597,13 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
 
         // Don't escape DOCTYPE declarations or if escaping is disabled
         // Also check for the special case where '<' and '!DOCTYPE' are split
-        const text = (node.value.trim().startsWith('<!DOCTYPE') || 
-                      node.value.trim().startsWith('!DOCTYPE') ||
-                      node.value === '<' ||
-                      opts.escapeHtml === false)
-          ? node.value
-          : escapeHtml(node.value);
+        const text =
+          node.value.trim().startsWith('<!DOCTYPE') ||
+          node.value.trim().startsWith('!DOCTYPE') ||
+          node.value === '<' ||
+          opts.escapeHtml === false
+            ? node.value
+            : escapeHtml(node.value);
 
         // Handle inline vs block text
         if (opts.prettyPrint && text.trim() !== text) {

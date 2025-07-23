@@ -1,7 +1,7 @@
-import { createServer } from 'vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vue from '@vitejs/plugin-vue';
+import { createServer } from 'vite';
 import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
 
 export interface DevOptions {
@@ -10,9 +10,9 @@ export interface DevOptions {
 
 export async function dev(options: DevOptions) {
   const { root } = options;
-  
+
   console.log('🚀 Starting Minimal Astro dev server...');
-  
+
   // Create Vite server with our Astro plugin
   const server = await createServer({
     root,
@@ -34,9 +34,9 @@ export async function dev(options: DevOptions) {
       exclude: ['*.astro'], // Don't optimize .astro files
     },
   });
-  
+
   await server.listen();
-  
+
   console.log(`
   🎉 Server running at http://localhost:${server.config.server.port}/
   
