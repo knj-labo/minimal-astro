@@ -17,11 +17,13 @@ const authorsCollection = defineCollection({
     name: z.string(),
     bio: z.string(),
     avatar: z.string().optional(),
-    social: z.object({
-      twitter: z.string().optional(),
-      github: z.string().optional(),
-      website: z.string().optional(),
-    }).optional(),
+    social: z
+      .object({
+        twitter: z.string().optional(),
+        github: z.string().optional(),
+        website: z.string().optional(),
+      })
+      .optional(),
   }),
 });
 

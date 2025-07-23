@@ -112,20 +112,27 @@ export async function renderSvelteComponent(
     // Try to use Svelte's SSR if available
     try {
       // Filter out client directives from props
-      const componentProps = Object.entries(props).reduce((acc, [key, value]) => {
-        if (!key.startsWith('client:')) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, unknown>);
-      
+      const componentProps = Object.entries(props).reduce(
+        (acc, [key, value]) => {
+          if (!key.startsWith('client:')) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+
       // Check if this is a real Svelte component with render method
       if (SvelteComponent && typeof SvelteComponent.render === 'function') {
         // Real Svelte SSR - Svelte components compiled for SSR have a render method
         const result = SvelteComponent.render(componentProps);
         html = result.html;
         css = result.css?.code;
-      } else if (SvelteComponent && SvelteComponent.default && typeof SvelteComponent.default.render === 'function') {
+      } else if (
+        SvelteComponent &&
+        SvelteComponent.default &&
+        typeof SvelteComponent.default.render === 'function'
+      ) {
         // Handle default export
         const result = SvelteComponent.default.render(componentProps);
         html = result.html;
@@ -136,7 +143,7 @@ export async function renderSvelteComponent(
     } catch (svelteError) {
       // Fallback to simplified rendering if Svelte SSR not available
       logger.debug(`Svelte SSR not available, using fallback for ${componentName}`, svelteError);
-      
+
       const componentTag = componentName.toLowerCase().replace(/([A-Z])/g, '-$1');
       const propsString = Object.entries(props)
         .filter(([key]) => !key.startsWith('client:'))
@@ -224,7 +231,10 @@ function extractPropsFromNode(node: ComponentNode): Record<string, unknown> {
 
     if (attr.value) {
       try {
-        if (typeof attr.value === 'string' && (attr.value.startsWith('{') || attr.value.startsWith('['))) {
+        if (
+          typeof attr.value === 'string' &&
+          (attr.value.startsWith('{') || attr.value.startsWith('['))
+        ) {
           props[attr.name] = JSON.parse(attr.value);
         } else {
           props[attr.name] = attr.value;
@@ -287,7 +297,10 @@ export function createSvelteSSRRenderer(options: SvelteSSROptions = {}) {
     /**
      * Render a component by name
      */
-    async render(componentName: string, props: Record<string, unknown> = {}): Promise<SvelteSSRResult> {
+    async render(
+      componentName: string,
+      props: Record<string, unknown> = {}
+    ): Promise<SvelteSSRResult> {
       const Component = options.components?.get(componentName);
       if (!Component) {
         return {

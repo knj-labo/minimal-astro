@@ -3,10 +3,10 @@
  * Implements proper server-side rendering with React 18
  */
 
-import React from 'react';
-import { renderToString } from 'react-dom/server';
 import type { ComponentNode } from '@minimal-astro/internal-helpers';
 import { createContextualLogger } from '@minimal-astro/internal-helpers';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 
 // ============================================================================
 // TYPES
@@ -188,7 +188,10 @@ export function renderReactComponent(
     const element = createHydrationWrapper(componentExport, props, hydrationData);
 
     // Wrap in error boundary for SSR safety
-    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName, children: element });
+    const wrappedElement = React.createElement(SSRErrorBoundary, {
+      componentName,
+      children: element,
+    });
 
     // Render to string
     const html = renderToString(wrappedElement);
@@ -261,7 +264,10 @@ function extractPropsFromNode(node: ComponentNode): Record<string, unknown> {
     if (attr.value) {
       try {
         // Try to parse as JSON for complex values
-        if (typeof attr.value === 'string' && (attr.value.startsWith('{') || attr.value.startsWith('['))) {
+        if (
+          typeof attr.value === 'string' &&
+          (attr.value.startsWith('{') || attr.value.startsWith('['))
+        ) {
           props[attr.name] = JSON.parse(attr.value);
         } else {
           props[attr.name] = attr.value;

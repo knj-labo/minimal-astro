@@ -254,7 +254,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
       // Define our middleware handler
       const astroDevHandler = async (req: any, res: any, next: any) => {
         const url = req.url ?? '/';
-        
+
         // Only handle GET requests to pages (not assets)
         if (req.method !== 'GET') {
           return next();
@@ -264,13 +264,13 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
         if (url.startsWith('/@')) {
           return next();
         }
-        
+
         // Skip asset requests (files with extensions, except .html)
         const hasExtension = url.includes('.') && !url.endsWith('.html');
         if (hasExtension) {
           return next();
         }
-        
+
         // Simple test endpoint
         if (url === '/ping') {
           res.statusCode = 200;
@@ -282,15 +282,15 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
         try {
           // Set status early to prevent Vite's 404 from taking over
           res.statusCode = 200;
-          
+
           // Map URL to page file path
           let pagePath = url === '/' ? '/index' : url;
           pagePath = pagePath.replace(/\/$/, ''); // Remove trailing slash
-          
+
           // Try to find the corresponding .astro file
           const possiblePaths = [
             `/src/pages${pagePath}.astro`,
-            `/src/pages${pagePath}/index.astro`
+            `/src/pages${pagePath}/index.astro`,
           ];
 
           let astroModule = null;
@@ -299,7 +299,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           for (const path of possiblePaths) {
             try {
               resolvedPath = server.config.root + path;
-              
+
               // Force the file through Vite's transform pipeline first
               const module = server.moduleGraph.getModuleById(resolvedPath);
               if (!module || !module.ssrModule) {
@@ -308,7 +308,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
               } else {
                 astroModule = module.ssrModule;
               }
-              
+
               break;
             } catch (e) {
               // Try next path
@@ -323,9 +323,9 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
             if (urlParts.length > 0) {
               const basePath = urlParts.slice(0, -1).join('/');
               const dynamicPath = `/src/pages/${basePath ? basePath + '/' : ''}[slug].astro`;
-              
+
               logger.debug(`Checking dynamic route: ${dynamicPath} for URL: ${url}`);
-              
+
               try {
                 resolvedPath = server.config.root + dynamicPath;
                 astroModule = await server.ssrLoadModule(resolvedPath);
@@ -343,7 +343,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
             res.statusCode = 404;
             return next();
           }
-          
+
           // Create Astro object with proper params and request info
           const Astro = {
             props: {},
@@ -351,12 +351,12 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
             request: {
               url,
               method: req.method,
-              headers: req.headers
+              headers: req.headers,
             },
             url: new URL(url, `http://${req.headers.host || 'localhost:3000'}`),
-            slots: {}
+            slots: {},
           };
-          
+
           // Render the page with Astro context
           const result = await astroModule.render({ Astro });
 
@@ -369,13 +369,13 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           next(error);
         }
       };
-      
+
       // Force our handler to be FIRST in the middleware stack
       server.middlewares.stack.unshift({
         route: '',
-        handle: astroDevHandler
+        handle: astroDevHandler,
       });
-      
+
       logger.info('Minimal Astro dev middleware registered at front of stack');
     },
 
@@ -395,7 +395,9 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
       // Check if this is already transformed code
       if (code.includes('// Auto-generated from')) {
-        console.warn(`[minimal-astro] WARNING: Attempting to transform already-transformed code for ${id}`);
+        console.warn(
+          `[minimal-astro] WARNING: Attempting to transform already-transformed code for ${id}`
+        );
         return null;
       }
 

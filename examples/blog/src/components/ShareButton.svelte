@@ -1,30 +1,30 @@
 <script>
-  export let title = '';
-  export let url = '';
-  
-  let showCopied = false;
-  
-  async function handleShare() {
-    const shareData = {
-      title: title,
-      url: url || window.location.href
-    };
-    
-    try {
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(shareData.url);
-        showCopied = true;
-        setTimeout(() => {
-          showCopied = false;
-        }, 2000);
-      }
-    } catch (err) {
-      console.error('Error sharing:', err);
+export const title = '';
+export const url = '';
+
+let showCopied = false;
+
+async function handleShare() {
+  const shareData = {
+    title: title,
+    url: url || window.location.href,
+  };
+
+  try {
+    if (navigator.share && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(shareData.url);
+      showCopied = true;
+      setTimeout(() => {
+        showCopied = false;
+      }, 2000);
     }
+  } catch (err) {
+    console.error('Error sharing:', err);
   }
+}
 </script>
 
 <div class="share-container">

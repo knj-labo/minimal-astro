@@ -248,10 +248,12 @@ async function optimizeAsset(
     }
 
     // Create output path - outputPath is already a full path, so we need to make it relative to outDir
-    const relativePath = filePath.startsWith(outDir) 
-      ? filePath.slice(outDir.length).replace(/^\//, '') 
+    const relativePath = filePath.startsWith(outDir)
+      ? filePath.slice(outDir.length).replace(/^\//, '')
       : filePath;
-    const finalOutputPath = options.fingerprint ? createFingerprintedName(relativePath, hash!) : relativePath;
+    const finalOutputPath = options.fingerprint
+      ? createFingerprintedName(relativePath, hash!)
+      : relativePath;
     const outputFilePath = join(outDir, finalOutputPath);
 
     // Ensure output directory exists

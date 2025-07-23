@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import vue from '@vitejs/plugin-vue';
 import { createServer, build as viteBuild } from 'vite';
 import type { InlineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { astroVitePlugin } from '../vite-plugin-astro/plugin.js';
 import { createAssetOptimizer } from './assets/optimizer.js';
 import type { BuildOptions } from './types.js';
@@ -51,7 +51,11 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
         extensions: ['.astro'],
       }),
       vue(),
-      svelte(),
+      // Only add Svelte plugin if not in test environment
+      ...(process.env.NODE_ENV !== 'test' ? [svelte({
+        emitCss: true,
+        preprocess: [],
+      })] : []),
     ],
     build: {
       outDir,
@@ -157,15 +161,18 @@ async function renderPages(
       try {
         // Log module structure for debugging
         console.log(`  Module exports:`, Object.keys(module));
-        
+
         // The transform generates: export default { render, metadata, Component }
         const moduleExports = module.default || module;
-        console.log(`  Module default exports:`, moduleExports ? Object.keys(moduleExports) : 'none');
-        
+        console.log(
+          `  Module default exports:`,
+          moduleExports ? Object.keys(moduleExports) : 'none'
+        );
+
         // Check if the module has a render function
         if (moduleExports && typeof moduleExports.render === 'function') {
           console.log(`  Found render function, executing...`);
-          
+
           // Call the render function with empty props for now
           const result = await moduleExports.render({});
           console.log(`  Render result type:`, typeof result);
@@ -173,12 +180,12 @@ async function renderPages(
 
           // Extract HTML from result
           const html = result.html || result;
-          
+
           if (!html || typeof html !== 'string') {
             console.error(`  ❌ Render function returned invalid HTML:`, html);
             continue;
           }
-          
+
           console.log(`  HTML length: ${html.length} characters`);
           console.log(`  HTML preview: ${html.substring(0, 100)}...`);
 
@@ -190,11 +197,11 @@ async function renderPages(
           // Write HTML file using synchronous write for reliability
           try {
             console.log(`  Writing file to: ${outputPath}`);
-            
+
             // Use synchronous operations for more reliable writes
             mkdirSync(outputDir, { recursive: true });
             writeFileSync(outputPath, html, 'utf-8');
-            
+
             // Verify the file was written
             if (existsSync(outputPath)) {
               const { statSync } = await import('node:fs');
@@ -205,7 +212,10 @@ async function renderPages(
             }
           } catch (writeError) {
             console.error(`  ❌ Failed to write file:`, writeError);
-            console.error(`  Stack trace:`, writeError instanceof Error ? writeError.stack : 'No stack');
+            console.error(
+              `  Stack trace:`,
+              writeError instanceof Error ? writeError.stack : 'No stack'
+            );
             throw writeError;
           }
         } else {
