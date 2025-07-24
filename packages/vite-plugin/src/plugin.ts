@@ -1,5 +1,7 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { parseAstro } from '@minimal-astro/compiler';
 import type { Diagnostic, FragmentNode } from '@minimal-astro/types/ast';
+import type { NextHandleFunction } from 'connect';
 import type { ModuleNode, Plugin } from 'vite';
 import {
   type AstroHmrState,
@@ -9,9 +11,7 @@ import {
   handleCssUpdate,
 } from './hmr.js';
 import { createContextualLogger } from './logger.js';
-import type { IncomingMessage, ServerResponse } from 'http';
-import type { NextHandleFunction } from 'connect';
-import { transformAstroToJs } from './transform.js';
+import { transformAstroToJs, type TransformOptions, type TransformResult } from './transform.js';
 
 export interface AstroVitePluginOptions {
   /**
@@ -322,7 +322,10 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           }
 
           // If no exact match, check for dynamic routes
-          interface RouteParams { slug?: string; [key: string]: string | undefined; }
+          interface RouteParams {
+            slug?: string;
+            [key: string]: string | undefined;
+          }
           let params: RouteParams = {};
           if (!astroModule) {
             // Simple dynamic route matching for [slug].astro
@@ -459,12 +462,13 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
         }
 
         // Transform to JavaScript module
-        const transformed = transformAstroToJs(parseResult.ast as FragmentNode, {
+        const transformOptions: TransformOptions = {
           filename: id,
           dev: opts.dev,
           prettyPrint: opts.prettyPrint,
           sourceMap: true,
-        });
+        };
+        const transformed = transformAstroToJs(parseResult.ast as FragmentNode, transformOptions);
 
         const result = {
           code: transformed.code,
