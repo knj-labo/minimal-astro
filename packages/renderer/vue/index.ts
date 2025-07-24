@@ -45,8 +45,13 @@ interface FrontmatterNode extends Node {
 }
 
 // Component type definition for Vue
-// biome-ignore lint/suspicious/noExplicitAny: Vue component types vary significantly
-type VueComponent = any; // Vue component type
+type VueComponent = {
+  render?: (...args: unknown[]) => unknown;
+  setup?: (...args: unknown[]) => unknown;
+  props?: Record<string, unknown>;
+  components?: Record<string, VueComponent>;
+  name?: string;
+};
 
 export interface VueRendererOptions {
   /**

@@ -45,8 +45,17 @@ interface FrontmatterNode extends Node {
 }
 
 // Component type definition for Svelte
-// biome-ignore lint/suspicious/noExplicitAny: Svelte component types vary significantly
-type SvelteComponent = any; // Svelte component type
+type SvelteComponent = {
+  new (options: {
+    target: HTMLElement;
+    props?: Record<string, unknown>;
+    hydrate?: boolean;
+  }): {
+    $destroy(): void;
+    $set(props: Record<string, unknown>): void;
+  };
+  name?: string;
+};
 
 export interface SvelteRendererOptions {
   /**

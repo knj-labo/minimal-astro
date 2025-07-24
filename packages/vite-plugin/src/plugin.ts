@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { parseAstro } from '@minimal-astro/compiler';
 import type { Diagnostic, FragmentNode } from '@minimal-astro/types/ast';
-import type { NextHandleFunction } from 'connect';
+import type { NextFunction } from 'connect';
 import type { ModuleNode, Plugin } from 'vite';
 import {
   type AstroHmrState,
@@ -11,7 +11,7 @@ import {
   handleCssUpdate,
 } from './hmr.js';
 import { createContextualLogger } from './logger.js';
-import { transformAstroToJs, type TransformOptions, type TransformResult } from './transform.js';
+import { transformAstroToJs } from './transform.js';
 
 export interface AstroVitePluginOptions {
   /**
@@ -257,7 +257,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
       const astroDevHandler = async (
         req: IncomingMessage,
         res: ServerResponse,
-        next: NextHandleFunction
+        next: NextFunction
       ) => {
         const url = req.url ?? '/';
 
@@ -462,13 +462,12 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
         }
 
         // Transform to JavaScript module
-        const transformOptions: TransformOptions = {
+        const transformed = transformAstroToJs(parseResult.ast as FragmentNode, {
           filename: id,
           dev: opts.dev,
           prettyPrint: opts.prettyPrint,
           sourceMap: true,
-        };
-        const transformed = transformAstroToJs(parseResult.ast as FragmentNode, transformOptions);
+        });
 
         const result = {
           code: transformed.code,

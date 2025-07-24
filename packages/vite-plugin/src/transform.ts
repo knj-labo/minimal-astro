@@ -58,6 +58,7 @@ function stripTypeScript(code: string): string {
  * Transform an Astro AST to a JavaScript module
  */
 export function transformAstroToJs(ast: FragmentNode, options: TransformOptions): TransformResult {
+  // Added comment to force recompile
   return safeExecute(
     () => transformAstroToJsInternal(ast, options),
     {
@@ -88,7 +89,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   const frontmatter = ast.children.find((child: Node) => child.type === 'Frontmatter') as
     | FrontmatterNode
     | undefined;
-  const templateNodes = ast.children.filter((child: Node) => child.type !== 'Frontmatter');
+  const templateNodes = ast.children.filter((child) => child.type !== 'Frontmatter');
 
   // Generate the module
   const parts: string[] = [];
@@ -467,13 +468,13 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
             // Split by comma and extract variable names (handling renaming and defaults)
             const vars = varsSection
               .split(',')
-              .map((v: string) => {
+              .map((v) => {
                 // Handle: varName, varName: renamed, varName = default
                 const trimmed = v.trim();
                 const varName = trimmed.split(/[:=]/)[0].trim();
                 return varName;
               })
-              .filter((v: string) => v);
+              .filter((v) => v);
 
             for (const varName of vars) {
               parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);

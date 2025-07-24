@@ -9,7 +9,22 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import type { PluggableList, Plugin } from 'unified';
 import { unified } from 'unified';
+
+// Type definitions for HAST nodes
+interface HastNode {
+  type: string;
+  tagName?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+  value?: string;
+}
+
+interface HastRoot extends HastNode {
+  type: 'root';
+  children: HastNode[];
+}
 
 // ============================================================================
 // TYPES
@@ -29,12 +44,12 @@ export interface MarkdownProcessorOptions {
   /**
    * Custom remark plugins
    */
-  remarkPlugins?: unknown[];
+  remarkPlugins?: PluggableList;
 
   /**
    * Custom rehype plugins
    */
-  rehypePlugins?: unknown[];
+  rehypePlugins?: PluggableList;
 
   /**
    * Generate table of contents
@@ -209,38 +224,38 @@ function generateToc(headings: Heading[]): TocEntry[] {
 /**
  * Plugin to add IDs to headings
  */
-function rehypeHeadingIds() {
-  return (tree: unknown) => {
-    const visit = (node: unknown) => {
-      if (node.type === 'element' && /^h[1-6]$/.test(node.tagName)) {
-        const text = getTextContent(node);
-        const slug = generateSlug(text);
+const rehypeHeadingIds: Plugin<[], HastRoot> = () => (tree: HastRoot) => {
+  const visit = (node: HastNode) => {
+    if (node.type === 'element' && node.tagName && /^h[1-6]$/.test(node.tagName)) {
+      const text = getTextContent(node);
+      const slug = generateSlug(text);
 
-        if (!node.properties) {
-          node.properties = {};
-        }
-        node.properties.id = slug;
+      if (!node.properties) {
+        node.properties = {};
       }
+      node.properties.id = slug;
+    }
 
-      if (node.children) {
-        node.children.forEach(visit);
+    if (node.children) {
+      for (const child of node.children) {
+        visit(child);
       }
-    };
-
-    visit(tree);
+    }
   };
-}
+
+  visit(tree);
+};
 
 /**
  * Get text content from a node
  */
-function getTextContent(node: unknown): string {
-  if (node.type === 'text') {
+function getTextContent(node: HastNode): string {
+  if (node.type === 'text' && node.value) {
     return node.value;
   }
 
   if (node.children) {
-    return node.children.map(getTextContent).join('');
+    return node.children.map((child) => getTextContent(child)).join('');
   }
 
   return '';
@@ -263,31 +278,39 @@ export function createMarkdownProcessor(options: MarkdownProcessorOptions = {}) 
   } = options;
 
   // Build the unified processor
-  let processor = unified().use(remarkParse).use(remarkFrontmatter, ['yaml', 'toml']);
+  const baseProcessor = unified().use(remarkParse).use(remarkFrontmatter, ['yaml', 'toml']);
 
-  // Add GFM support
-  if (gfm) {
-    processor = processor.use(remarkGfm);
-  }
+  // Create a function to build the full processor
+  const buildProcessor = () => {
+    // biome-ignore lint/suspicious/noExplicitAny: Complex processor type chain
+    let proc: any = baseProcessor;
 
-  // Add custom remark plugins
-  for (const plugin of remarkPlugins) {
-    processor = processor.use(plugin);
-  }
+    // Add GFM support
+    if (gfm) {
+      proc = proc.use(remarkGfm);
+    }
 
-  // Convert to rehype
-  processor = processor.use(remarkRehype);
+    // Add custom remark plugins
+    if (remarkPlugins.length > 0) {
+      proc = proc.use(remarkPlugins);
+    }
 
-  // Add heading IDs
-  processor = processor.use(rehypeHeadingIds);
+    // Convert to rehype
+    proc = proc.use(remarkRehype);
 
-  // Add custom rehype plugins
-  for (const plugin of rehypePlugins) {
-    processor = processor.use(plugin);
-  }
+    // Add heading IDs
+    proc = proc.use(rehypeHeadingIds);
 
-  // Stringify to HTML
-  processor = processor.use(rehypeStringify);
+    // Add custom rehype plugins
+    if (rehypePlugins.length > 0) {
+      proc = proc.use(rehypePlugins);
+    }
+
+    // Stringify to HTML
+    return proc.use(rehypeStringify);
+  };
+
+  const processor = buildProcessor();
 
   return {
     /**
