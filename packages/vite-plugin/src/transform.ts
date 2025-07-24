@@ -365,24 +365,34 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     );
     parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
     parts.push('          } else {');
-    parts.push('            // Framework component (React/Vue/Svelte) - for now, just render placeholder');
+    parts.push(
+      '            // Framework component (React/Vue/Svelte) - for now, just render placeholder'
+    );
     parts.push('            // TODO: Implement proper SSR for framework components');
-    parts.push(`            const componentId = \`\${node.tag}-\${Math.random().toString(36).slice(2, 9)}\`;`);
+    parts.push(
+      '            const componentId = `${node.tag}-${Math.random().toString(36).slice(2, 9)}`;'
+    );
     parts.push('            ');
     parts.push('            if (hasClientDirective) {');
     parts.push('              // If it has a client directive, wrap in astro-island for hydration');
-    parts.push(`              const directive = node.attrs.find(attr => attr.name.startsWith('client:'))?.name.replace('client:', '');`);
+    parts.push(
+      `              const directive = node.attrs.find(attr => attr.name.startsWith('client:'))?.name.replace('client:', '');`
+    );
     parts.push(`              const propsJson = JSON.stringify(props).replace(/"/g, '&quot;');`);
     parts.push('              ');
     parts.push('              return { ');
-    parts.push('                type: \'RawHTML\', ');
-    parts.push(`                value: \`<astro-island uid="\\\${componentId}" component-export="\\\${node.tag}" component-props="\\\${propsJson}" client-directive="\\\${directive}">`);
-    parts.push(`                  <!-- \\\${node.tag} will be hydrated on client -->`);
-    parts.push(`                </astro-island>\` `);
+    parts.push("                type: 'RawHTML', ");
+    parts.push(
+      `                value: \`<astro-island uid="\\\${componentId}" component-export="\\\${node.tag}" component-props="\\\${propsJson}" client-directive="\\\${directive}">`
+    );
+    parts.push('                  <!-- \\${node.tag} will be hydrated on client -->');
+    parts.push('                </astro-island>` ');
     parts.push('              };');
     parts.push('            } else {');
     parts.push('              // No client directive - just a placeholder for now');
-    parts.push(`              return { type: 'RawHTML', value: \`<!-- \\\${node.tag} (SSR not implemented) -->\` };`);
+    parts.push(
+      `              return { type: 'RawHTML', value: \`<!-- \\\${node.tag} (SSR not implemented) -->\` };`
+    );
     parts.push('            }');
     parts.push('          }');
     parts.push('        }');
