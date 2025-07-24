@@ -467,13 +467,13 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
             // Split by comma and extract variable names (handling renaming and defaults)
             const vars = varsSection
               .split(',')
-              .map((v: any) => {
+              .map((v: string) => {
                 // Handle: varName, varName: renamed, varName = default
                 const trimmed = v.trim();
                 const varName = trimmed.split(/[:=]/)[0].trim();
                 return varName;
               })
-              .filter((v: any) => v);
+              .filter((v: string) => v);
 
             for (const varName of vars) {
               parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
@@ -859,7 +859,7 @@ function checkNodeForClientDirectives(node: Node): boolean {
     case 'Component': {
       const element = node as ElementNode | ComponentNode;
       return (
-        element.attrs.some((attr: any) => attr.name.startsWith('client:')) ||
+        element.attrs.some((attr) => attr.name.startsWith('client:')) ||
         element.children.some(checkNodeForClientDirectives)
       );
     }

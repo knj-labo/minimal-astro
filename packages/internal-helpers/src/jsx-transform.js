@@ -352,7 +352,7 @@ export function astToJSX(ast, options) {
 /**
  * Transform Astro AST to React component code
  */
-export function astToReactComponent(ast, componentName = 'AstroComponent', options) {
+export function astToReactComponent(ast, componentName, options) {
   const jsx = astToJSX(ast, options);
   // Customize the component wrapper
   const lines = jsx.split('\n');

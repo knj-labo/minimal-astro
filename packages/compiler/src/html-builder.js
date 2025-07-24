@@ -201,7 +201,7 @@ function extractFrontmatterVariables(ast) {
 /**
  * Builds HTML from a single AST node
  */
-function buildNodeHtml(node, options, depth = 0, context) {
+function buildNodeHtml(node, options, depth, context) {
   switch (node.type) {
     case 'Fragment':
       return buildFragmentHtml(node, options, depth, context);

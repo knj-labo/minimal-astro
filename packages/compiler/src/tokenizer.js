@@ -1,28 +1,28 @@
-export var TokenType;
+export let TokenType;
 ((TokenType) => {
-  TokenType['Text'] = 'Text';
-  TokenType['TagOpen'] = 'TagOpen';
-  TokenType['TagClose'] = 'TagClose';
-  TokenType['TagSelfClose'] = 'TagSelfClose';
-  TokenType['AttributeName'] = 'AttributeName';
-  TokenType['AttributeValue'] = 'AttributeValue';
-  TokenType['ExpressionStart'] = 'ExpressionStart';
-  TokenType['ExpressionEnd'] = 'ExpressionEnd';
-  TokenType['ExpressionContent'] = 'ExpressionContent';
-  TokenType['FrontmatterStart'] = 'FrontmatterStart';
-  TokenType['FrontmatterEnd'] = 'FrontmatterEnd';
-  TokenType['FrontmatterContent'] = 'FrontmatterContent';
-  TokenType['EOF'] = 'EOF';
+  TokenType.Text = 'Text';
+  TokenType.TagOpen = 'TagOpen';
+  TokenType.TagClose = 'TagClose';
+  TokenType.TagSelfClose = 'TagSelfClose';
+  TokenType.AttributeName = 'AttributeName';
+  TokenType.AttributeValue = 'AttributeValue';
+  TokenType.ExpressionStart = 'ExpressionStart';
+  TokenType.ExpressionEnd = 'ExpressionEnd';
+  TokenType.ExpressionContent = 'ExpressionContent';
+  TokenType.FrontmatterStart = 'FrontmatterStart';
+  TokenType.FrontmatterEnd = 'FrontmatterEnd';
+  TokenType.FrontmatterContent = 'FrontmatterContent';
+  TokenType.EOF = 'EOF';
 })(TokenType || (TokenType = {}));
-export var Mode;
+export let Mode;
 ((Mode) => {
-  Mode['HTML'] = 'HTML';
-  Mode['Expression'] = 'Expression';
-  Mode['Frontmatter'] = 'Frontmatter';
-  Mode['Tag'] = 'Tag';
-  Mode['Attribute'] = 'Attribute';
-  Mode['Style'] = 'Style';
-  Mode['Script'] = 'Script';
+  Mode.HTML = 'HTML';
+  Mode.Expression = 'Expression';
+  Mode.Frontmatter = 'Frontmatter';
+  Mode.Tag = 'Tag';
+  Mode.Attribute = 'Attribute';
+  Mode.Style = 'Style';
+  Mode.Script = 'Script';
 })(Mode || (Mode = {}));
 function createInitialState(source) {
   return {

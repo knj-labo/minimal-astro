@@ -252,7 +252,11 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
     // Configure dev server to handle page requests
     configureServer(server) {
       // Define our middleware handler
-      const astroDevHandler = async (req: any, res: any, next: any) => {
+      const astroDevHandler = async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        next: NextHandleFunction
+      ) => {
         const url = req.url ?? '/';
 
         // Only handle GET requests to pages (not assets)
@@ -331,7 +335,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
                 astroModule = await server.ssrLoadModule(resolvedPath);
                 // Extract the slug parameter
                 params = { slug: urlParts[urlParts.length - 1] };
-                logger.debug(`Dynamic route matched! Slug: ${(params as any).slug}`);
+                logger.debug(`Dynamic route matched! Slug: ${params.slug}`);
               } catch (e) {
                 logger.debug(`Dynamic route not found: ${(e as Error).message}`);
               }

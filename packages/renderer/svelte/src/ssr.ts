@@ -110,9 +110,13 @@ export function renderSvelteComponent(
     let css: string | undefined;
 
     // Check if this is a real Svelte component with render method
-    if (SvelteComponent && typeof (SvelteComponent as any).render === 'function') {
+    interface SvelteSSRComponent {
+      render(props: Record<string, unknown>): { html: string; css?: { code: string } };
+    }
+
+    if (SvelteComponent && typeof (SvelteComponent as SvelteSSRComponent).render === 'function') {
       // Real Svelte SSR
-      const result = (SvelteComponent as any).render(props);
+      const result = (SvelteComponent as SvelteSSRComponent).render(props);
       html = result.html;
       css = result.css?.code;
     } else {
