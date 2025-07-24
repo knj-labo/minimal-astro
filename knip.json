@@ -6,11 +6,6 @@
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**", "src/cli/build-simple.ts"]
     },
-    "packages/create-minimal-astro": {
-      "entry": ["src/index.ts"],
-      "project": ["src/**/*.ts"],
-      "ignore": ["**/*.d.ts", "**/dist/**"]
-    },
     "packages/internal-helpers": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],

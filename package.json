@@ -6,11 +6,17 @@
   "description": "A minimal implementation of Astro from scratch",
   "scripts": {
     "build": "turbo run build",
-    "test": "bun test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:unit": "vitest run",
+    "test:integration": "vitest run -c vitest.integration.config.ts",
     "dev": "turbo run dev",
     "lint": "biome check",
     "format": "biome format --write",
     "check": "biome check --write",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
     "knip": "knip",
     "knip:fix": "knip --fix",
     "knip:production": "knip --production",
@@ -19,18 +25,20 @@
   "devDependencies": {
     "@biomejs/biome": "^1.7.0",
     "@types/node": "^20.0.0",
+    "@vitest/ui": "^1.6.0",
     "knip": "^5.62.0",
     "turbo": "^1.10.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   },
   "workspaces": [
     "packages/minimal-astro",
-    "packages/create-minimal-astro",
     "packages/internal-helpers",
-    "packages/integrations/react",
-    "packages/integrations/vue",
-    "packages/integrations/svelte",
+    "packages/renderer/*",
     "packages/markdown/remark",
+    "packages/compiler",
+    "packages/vite-plugin",
+    "packages/runtime",
     "examples/*"
   ],
   "engines": {

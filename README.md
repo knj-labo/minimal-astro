@@ -119,10 +119,6 @@ minimal-astro/
 │  │  │     └─ hmr.ts
 │  │  └─ package.json
 │  │
-│  ├─ create-minimal-astro/       # プロジェクト作成ツール
-│  │  ├─ src/index.ts
-│  │  └─ package.json
-│  │
 │  ├─ integrations/               # フレームワーク統合
 │  │  ├─ react/
 │  │  │  ├─ index.ts              # React統合

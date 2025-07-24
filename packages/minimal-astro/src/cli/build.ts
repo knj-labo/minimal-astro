@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, extname, join, relative } from 'node:path';
-import { buildHtml } from '../core/html-builder.js';
-import { parseAstro } from '../core/parse.js';
-import type { Diagnostic } from '../types/ast.js';
+import { buildHtml } from '@minimal-astro/compiler/html-builder';
+import { parseAstro } from '@minimal-astro/compiler/parser';
+import type { Diagnostic } from '@minimal-astro/types/ast';
 
 // ============================================================================
 // TYPES - Immutable and well-defined

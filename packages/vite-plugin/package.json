@@ -1,0 +1,39 @@
+{
+  "name": "@minimal-astro/vite-plugin",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "@minimal-astro/compiler": "workspace:*",
+    "@minimal-astro/internal-helpers": "workspace:*",
+    "@minimal-astro/types": "workspace:*",
+    "vite": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "bun-types": "latest",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0"
+  },
+  "files": ["dist", "README.md"]
+}

@@ -8,6 +8,7 @@
     "allowImportingTsExtensions": false,
     "composite": true,
     "noEmit": false,
+    "emitDeclarationOnly": false,
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
