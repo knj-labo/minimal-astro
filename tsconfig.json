@@ -2,17 +2,15 @@
   "files": [],
   "references": [
     { "path": "./packages/types" },
-    { "path": "./packages/compiler" },
     { "path": "./packages/internal-helpers" },
-    { "path": "./packages/vite-plugin" },
+    { "path": "./packages/compiler" },
     { "path": "./packages/runtime" },
     { "path": "./packages/content" },
     { "path": "./packages/renderer/react" },
     { "path": "./packages/renderer/vue" },
     { "path": "./packages/renderer/svelte" },
+    { "path": "./packages/vite-plugin" },
     { "path": "./packages/markdown/remark" },
-    { "path": "./packages/minimal-astro" },
-    { "path": "./examples/blog" },
-    { "path": "./examples/benchmark" }
+    { "path": "./packages/minimal-astro" }
   ]
 }

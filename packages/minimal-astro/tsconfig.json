@@ -19,5 +19,16 @@
     "skipDefaultLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    { "path": "../compiler" },
+    { "path": "../content" },
+    { "path": "../internal-helpers" },
+    { "path": "../runtime" },
+    { "path": "../types" },
+    { "path": "../vite-plugin" },
+    { "path": "../renderer/react" },
+    { "path": "../renderer/svelte" },
+    { "path": "../renderer/vue" }
+  ]
 }
