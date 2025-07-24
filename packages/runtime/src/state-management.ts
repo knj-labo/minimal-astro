@@ -46,7 +46,6 @@ export function addPending(
   } as const;
 }
 
-
 /**
  * Remove a component from hydrated set (for retry scenarios)
  */
@@ -75,7 +74,6 @@ export function setIntersectionObserver(
     },
   } as const;
 }
-
 
 /**
  * Clear all observers
