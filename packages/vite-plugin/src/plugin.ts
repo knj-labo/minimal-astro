@@ -9,6 +9,8 @@ import {
   handleCssUpdate,
 } from './hmr.js';
 import { createContextualLogger } from './logger.js';
+import type { IncomingMessage, ServerResponse } from 'http';
+import type { NextHandleFunction } from 'connect';
 import { transformAstroToJs } from './transform.js';
 
 export interface AstroVitePluginOptions {
@@ -320,7 +322,8 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           }
 
           // If no exact match, check for dynamic routes
-          let params = {};
+          interface RouteParams { slug?: string; [key: string]: string | undefined; }
+          let params: RouteParams = {};
           if (!astroModule) {
             // Simple dynamic route matching for [slug].astro
             const urlParts = url.split('/').filter(Boolean);

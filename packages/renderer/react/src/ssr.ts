@@ -192,8 +192,8 @@ export function renderReactComponent(
       SSRErrorBoundary,
       {
         componentName,
-      },
-      element
+        children: element,
+      }
     );
 
     // Render to string
