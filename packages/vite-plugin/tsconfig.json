@@ -6,7 +6,9 @@
     "types": ["bun-types", "vite/client"],
     "paths": {
       "@minimal-astro/*": ["../*"]
-    }
+    },
+    "noEmit": false,
+    "emitDeclarationOnly": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]

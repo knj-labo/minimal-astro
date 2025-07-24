@@ -188,7 +188,10 @@ export function renderReactComponent(
     const element = createHydrationWrapper(componentExport, props, hydrationData);
 
     // Wrap in error boundary for SSR safety
-    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName }, element);
+    const wrappedElement = React.createElement(SSRErrorBoundary, {
+      componentName,
+      children: element,
+    });
 
     // Render to string
     const html = renderToString(wrappedElement);

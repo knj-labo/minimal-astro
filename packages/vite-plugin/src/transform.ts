@@ -1,15 +1,12 @@
-import { buildHtml } from '@minimal-astro/compiler';
 import { safeExecute } from '@minimal-astro/internal-helpers';
 import { astToJSX } from '@minimal-astro/internal-helpers';
-import { createSSRRenderer } from '@minimal-astro/react';
-import { renderUniversalComponent } from '@minimal-astro/runtime';
 import type {
   ComponentNode,
   ElementNode,
   FragmentNode,
   FrontmatterNode,
   Node,
-} from '../types/src/ast.js';
+} from '@minimal-astro/types/ast';
 // type HydrationData available if needed
 import { injectHmrCode } from './hmr.js';
 
@@ -88,10 +85,10 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   } = options;
 
   // Extract frontmatter
-  const frontmatter = ast.children.find((child) => child.type === 'Frontmatter') as
+  const frontmatter = ast.children.find((child: Node) => child.type === 'Frontmatter') as
     | FrontmatterNode
     | undefined;
-  const templateNodes = ast.children.filter((child) => child.type !== 'Frontmatter');
+  const templateNodes = ast.children.filter((child: Node) => child.type !== 'Frontmatter');
 
   // Generate the module
   const parts: string[] = [];
@@ -470,13 +467,13 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
             // Split by comma and extract variable names (handling renaming and defaults)
             const vars = varsSection
               .split(',')
-              .map((v) => {
+              .map((v: any) => {
                 // Handle: varName, varName: renamed, varName = default
                 const trimmed = v.trim();
                 const varName = trimmed.split(/[:=]/)[0].trim();
                 return varName;
               })
-              .filter((v) => v);
+              .filter((v: any) => v);
 
             for (const varName of vars) {
               parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
@@ -741,7 +738,9 @@ function generateSourceMap(code: string, filename: string, ast: FragmentNode): s
       mappings.push('AAEA'); // Maps to line 2, column 0
     } else if (line.includes('// Component render function')) {
       // Map template section to the line after frontmatter
-      const frontmatterEnd = ast.children.find((child) => child.type === 'Frontmatter') ? 10 : 2;
+      const frontmatterEnd = ast.children.find((child: Node) => child.type === 'Frontmatter')
+        ? 10
+        : 2;
       mappings.push(encodeVLQ(0, 0, frontmatterEnd, 0));
     } else if (line.includes('export')) {
       // Map exports to end of file
@@ -860,7 +859,7 @@ function checkNodeForClientDirectives(node: Node): boolean {
     case 'Component': {
       const element = node as ElementNode | ComponentNode;
       return (
-        element.attrs.some((attr) => attr.name.startsWith('client:')) ||
+        element.attrs.some((attr: any) => attr.name.startsWith('client:')) ||
         element.children.some(checkNodeForClientDirectives)
       );
     }

@@ -36,7 +36,7 @@ const requestIdleCallback: IdleRequestCallback =
         didTimeout: false,
         timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
       });
-    }, options?.timeout ?? 1);
+    }, options?.timeout ?? 1) as unknown as number;
   });
 
 /**

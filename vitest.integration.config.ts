@@ -1,11 +1,14 @@
-import { defineConfig } from 'vitest/config';
 import { resolve } from 'node:path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['packages/**/test/integration/**/*.test.ts', 'packages/**/test/fixtures/**/*.test.ts'],
+    include: [
+      'packages/**/test/integration/**/*.test.ts',
+      'packages/**/test/fixtures/**/*.test.ts',
+    ],
     exclude: ['**/node_modules/**', '**/dist/**', '**/build/**'],
     testTimeout: 30000,
     hookTimeout: 30000,

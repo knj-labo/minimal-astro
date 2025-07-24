@@ -22,7 +22,8 @@ export {
 // Type exports
 export type {
   CollectionConfig,
-  CollectionEntry,
+  ContentEntry,
+  ContentEntry as CollectionEntry, // Alias for backward compatibility
   ContentConfig,
   ContentModule,
 } from './types.js';

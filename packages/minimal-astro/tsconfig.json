@@ -8,6 +8,7 @@
     "allowImportingTsExtensions": false,
     "composite": true,
     "noEmit": false,
+    "emitDeclarationOnly": false,
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -15,18 +16,7 @@
     "skipLibCheck": true,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
-    "skipDefaultLibCheck": true,
-    "paths": {
-      "@minimal-astro/compiler": ["../compiler/src/index.ts"],
-      "@minimal-astro/content": ["../content/src/index.ts"],
-      "@minimal-astro/internal-helpers": ["../internal-helpers/src/index.ts"],
-      "@minimal-astro/renderer-react": ["../renderer/react/src/index.ts"],
-      "@minimal-astro/renderer-svelte": ["../renderer/svelte/src/index.ts"],
-      "@minimal-astro/renderer-vue": ["../renderer/vue/src/index.ts"],
-      "@minimal-astro/runtime": ["../runtime/src/index.ts"],
-      "@minimal-astro/types": ["../types/src/index.ts"],
-      "@minimal-astro/vite-plugin": ["../vite-plugin/src/index.ts"]
-    }
+    "skipDefaultLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

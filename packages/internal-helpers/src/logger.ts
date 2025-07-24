@@ -198,5 +198,17 @@ export function createContextualLogger(baseContext: LogContext, options?: Logger
         baseLogger.error(message, { ...baseContext, ...errorOrContext });
       }
     },
+
+    setLevel(newLevel: LogLevel): void {
+      baseLogger.setLevel(newLevel);
+    },
+
+    getLevel(): LogLevel {
+      return baseLogger.getLevel();
+    },
+
+    child(context: LogContext): Logger {
+      return createContextualLogger({ ...baseContext, ...context }, options);
+    },
   };
 }

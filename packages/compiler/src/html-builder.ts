@@ -237,7 +237,7 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, unknown>
           ${
             strippedCode
               .match(/(?:const|let|var)\s+(\w+)/g)
-              ?.map((match) => {
+              ?.map((match: string) => {
                 const varName = match.replace(/(?:const|let|var)\s+/, '');
                 return `try { context.${varName} = ${varName}; } catch (e) { context.${varName} = undefined; }`;
               })
@@ -308,8 +308,8 @@ function buildFragmentHtml(
   context?: EvaluationContext
 ): string {
   return node.children
-    .map((child) => buildNodeHtml(child, options, depth, context))
-    .filter((html) => html !== '') // Filter out empty strings from frontmatter
+    .map((child: Node) => buildNodeHtml(child, options, depth, context))
+    .filter((html: string) => html !== '') // Filter out empty strings from frontmatter
     .join('');
 }
 
@@ -359,20 +359,20 @@ function buildElementHtml(
 
   // Check if children are only text nodes (inline content)
   const hasOnlyTextChildren = node.children.every(
-    (child) => child.type === 'Text' || child.type === 'Expression'
+    (child: Node) => child.type === 'Text' || child.type === 'Expression'
   );
 
   if (hasOnlyTextChildren && options.prettyPrint) {
     // Render inline content on same line
     const childrenHtml = node.children
-      .map((child) => buildNodeHtml(child, { ...options, prettyPrint: false }, 0, context))
+      .map((child: Node) => buildNodeHtml(child, { ...options, prettyPrint: false }, 0, context))
       .join('');
     return `${openTag}${childrenHtml}</${tag}>${newline}`;
   }
 
   // Render with proper indentation
   const childrenHtml = node.children
-    .map((child) => buildNodeHtml(child, options, depth + 1, context))
+    .map((child: Node) => buildNodeHtml(child, options, depth + 1, context))
     .join('');
 
   const closeTag = `${indent}</${tag}>`;
@@ -462,7 +462,7 @@ export function buildHtml(ast: FragmentNode, options: HtmlBuilderOptions = {}): 
 
   // Extract evaluation context if expression evaluation is enabled
   let context: EvaluationContext | undefined;
-  const _debugInfo = '';
+  // const _debugInfo = '';
   if (opts.evaluateExpressions) {
     const variables = extractFrontmatterVariables(ast);
     context = { variables };
@@ -559,7 +559,7 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
 
         // Handle inline vs block content
         const hasBlockChildren = node.children.some(
-          (child) => child.type === 'Element' || child.type === 'Component'
+          (child: Node) => child.type === 'Element' || child.type === 'Component'
         );
 
         if (hasBlockChildren && opts.prettyPrint) {
