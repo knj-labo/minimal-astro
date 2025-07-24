@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "minimal-astro dev",
-    "build": "minimal-astro build",
-    "preview": "minimal-astro preview",
+    "dev": "node ../../packages/minimal-astro/dist/cli/index.js dev",
+    "build": "node ../../packages/minimal-astro/dist/cli/index.js build",
+    "preview": "node ../../packages/minimal-astro/dist/cli/index.js preview",
     "lighthouse": "lhci autorun",
     "benchmark": "pnpm build && pnpm lighthouse"
   },
