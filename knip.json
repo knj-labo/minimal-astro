@@ -16,6 +16,36 @@
       "project": ["**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
+    "packages/renderer/*": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/compiler": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/vite-plugin": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/runtime": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/content": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/types": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
     "packages/markdown/remark": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
@@ -38,7 +68,10 @@
     "**/build/**",
     "**/.vite/**",
     "**/coverage/**",
-    "packages/minimal-astro/tests/**"
+    "packages/minimal-astro/tests/**",
+    "examples/blog/src/components/Counter.jsx",
+    "examples/blog/src/content/config.ts",
+    "examples/benchmark/src/components/ReactCounter.jsx"
   ],
   "ignoreExportsUsedInFile": true,
   "ignoreDependencies": [
@@ -53,7 +86,9 @@
     "react-dom",
     "vue",
     "svelte",
-    "@vue/server-renderer"
+    "@vue/server-renderer",
+    "@types/react",
+    "@types/react-dom"
   ],
   "ignoreWorkspaces": []
 }
