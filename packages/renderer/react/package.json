@@ -18,7 +18,8 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "@minimal-astro/internal-helpers": "workspace:*"
+    "@minimal-astro/internal-helpers": "workspace:*",
+    "minimal-astro": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

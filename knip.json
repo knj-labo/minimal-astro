@@ -22,9 +22,9 @@
       "ignore": ["**/*.d.ts", "**/dist/**", "test-markdown.ts"]
     },
     "examples/*": {
-      "entry": ["vite.config.ts", "serve.js"],
+      "entry": ["vite.config.ts", "serve.js", "src/pages/**/*.astro"],
       "project": ["src/**/*.{ts,tsx,js,jsx,astro}", "*.{ts,js}"],
-      "ignore": ["dist/**"]
+      "ignore": ["dist/**", "astro.config.js", "lighthouserc.js"]
     }
   },
   "ignore": [
@@ -41,6 +41,6 @@
     "packages/minimal-astro/tests/**"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": ["@turbo/codemod"],
+  "ignoreDependencies": ["@turbo/codemod", "minimal-astro", "@minimal-astro/compiler", "@minimal-astro/runtime", "@minimal-astro/renderer-react", "@minimal-astro/renderer-vue", "@minimal-astro/renderer-svelte", "react", "react-dom", "vue", "svelte", "@vue/server-renderer"],
   "ignoreWorkspaces": []
 }

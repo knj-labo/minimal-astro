@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@minimal-astro/internal-helpers": "workspace:*",
-    "@minimal-astro/types": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {
