@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "minimal-astro": "workspace:*",
+    "@minimal-astro/compiler": "workspace:*",
+    "@minimal-astro/runtime": "workspace:*",
     "@minimal-astro/renderer-react": "workspace:*",
     "@minimal-astro/renderer-vue": "workspace:*",
     "@minimal-astro/renderer-svelte": "workspace:*",

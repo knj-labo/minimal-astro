@@ -39,6 +39,9 @@ importers:
 
   examples/benchmark:
     dependencies:
+      '@minimal-astro/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
       '@minimal-astro/renderer-react':
         specifier: workspace:*
         version: link:../../packages/renderer/react
@@ -48,6 +51,9 @@ importers:
       '@minimal-astro/renderer-vue':
         specifier: workspace:*
         version: link:../../packages/renderer/vue
+      '@minimal-astro/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       minimal-astro:
         specifier: workspace:*
         version: link:../../packages/minimal-astro
