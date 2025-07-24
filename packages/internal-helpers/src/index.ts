@@ -4,55 +4,24 @@
  */
 
 // Logger utilities
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
+export { createLogger, createContextualLogger, logger } from './logger.js';
+export { LogLevel } from './logger-types.js';
+export type { LogContext, LogEntry, Logger, LoggerOptions } from './logger-types.js';
 
-export interface LogEntry {
-  level: LogLevel;
-  message: string;
-  timestamp: Date;
-  context?: Record<string, unknown>;
-}
-
-export interface LoggerOptions {
-  level?: LogLevel;
-  prefix?: string;
-}
-
-export function createLogger(options: LoggerOptions = {}) {
-  const { level = LogLevel.INFO, prefix = '' } = options;
-
-  return {
-    debug: (message: string, context?: Record<string, unknown>) => {
-      if (level <= LogLevel.DEBUG) {
-        console.debug(`${prefix}[DEBUG] ${message}`, context);
-      }
-    },
-    info: (message: string, context?: Record<string, unknown>) => {
-      if (level <= LogLevel.INFO) {
-        console.info(`${prefix}[INFO] ${message}`, context);
-      }
-    },
-    warn: (message: string, context?: Record<string, unknown>) => {
-      if (level <= LogLevel.WARN) {
-        console.warn(`${prefix}[WARN] ${message}`, context);
-      }
-    },
-    error: (message: string, error?: Error, context?: Record<string, unknown>) => {
-      if (level <= LogLevel.ERROR) {
-        console.error(`${prefix}[ERROR] ${message}`, error, context);
-      }
-    },
-  };
-}
-
-export function createContextualLogger(context: Record<string, unknown>) {
-  return createLogger({ prefix: `[${JSON.stringify(context)}] ` });
-}
+// Error boundary utilities
+export {
+  createErrorBoundary,
+  globalErrorBoundary,
+  withErrorBoundary,
+  withAsyncErrorBoundary,
+  safeExecute,
+  safeExecuteAsync,
+} from './error-boundary.js';
+export type {
+  ErrorContext,
+  RecoveryStrategy,
+  ErrorBoundaryOptions,
+} from './error-boundary.js';
 
 // Path utilities
 export function isAbsolutePath(path: string): boolean {

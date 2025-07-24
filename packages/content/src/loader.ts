@@ -3,7 +3,7 @@
  * Handles Markdown, MDX, JSON, and YAML content
  */
 
-import { createContextualLogger } from '@minimal-astro/core';
+import { createContextualLogger } from '@minimal-astro/internal-helpers';
 import type {
   ContentEntry,
   ContentLoader,

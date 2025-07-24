@@ -1,1 +1,1 @@
-export * from '@minimal-astro/core/logger';
+export * from '@minimal-astro/internal-helpers';

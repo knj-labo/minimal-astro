@@ -1,5 +1,5 @@
 {
-  "name": "@minimal-astro/renderer-svelte",
+  "name": "@minimal-astro/renderer-react",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "bun test",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write ."
@@ -22,9 +22,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "typescript": "^5.4.0"
   },
   "peerDependencies": {
-    "svelte": "^4.0.0"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

@@ -17,16 +17,15 @@
     "noFallthroughCasesInSwitch": false,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@minimal-astro/compiler": ["../compiler/src/index.js"],
-      "@minimal-astro/content": ["../content/src/index.js"],
-      "@minimal-astro/core": ["../core/src/index.js"],
-      "@minimal-astro/internal-helpers": ["../internal-helpers/src/index.js"],
-      "@minimal-astro/renderer-react": ["../renderer-react/src/index.js"],
-      "@minimal-astro/renderer-svelte": ["../renderer-svelte/src/index.js"],
-      "@minimal-astro/renderer-vue": ["../renderer-vue/src/index.js"],
-      "@minimal-astro/runtime": ["../runtime/src/index.js"],
-      "@minimal-astro/types": ["../types/src/index.js"],
-      "@minimal-astro/vite-plugin": ["../vite-plugin/src/index.js"]
+      "@minimal-astro/compiler": ["../compiler/src/index.ts"],
+      "@minimal-astro/content": ["../content/src/index.ts"],
+      "@minimal-astro/internal-helpers": ["../internal-helpers/src/index.ts"],
+      "@minimal-astro/renderer-react": ["../renderer/react/src/index.ts"],
+      "@minimal-astro/renderer-svelte": ["../renderer/svelte/src/index.ts"],
+      "@minimal-astro/renderer-vue": ["../renderer/vue/src/index.ts"],
+      "@minimal-astro/runtime": ["../runtime/src/index.ts"],
+      "@minimal-astro/types": ["../types/src/index.ts"],
+      "@minimal-astro/vite-plugin": ["../vite-plugin/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

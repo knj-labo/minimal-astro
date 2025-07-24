@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join } from 'node:path';
-import { createContextualLogger } from '@minimal-astro/core/logger';
+import { createContextualLogger } from '@minimal-astro/internal-helpers';
 
 // ============================================================================
 // TYPES

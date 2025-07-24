@@ -47,7 +47,7 @@ export {
   type LogLevel,
   type LogContext,
   type Logger,
-} from '@minimal-astro/core';
+} from '@minimal-astro/internal-helpers';
 
 // Type exports
 export type { ParseOptions, HtmlBuilderOptions } from '@minimal-astro/compiler';

@@ -9,7 +9,7 @@ import {
   LogLevel,
   type Logger,
   type LoggerOptions,
-} from './types.js';
+} from './logger-types.js';
 
 /**
  * Create a logger instance with specified options

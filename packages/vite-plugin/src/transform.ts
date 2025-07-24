@@ -1,5 +1,5 @@
 import { buildHtml } from '@minimal-astro/compiler';
-import { safeExecute } from '@minimal-astro/core';
+import { safeExecute } from '@minimal-astro/internal-helpers';
 import { astToJSX } from '@minimal-astro/internal-helpers';
 import { createSSRRenderer } from '@minimal-astro/react';
 import { renderUniversalComponent } from '@minimal-astro/runtime';

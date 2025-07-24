@@ -1,0 +1,26 @@
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'node:path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['packages/**/test/integration/**/*.test.ts', 'packages/**/test/fixtures/**/*.test.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/build/**'],
+    testTimeout: 30000,
+    hookTimeout: 30000,
+  },
+  resolve: {
+    alias: {
+      '@minimal-astro/compiler': resolve(__dirname, 'packages/compiler/src'),
+      '@minimal-astro/content': resolve(__dirname, 'packages/content/src'),
+      '@minimal-astro/internal-helpers': resolve(__dirname, 'packages/internal-helpers/src'),
+      '@minimal-astro/renderer-react': resolve(__dirname, 'packages/renderer/react/src'),
+      '@minimal-astro/renderer-svelte': resolve(__dirname, 'packages/renderer/svelte/src'),
+      '@minimal-astro/renderer-vue': resolve(__dirname, 'packages/renderer/vue/src'),
+      '@minimal-astro/runtime': resolve(__dirname, 'packages/runtime/src'),
+      '@minimal-astro/types': resolve(__dirname, 'packages/types/src'),
+      '@minimal-astro/vite-plugin': resolve(__dirname, 'packages/vite-plugin/src'),
+    },
+  },
+});

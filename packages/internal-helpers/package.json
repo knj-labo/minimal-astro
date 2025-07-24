@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "bun test",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write ."
