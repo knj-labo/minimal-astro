@@ -9,8 +9,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"],
-  "references": [
-    { "path": "../internal-helpers" },
-    { "path": "../types" }
-  ]
+  "references": [{ "path": "../internal-helpers" }, { "path": "../types" }]
 }
