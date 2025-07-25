@@ -43,8 +43,6 @@ export interface MarkdownRenderer {
   render(content: string): Promise<string>;
 }
 
-
-
 /**
  * Generate slug from filename
  */
@@ -55,10 +53,6 @@ export function generateSlug(filename: string): string {
     .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     .toLowerCase();
 }
-
-
-
-
 
 /**
  * Default markdown renderer using simple HTML conversion
@@ -95,8 +89,6 @@ const defaultMarkdownRenderer: MarkdownRenderer = {
     return html;
   },
 };
-
-
 
 /**
  * Load a content module (placeholder for actual implementation)
