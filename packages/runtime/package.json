@@ -32,10 +32,11 @@
     "lint": "biome check .",
     "format": "biome format --write ."
   },
-  "dependencies": {},
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^20.0.0",
     "bun-types": "latest",
+    "jsdom": "^26.1.0",
     "typescript": "^5.4.0"
   },
   "files": ["dist", "README.md"]

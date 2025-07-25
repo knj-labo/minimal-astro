@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    environmentMatchGlobs: [['packages/runtime/**', 'jsdom']],
     include: ['packages/**/test/unit/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/build/**'],
     coverage: {
