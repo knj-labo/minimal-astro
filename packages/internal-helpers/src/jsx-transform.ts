@@ -479,23 +479,4 @@ export function astToJSX(ast: FragmentNode, options?: JSXTransformOptions): stri
   return transformer.transform(ast);
 }
 
-/**
- * Transform Astro AST to React component code
- */
-function astToReactComponent(
-  ast: FragmentNode,
-  componentName = 'AstroComponent',
-  options?: JSXTransformOptions
-): string {
-  const jsx = astToJSX(ast, options);
 
-  // Customize the component wrapper
-  const lines = jsx.split('\n');
-  const functionLine = lines.findIndex((line) => line.includes('export default function'));
-
-  if (functionLine !== -1) {
-    lines[functionLine] = `export default function ${componentName}(props) {`;
-  }
-
-  return lines.join('\n');
-}

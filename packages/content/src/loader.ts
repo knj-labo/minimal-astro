@@ -331,35 +331,7 @@ export function createYamlLoader(_options: LoaderOptions): ContentLoader {
   };
 }
 
-/**
- * Auto-detect and create appropriate loader based on file extension
- */
-function createAutoLoader(options: LoaderOptions): ContentLoader {
-  const markdownLoader = createMarkdownLoader(options);
-  const jsonLoader = createJsonLoader(options);
-  const yamlLoader = createYamlLoader(options);
 
-  return async (file: string, collection: string): Promise<Partial<ContentEntry>> => {
-    const ext = file.split('.').pop()?.toLowerCase();
-
-    switch (ext) {
-      case 'md':
-      case 'markdown':
-      case 'mdx':
-        return markdownLoader(file, collection);
-
-      case 'json':
-        return jsonLoader(file, collection);
-
-      case 'yaml':
-      case 'yml':
-        return yamlLoader(file, collection);
-
-      default:
-        throw new Error(`Unsupported file type: ${ext}`);
-    }
-  };
-}
 
 /**
  * Load a content module (placeholder for actual implementation)
