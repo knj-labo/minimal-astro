@@ -199,5 +199,3 @@ export interface ContentQuery<T = Record<string, unknown>> {
    */
   count(): Promise<number>;
 }
-
-

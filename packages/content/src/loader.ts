@@ -331,8 +331,6 @@ export function createYamlLoader(_options: LoaderOptions): ContentLoader {
   };
 }
 
-
-
 /**
  * Load a content module (placeholder for actual implementation)
  */

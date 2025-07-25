@@ -478,5 +478,3 @@ export function astToJSX(ast: FragmentNode, options?: JSXTransformOptions): stri
   const transformer = createJSXTransformer(options);
   return transformer.transform(ast);
 }
-
-
