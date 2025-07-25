@@ -1,5 +1,7 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { parseAstro } from '@minimal-astro/compiler';
 import type { Diagnostic, FragmentNode } from '@minimal-astro/types/ast';
+import type { NextFunction } from 'connect';
 import type { ModuleNode, Plugin } from 'vite';
 import {
   type AstroHmrState,
@@ -255,7 +257,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
       const astroDevHandler = async (
         req: IncomingMessage,
         res: ServerResponse,
-        next: NextHandleFunction
+        next: NextFunction
       ) => {
         const url = req.url ?? '/';
 
@@ -320,7 +322,11 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           }
 
           // If no exact match, check for dynamic routes
-          let params = {};
+          interface RouteParams {
+            slug?: string;
+            [key: string]: string | undefined;
+          }
+          let params: RouteParams = {};
           if (!astroModule) {
             // Simple dynamic route matching for [slug].astro
             const urlParts = url.split('/').filter(Boolean);

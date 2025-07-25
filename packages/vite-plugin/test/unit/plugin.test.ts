@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test';
 import type { Plugin } from 'vite';
-import { astroVitePlugin } from '../../../src/vite-plugin-astro/plugin';
+import { describe, expect, test } from 'vitest';
+import { astroVitePlugin } from '../../src/plugin.js';
 
 describe('astroVitePlugin', () => {
   test('creates plugin with correct name', () => {

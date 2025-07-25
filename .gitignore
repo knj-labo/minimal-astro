@@ -10,6 +10,9 @@ build/
 coverage/
 *.tsbuildinfo
 
+# prevent declaration files in src directories
+packages/*/src/**/*.d.ts
+
 # cache
 .turbo
 .biome-cache

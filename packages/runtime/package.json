@@ -32,9 +32,7 @@
     "lint": "biome check .",
     "format": "biome format --write ."
   },
-  "dependencies": {
-    "@minimal-astro/types": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
     "bun-types": "latest",

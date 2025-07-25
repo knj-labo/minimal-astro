@@ -24,8 +24,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.0",
+    "@types/connect": "^3.4.38",
     "@types/node": "^20.0.0",
     "@vitest/ui": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "knip": "^5.62.0",
     "turbo": "^1.10.0",
     "typescript": "^5.4.0",

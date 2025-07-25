@@ -199,39 +199,3 @@ export interface ContentQuery<T = Record<string, unknown>> {
    */
   count(): Promise<number>;
 }
-
-/**
- * Content API
- */
-export interface ContentAPI {
-  /**
-   * Get a collection
-   */
-  getCollection<T = Record<string, unknown>>(name: string): Promise<ContentEntry<T>[]>;
-
-  /**
-   * Get entry by ID
-   */
-  getEntry<T = Record<string, unknown>>(
-    collection: string,
-    id: string
-  ): Promise<ContentEntry<T> | null>;
-
-  /**
-   * Get entry by slug
-   */
-  getEntryBySlug<T = Record<string, unknown>>(
-    collection: string,
-    slug: string
-  ): Promise<ContentEntry<T> | null>;
-
-  /**
-   * Query builder
-   */
-  query<T = Record<string, unknown>>(collection: string): ContentQuery<T>;
-
-  /**
-   * Get all collections
-   */
-  getCollections(): string[];
-}

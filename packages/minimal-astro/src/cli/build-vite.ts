@@ -61,6 +61,12 @@ function createViteConfig(options: ViteBuildOptions): InlineConfig {
           ]
         : []),
     ],
+    resolve: {
+      alias: {
+        '@minimal-astro/compiler': '@minimal-astro/compiler',
+        '@minimal-astro/runtime': '@minimal-astro/runtime',
+      },
+    },
     build: {
       outDir,
       minify,

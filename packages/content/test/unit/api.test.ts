@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import {
   createContentManager,
   defineCollection,
@@ -8,7 +8,7 @@ import {
   getEntry,
   initializeContentAPI,
   z,
-} from '../../../src/core/content/api';
+} from '../../src/api.js';
 
 describe('Content API', () => {
   describe('defineCollection', () => {

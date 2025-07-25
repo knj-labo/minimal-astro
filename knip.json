@@ -2,29 +2,49 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     "packages/minimal-astro": {
-      "entry": ["src/index.ts", "src/cli/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**", "src/cli/build-simple.ts"]
     },
     "packages/internal-helpers": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/integrations/*": {
-      "entry": ["index.ts"],
       "project": ["**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
+    "packages/renderer/*": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/compiler": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/vite-plugin": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/runtime": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/content": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
+    "packages/types": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["**/*.d.ts", "**/dist/**"]
+    },
     "packages/markdown/remark": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**", "test-markdown.ts"]
     },
     "examples/*": {
-      "entry": ["vite.config.ts", "serve.js"],
+      "entry": ["src/pages/**/*.astro"],
       "project": ["src/**/*.{ts,tsx,js,jsx,astro}", "*.{ts,js}"],
-      "ignore": ["dist/**"]
+      "ignore": ["dist/**", "astro.config.js", "lighthouserc.js"]
     }
   },
   "ignore": [
@@ -38,9 +58,27 @@
     "**/build/**",
     "**/.vite/**",
     "**/coverage/**",
-    "packages/minimal-astro/tests/**"
+    "packages/minimal-astro/tests/**",
+    "examples/blog/src/components/Counter.jsx",
+    "examples/blog/src/content/config.ts",
+    "examples/benchmark/src/components/ReactCounter.jsx"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": ["@turbo/codemod"],
+  "ignoreDependencies": [
+    "@turbo/codemod",
+    "minimal-astro",
+    "@minimal-astro/compiler",
+    "@minimal-astro/runtime",
+    "@minimal-astro/renderer-react",
+    "@minimal-astro/renderer-vue",
+    "@minimal-astro/renderer-svelte",
+    "react",
+    "react-dom",
+    "vue",
+    "svelte",
+    "@vue/server-renderer",
+    "@types/react",
+    "@types/react-dom"
+  ],
   "ignoreWorkspaces": []
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test';
 import type { FragmentNode } from '@minimal-astro/types/ast';
+import { describe, expect, it } from 'vitest';
 import {
   buildHtml,
   createStreamingHtmlBuilder,

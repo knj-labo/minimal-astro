@@ -3,13 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { astroVitePlugin } from '@minimal-astro/vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import { createServer } from 'vite';
-
-export interface DevOptions {
-  root: string;
-}
+import type { DevOptions } from './types.js';
 
 export async function dev(options: DevOptions) {
-  const { root } = options;
+  const { root = process.cwd() } = options;
 
   console.log('🚀 Starting Minimal Astro dev server...');
 

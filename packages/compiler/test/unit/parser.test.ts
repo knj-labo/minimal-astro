@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'bun:test';
 import type {
   ComponentNode,
   ElementNode,
@@ -7,6 +6,7 @@ import type {
   FrontmatterNode,
   TextNode,
 } from '@minimal-astro/types/ast';
+import { describe, expect, it } from 'vitest';
 import { parseAstro } from '../../src/parser.js';
 
 describe('Parser', () => {

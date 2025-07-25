@@ -8,14 +8,16 @@
     "preview": "node ../../packages/minimal-astro/dist/cli/index.js preview"
   },
   "dependencies": {
+    "@minimal-astro/compiler": "workspace:*",
     "@minimal-astro/renderer-react": "workspace:*",
     "@minimal-astro/renderer-svelte": "workspace:*",
     "@minimal-astro/renderer-vue": "workspace:*",
+    "@minimal-astro/runtime": "workspace:*",
     "@vue/server-renderer": "^3.5.18",
     "minimal-astro": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "svelte": "^4.2.0",
+    "svelte": "^5.36.0",
     "vue": "^3.5.17"
   },
   "devDependencies": {

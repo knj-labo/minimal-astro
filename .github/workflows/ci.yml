@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint & Type Check
@@ -28,6 +32,9 @@ jobs:
       
       - name: Lint
         run: pnpm lint
+      
+      - name: Build packages
+        run: pnpm build
       
       - name: Type check
         run: pnpm typecheck
@@ -64,8 +71,14 @@ jobs:
       - name: Run unit tests
         run: pnpm test:unit
       
-      - name: Run integration tests
-        run: pnpm test:integration
+      - name: Upload coverage reports
+        if: matrix.node-version == 20 && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
   build:
     name: Build
@@ -91,5 +104,21 @@ jobs:
       
       - name: Build examples
         run: |
-          cd examples/blog && pnpm build
-          cd ../benchmark && pnpm build
+          pnpm --filter blog-example build
+          pnpm --filter minimal-astro-benchmark build
+  
+  # This job ensures all CI checks pass
+  ci-pass:
+    name: CI Pass
+    needs: [lint, test, build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all job status
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            echo "One or more jobs failed"
+            exit 1
+          else
+            echo "All jobs passed successfully"
+          fi

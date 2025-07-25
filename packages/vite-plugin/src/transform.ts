@@ -58,6 +58,7 @@ function stripTypeScript(code: string): string {
  * Transform an Astro AST to a JavaScript module
  */
 export function transformAstroToJs(ast: FragmentNode, options: TransformOptions): TransformResult {
+  // Added comment to force recompile
   return safeExecute(
     () => transformAstroToJsInternal(ast, options),
     {
@@ -67,7 +68,8 @@ export function transformAstroToJs(ast: FragmentNode, options: TransformOptions)
     },
     {
       fallbackValue: {
-        code: '// Transform error occurred\nexport default {};',
+        code: `// Transform error occurred
+export default {};`,
         map: undefined,
       },
     }
@@ -88,7 +90,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   const frontmatter = ast.children.find((child: Node) => child.type === 'Frontmatter') as
     | FrontmatterNode
     | undefined;
-  const templateNodes = ast.children.filter((child: Node) => child.type !== 'Frontmatter');
+  const templateNodes = ast.children.filter((child) => child.type !== 'Frontmatter');
 
   // Generate the module
   const parts: string[] = [];
@@ -152,10 +154,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   parts.push(`// Auto-generated from ${filename}`);
 
   // Import buildHtml at the top
-  parts.push(`import { buildHtml } from 'minimal-astro/core/html-builder';`);
-  parts.push(
-    `import { renderUniversalComponent } from 'minimal-astro/core/renderer/universal-ssr';`
-  );
+  parts.push(`import { buildHtml } from '@minimal-astro/compiler';`);
 
   // Add frontmatter imports
   if (frontmatterImports.length > 0) {
@@ -351,7 +350,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('                prettyPrint: false,');
     parts.push('                evaluateExpressions: false,');
     parts.push('                escapeHtml: false');
-    parts.push('              }');
+    parts.push('              });');
     parts.push('              return html;');
     parts.push('            };');
     parts.push('            ');
@@ -362,34 +361,39 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('            };');
     parts.push('            ');
     parts.push(
-      '            const result = await Component.render({ ...props, Astro: componentAstro }'
+      '            const result = await Component.render({ ...props, Astro: componentAstro });'
     );
     parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
     parts.push('          } else {');
-    parts.push('            // Framework component (React/Vue/Svelte)');
-    parts.push('            const registries = {');
-    parts.push('              react: new Map([[node.tag, Component]]),');
-    parts.push('              vue: new Map([[node.tag, Component]]),');
-    parts.push('              svelte: new Map([[node.tag, Component]])');
-    parts.push('            };');
+    parts.push(
+      '            // Framework component (React/Vue/Svelte) - for now, just render placeholder'
+    );
+    parts.push('            // TODO: Implement proper SSR for framework components');
+    parts.push(
+      '            const componentId = `${node.tag}-${Math.random().toString(36).slice(2, 9)}`;'
+    );
     parts.push('            ');
+    parts.push('            if (hasClientDirective) {');
+    parts.push('              // If it has a client directive, wrap in astro-island for hydration');
     parts.push(
-      '            const result = await renderUniversalComponent(node.tag, props, componentType, {'
+      `              const directive = node.attrs.find(attr => attr.name.startsWith('client:'))?.name.replace('client:', '');`
     );
+    parts.push(`              const propsJson = JSON.stringify(props).replace(/"/g, '&quot;');`);
+    parts.push('              ');
+    parts.push('              return { ');
+    parts.push("                type: 'RawHTML', ");
     parts.push(
-      `              reactComponents: componentType === 'react' ? registries.react : undefined,`
+      `                value: \`<astro-island uid="\\\${componentId}" component-export="\\\${node.tag}" component-props="\\\${propsJson}" client-directive="\\\${directive}">`
     );
+    parts.push('                  <!-- \\${node.tag} will be hydrated on client -->');
+    parts.push('                </astro-island>` ');
+    parts.push('              };');
+    parts.push('            } else {');
+    parts.push('              // No client directive - just a placeholder for now');
     parts.push(
-      `              vueComponents: componentType === 'vue' ? registries.vue : undefined,`
+      `              return { type: 'RawHTML', value: \`<!-- \\\${node.tag} (SSR not implemented) -->\` };`
     );
-    parts.push(
-      `              svelteComponents: componentType === 'svelte' ? registries.svelte : undefined,`
-    );
-    parts.push('              generateHydrationData: hasClientDirective,');
-    parts.push(`              dev: ${dev}`);
     parts.push('            }');
-    parts.push('            ');
-    parts.push(`            return { type: 'RawHTML', value: result.html };`);
     parts.push('          }');
     parts.push('        }');
     parts.push('        // If component not found, return comment');
@@ -467,13 +471,13 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
             // Split by comma and extract variable names (handling renaming and defaults)
             const vars = varsSection
               .split(',')
-              .map((v: string) => {
+              .map((v) => {
                 // Handle: varName, varName: renamed, varName = default
                 const trimmed = v.trim();
                 const varName = trimmed.split(/[:=]/)[0].trim();
                 return varName;
               })
-              .filter((v: string) => v);
+              .filter((v) => v);
 
             for (const varName of vars) {
               parts.push(`    try { evalContext.${varName} = ${varName}; } catch(e) {}`);
@@ -496,12 +500,12 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`      prettyPrint: ${prettyPrint},`);
     parts.push('      evaluateExpressions: false,');
     parts.push('      escapeHtml: false');
-    parts.push('    }');
+    parts.push('    });');
     parts.push('    ');
     parts.push('    // Add hydration script if there are any client components');
     parts.push('    const hasClientComponents = Object.keys(componentTypes).some(name => {');
     parts.push(`      return componentTypes[name] !== 'astro';`);
-    parts.push('    }');
+    parts.push('    });');
     parts.push('    ');
     parts.push('    ');
     parts.push(`    if (hasClientComponents && html.includes('astro-island')) {`);
@@ -563,7 +567,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('        target: island,');
     parts.push('        props,');
     parts.push(`        hydrate: directive !== 'only'`);
-    parts.push('      }');
+    parts.push('      });');
     parts.push('    }');
     parts.push('    } catch (e) {');
     parts.push(`      console.error('Failed to hydrate component:', componentName, e);`);
@@ -633,8 +637,8 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('            hydrateComponent(entry.target);');
     parts.push('            observer.unobserve(entry.target);');
     parts.push('          }');
-    parts.push('        }');
-    parts.push('      }');
+    parts.push('        });');
+    parts.push('      });');
     parts.push('      visibleIslands.forEach(island => observer.observe(island));');
     parts.push('    } else {');
     parts.push('      visibleIslands.forEach(hydrateComponent);');

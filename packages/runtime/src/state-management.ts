@@ -47,19 +47,6 @@ export function addPending(
 }
 
 /**
- * Remove a pending hydration
- */
-export function removePending(state: HydrationState, componentId: string): HydrationState {
-  const newPending = new Map(state.pending);
-  newPending.delete(componentId);
-
-  return {
-    ...state,
-    pending: newPending,
-  } as const;
-}
-
-/**
  * Remove a component from hydrated set (for retry scenarios)
  */
 export function removeFromHydrated(state: HydrationState, componentId: string): HydrationState {
@@ -84,22 +71,6 @@ export function setIntersectionObserver(
     observers: {
       ...state.observers,
       intersection: observer,
-    },
-  } as const;
-}
-
-/**
- * Set mutation observer
- */
-export function setMutationObserver(
-  state: HydrationState,
-  observer: MutationObserver
-): HydrationState {
-  return {
-    ...state,
-    observers: {
-      ...state.observers,
-      mutation: observer,
     },
   } as const;
 }

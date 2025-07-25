@@ -4,12 +4,14 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "types": ["bun-types", "vite/client"],
-    "paths": {
-      "@minimal-astro/*": ["../*"]
-    },
     "noEmit": false,
     "emitDeclarationOnly": false
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": ["node_modules", "dist", "test"],
+  "references": [
+    { "path": "../compiler" },
+    { "path": "../types" },
+    { "path": "../internal-helpers" }
+  ]
 }

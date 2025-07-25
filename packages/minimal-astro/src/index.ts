@@ -6,17 +6,7 @@
 // Core compiler exports
 export { parseAstro, buildHtml, tokenize } from '@minimal-astro/compiler';
 
-// Renderer exports
-// Re-export from integration packages
-export {
-  createReactRenderer,
-  createSSRRenderer,
-  createClientRenderer,
-  type ReactRendererOptions,
-  type RenderResult,
-  type HydrationData,
-  type ClientDirective,
-} from '@minimal-astro/renderer-react';
+// Internal helper exports
 export {
   astToJSX,
   type JSXTransformOptions,

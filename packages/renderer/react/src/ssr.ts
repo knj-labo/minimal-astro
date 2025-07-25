@@ -122,11 +122,15 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
+interface SSRErrorBoundaryProps {
+  componentName: string;
+}
+
 class SSRErrorBoundary extends React.Component<
-  { children: React.ReactNode; componentName: string },
+  React.PropsWithChildren<SSRErrorBoundaryProps>,
   ErrorBoundaryState
 > {
-  constructor(props: { children: React.ReactNode; componentName: string }) {
+  constructor(props: React.PropsWithChildren<SSRErrorBoundaryProps>) {
     super(props);
     this.state = { hasError: false };
   }
@@ -188,13 +192,7 @@ export function renderReactComponent(
     const element = createHydrationWrapper(componentExport, props, hydrationData);
 
     // Wrap in error boundary for SSR safety
-    const wrappedElement = React.createElement(
-      SSRErrorBoundary,
-      {
-        componentName,
-      },
-      element
-    );
+    const wrappedElement = React.createElement(SSRErrorBoundary, { componentName }, element);
 
     // Render to string
     const html = renderToString(wrappedElement);
