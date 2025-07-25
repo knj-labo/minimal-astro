@@ -17,9 +17,9 @@ export interface HydrationOptions {
   components: Map<string, ComponentType>;
 
   /**
-   * React or Preact
+   * React, Preact, or vanilla/test for testing
    */
-  runtime: 'react' | 'preact';
+  runtime: 'react' | 'preact' | 'vanilla' | 'test' | string;
 
   /**
    * Custom render function
