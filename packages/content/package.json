@@ -29,7 +29,6 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "@minimal-astro/internal-helpers": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {
