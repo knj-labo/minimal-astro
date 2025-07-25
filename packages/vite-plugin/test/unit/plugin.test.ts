@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest';
 import type { Plugin } from 'vite';
+import { describe, expect, test } from 'vitest';
 import { astroVitePlugin } from '../../src/plugin.js';
 
 describe('astroVitePlugin', () => {
