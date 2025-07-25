@@ -334,7 +334,7 @@ export function createYamlLoader(_options: LoaderOptions): ContentLoader {
 /**
  * Auto-detect and create appropriate loader based on file extension
  */
-export function createAutoLoader(options: LoaderOptions): ContentLoader {
+function createAutoLoader(options: LoaderOptions): ContentLoader {
   const markdownLoader = createMarkdownLoader(options);
   const jsonLoader = createJsonLoader(options);
   const yamlLoader = createYamlLoader(options);

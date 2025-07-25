@@ -203,7 +203,7 @@ export interface ContentQuery<T = Record<string, unknown>> {
 /**
  * Content API
  */
-export interface ContentAPI {
+interface ContentAPI {
   /**
    * Get a collection
    */

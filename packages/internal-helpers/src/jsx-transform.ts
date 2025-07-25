@@ -482,7 +482,7 @@ export function astToJSX(ast: FragmentNode, options?: JSXTransformOptions): stri
 /**
  * Transform Astro AST to React component code
  */
-export function astToReactComponent(
+function astToReactComponent(
   ast: FragmentNode,
   componentName = 'AstroComponent',
   options?: JSXTransformOptions
