@@ -2,57 +2,47 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     "packages/minimal-astro": {
-      "entry": ["src/index.ts", "src/cli/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**", "src/cli/build-simple.ts"]
     },
     "packages/internal-helpers": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/integrations/*": {
-      "entry": ["index.ts"],
       "project": ["**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/renderer/*": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/compiler": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/vite-plugin": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/runtime": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/content": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/types": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**"]
     },
     "packages/markdown/remark": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["**/*.d.ts", "**/dist/**", "test-markdown.ts"]
     },
     "examples/*": {
-      "entry": ["vite.config.ts", "serve.js", "src/pages/**/*.astro"],
+      "entry": ["src/pages/**/*.astro"],
       "project": ["src/**/*.{ts,tsx,js,jsx,astro}", "*.{ts,js}"],
       "ignore": ["dist/**", "astro.config.js", "lighthouserc.js"]
     }
