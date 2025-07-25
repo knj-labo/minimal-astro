@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import type { FragmentNode } from '@minimal-astro/types/ast';
 import {
   buildHtml,
