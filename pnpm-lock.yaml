@@ -144,9 +144,6 @@ importers:
 
   packages/content:
     dependencies:
-      '@minimal-astro/internal-helpers':
-        specifier: workspace:*
-        version: link:../internal-helpers
       zod:
         specifier: ^3.22.0
         version: 3.25.76
