@@ -4,6 +4,7 @@ import type {
   ExpressionNode,
   FrontmatterNode,
   TextNode,
+  // @ts-ignore
 } from '@minimal-astro/types/ast';
 import { describe, expect, it } from 'vitest';
 import { CompilerError, FrontmatterParseError } from '../../src/errors.js';

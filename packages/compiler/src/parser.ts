@@ -238,6 +238,7 @@ function parseFrontmatter(
       // This is not a full validation, but can catch basic errors.
       // For a real implementation, a proper JS parser would be needed.
       new Function(token.value);
+    // biome-ignore lint/suspicious/noExplicitAny: Error type from Function constructor
     } catch (e: any) {
       if (options.throwOnError) {
         throw new FrontmatterParseError(
