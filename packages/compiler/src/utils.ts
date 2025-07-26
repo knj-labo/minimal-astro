@@ -1,4 +1,5 @@
 import type { Diagnostic } from '@minimal-astro/types/ast';
+import { CompilerError } from './errors.js';
 
 /**
  * Utility to safely execute a function and handle errors gracefully.
@@ -26,6 +27,10 @@ export function safeExecute<T>(
   try {
     return fn();
   } catch (error) {
+    if (error instanceof CompilerError) {
+      throw error;
+    }
+
     const diagnostic: Diagnostic = {
       code: 'internal-error',
       message: `An internal error occurred during ${options.operation}: ${

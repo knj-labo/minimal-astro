@@ -492,19 +492,38 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
     buildToStream: async (ast: FragmentNode, streamOptions: StreamingOptions): Promise<void> => {
       const { write } = streamOptions;
       let buffer = '';
+      let streamError: Error | null = null;
 
       const writeBuffered = async (content: string): Promise<void> => {
+        if (streamError) {
+          throw streamError;
+        }
+
         buffer += content;
         if (buffer.length >= chunkSize) {
-          await write(buffer);
-          buffer = '';
+          try {
+            await write(buffer);
+            buffer = '';
+          } catch (error) {
+            streamError = error instanceof Error ? error : new Error(String(error));
+            throw streamError;
+          }
         }
       };
 
       const flush = async (): Promise<void> => {
+        if (streamError) {
+          throw streamError;
+        }
+
         if (buffer.length > 0) {
-          await write(buffer);
-          buffer = '';
+          try {
+            await write(buffer);
+            buffer = '';
+          } catch (error) {
+            streamError = error instanceof Error ? error : new Error(String(error));
+            throw streamError;
+          }
         }
       };
 

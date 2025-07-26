@@ -1,4 +1,5 @@
-import type { FragmentNode } from '@minimal-astro/types/ast';
+// @ts-ignore
+import type { ElementNode, FragmentNode, TextNode } from '@minimal-astro/types/ast';
 import { describe, expect, it } from 'vitest';
 import {
   buildHtml,
@@ -154,8 +155,7 @@ describe('HTML Builder', () => {
     });
 
     it('should evaluate complex expressions', () => {
-      const source =
-        "---\nconst user = { name: 'John', age: 30 };\n---\n<p>{user.name} is {user.age} years old</p>";
+      const source = `---\nconst user = { name: 'John', age: 30 };\n---\n<p>{user.name} is {user.age} years old</p>`;
       const result = parseAstro(source);
       const html = buildHtml(result.ast, { evaluateExpressions: true });
 
@@ -171,8 +171,7 @@ describe('HTML Builder', () => {
     });
 
     it('should handle expressions in attributes', () => {
-      const source =
-        "---\nconst className = 'container';\nconst id = 'main';\n---\n<div class={className} id={id}>Content</div>";
+      const source = `---\nconst className = 'container';\nconst id = 'main';\n---\n<div class={className} id={id}>Content</div>`;
       const result = parseAstro(source);
       const html = buildHtml(result.ast, { evaluateExpressions: true });
 
@@ -194,6 +193,38 @@ describe('HTML Builder', () => {
       const html = buildHtml(result.ast, { prettyPrint: true });
 
       expect(html).toContain('<!-- Component: Counter');
+    });
+
+    it('CMP-3: should evaluate arithmetic expressions like {1 + 1} to 2', () => {
+      const source = `---
+// No variables needed for pure arithmetic
+---
+<p>The answer is {1 + 1}</p>`;
+
+      const result = parseAstro(source);
+      const html = buildHtml(result.ast, { evaluateExpressions: true });
+
+      expect(html).toContain('<p>The answer is 2</p>');
+      expect(html).not.toContain('1 + 1');
+    });
+
+    it('should evaluate complex arithmetic expressions', () => {
+      const source = `---
+const x = 10;
+const y = 5;
+---
+<div>
+  <p>Addition: {x + y}</p>
+  <p>Multiplication: {x * y}</p>
+  <p>Complex: {(x + y) * 2 - 10}</p>
+</div>`;
+
+      const result = parseAstro(source);
+      const html = buildHtml(result.ast, { evaluateExpressions: true });
+
+      expect(html).toContain('<p>Addition: 15</p>');
+      expect(html).toContain('<p>Multiplication: 50</p>');
+      expect(html).toContain('<p>Complex: 20</p>');
     });
   });
 
@@ -342,6 +373,148 @@ describe('HTML Builder', () => {
       expect(html).toContain('<html>');
       expect(html).toContain('<h1>Deep</h1>');
       expect(html).toContain('</html>');
+    });
+  });
+
+  describe('Streaming Error Handling', () => {
+    it('STR-A1: should reject buildToStream when write() fails', async () => {
+      const source = '<div>Test content</div>';
+      const result = parseAstro(source);
+
+      const streamBuilder = createStreamingHtmlBuilder();
+      const errorMessage = 'Write operation failed';
+
+      const failingStream = {
+        write: async () => {
+          throw new Error(errorMessage);
+        },
+      };
+
+      await expect(streamBuilder.buildToStream(result.ast, failingStream)).rejects.toThrow(
+        errorMessage
+      );
+    });
+
+    it('should stop processing after write error', async () => {
+      const source = '<div><p>First</p><p>Second</p><p>Third</p></div>';
+      const result = parseAstro(source);
+
+      const streamBuilder = createStreamingHtmlBuilder({ chunkSize: 1 });
+      let writeCount = 0;
+
+      const partiallyFailingStream = {
+        write: async (_chunk: string): Promise<void> => {
+          writeCount++;
+          if (writeCount > 2) {
+            throw new Error('Stream interrupted');
+          }
+        },
+      };
+
+      await expect(streamBuilder.buildToStream(result.ast, partiallyFailingStream)).rejects.toThrow(
+        'Stream interrupted'
+      );
+
+      // Should have attempted only a few writes before stopping
+      expect(writeCount).toBeLessThan(10);
+    });
+  });
+
+  describe('Unicode and Special Characters', () => {
+    it('ESC-Edge-Unicode: should correctly escape surrogate pair characters', () => {
+      const testCases = [
+        ['👍', '👍'], // Thumbs up emoji (U+1F44D)
+        ['🎉', '🎉'], // Party popper (U+1F389)
+        ['你好', '你好'], // Chinese characters
+        ['🇯🇵', '🇯🇵'], // Flag emoji (surrogate pairs)
+        ['👨‍👩‍👧‍👦', '👨‍👩‍👧‍👦'], // Family emoji with ZWJ sequences
+      ];
+
+      for (const [input, expected] of testCases) {
+        expect(escapeHtmlFast(input)).toBe(expected);
+        expect(escapeHtmlLegacy(input)).toBe(expected);
+      }
+    });
+
+    it('should preserve emoji in HTML output', () => {
+      const source = '<p>Hello 👋 World 🌍!</p>';
+      const result = parseAstro(source);
+      const html = buildHtml(result.ast);
+
+      expect(html).toContain('Hello 👋 World 🌍!');
+    });
+
+    it('should handle mixed Unicode and HTML entities', () => {
+      const input = '<p>Emoji: 👍 & HTML: &lt;tag&gt;</p>';
+      const escaped = escapeHtmlFast(input);
+
+      expect(escaped).toContain('👍'); // Emoji preserved
+      expect(escaped).toContain('&lt;p&gt;'); // Tags escaped
+      expect(escaped).toContain('&amp;lt;'); // Already escaped entities double-escaped
+    });
+  });
+
+  describe('Performance', () => {
+    it('PERF-1kNodes: should transform 1000-node AST within 100ms', () => {
+      // Create a large AST with 1000+ nodes
+      const nodes: Array<ElementNode | TextNode> = [];
+      for (let i = 0; i < 500; i++) {
+        nodes.push({
+          type: 'Element',
+          tag: 'div',
+          attrs: [
+            {
+              name: 'class',
+              value: `item-${i}`,
+              loc: {
+                start: { line: 1, column: 1, offset: 0 },
+                end: { line: 1, column: 1, offset: 0 },
+              },
+            },
+            {
+              name: 'data-index',
+              value: `${i}`,
+              loc: {
+                start: { line: 1, column: 1, offset: 0 },
+                end: { line: 1, column: 1, offset: 0 },
+              },
+            },
+          ],
+          attributes: [],
+          children: [
+            {
+              type: 'Text',
+              value: `Content ${i}`,
+              loc: {
+                start: { line: 1, column: 1, offset: 0 },
+                end: { line: 1, column: 1, offset: 0 },
+              },
+            },
+          ],
+          selfClosing: false,
+          loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } },
+        });
+      }
+
+      const largeAst: FragmentNode = {
+        type: 'Fragment',
+        children: nodes,
+        loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } },
+      };
+
+      // Verify we have 1000+ nodes (334 divs * 3 nodes each = 1002 nodes)
+      const nodeCount = nodes.length + nodes.reduce((sum, node) => sum + node.children.length, 0);
+      expect(nodeCount).toBeGreaterThanOrEqual(1000);
+
+      // Measure performance
+      const startTime = performance.now();
+      const html = buildHtml(largeAst);
+      const endTime = performance.now();
+
+      const duration = endTime - startTime;
+      expect(duration).toBeLessThan(100); // Should complete within 100ms
+      expect(html).toContain('Content 0');
+      expect(html).toContain('Content 333');
     });
   });
 });

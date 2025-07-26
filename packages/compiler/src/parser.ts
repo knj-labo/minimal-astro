@@ -11,11 +11,13 @@ import type {
   SourceSpan,
   TextNode,
 } from '@minimal-astro/types/ast';
+import { CompilerError, FrontmatterParseError } from './errors.js';
 import { type Token, TokenType, tokenize } from './tokenizer.js';
 import { safeExecute } from './utils.js';
 
 export interface ParseOptions {
   filename?: string;
+  throwOnError?: boolean;
 }
 
 interface ParserState {
@@ -57,8 +59,12 @@ function addDiagnostic(
   code: string,
   message: string,
   loc: SourceSpan,
-  severity: 'error' | 'warning' = 'error'
+  severity: 'error' | 'warning' = 'error',
+  options: { throwOnError?: boolean } = {}
 ): ParserState {
+  if (severity === 'error' && options.throwOnError) {
+    throw new CompilerError(message, code, loc, state.filename);
+  }
   return {
     ...state,
     diagnostics: [
@@ -220,10 +226,37 @@ function parseAttributes(state: ParserState): [ParserState, Attr[]] {
   return [currentState, attrs];
 }
 
-function parseFrontmatter(state: ParserState): [ParserState, FrontmatterNode | null] {
+function parseFrontmatter(
+  state: ParserState,
+  options: { throwOnError?: boolean } = {}
+): [ParserState, FrontmatterNode | null] {
   const token = peek(state);
   if (token && token.type === TokenType.FrontmatterContent) {
     const [newState] = advance(state);
+    try {
+      // A simple check for syntax errors could be to try to parse it.
+      // This is not a full validation, but can catch basic errors.
+      // For a real implementation, a proper JS parser would be needed.
+      new Function(token.value);
+    } catch (e: any) {
+      if (options.throwOnError) {
+        throw new FrontmatterParseError(
+          `Frontmatter parsing error: ${e.message}`,
+          token.loc,
+          state.filename
+        );
+      }
+      const errorState = addDiagnostic(
+        newState,
+        'FRONTMATTER_PARSE_ERROR',
+        `Frontmatter parsing error: ${e.message}`,
+        token.loc,
+        'error',
+        options
+      );
+      return [errorState, null];
+    }
+
     return [
       newState,
       {
@@ -306,7 +339,11 @@ function getImplicitlyClosedTags(tag: string): string[] {
   return implicitClosers[tag.toLowerCase()] ?? [];
 }
 
-function parseChildren(state: ParserState, parentTag: string): [ParserState, Node[]] {
+function parseChildren(
+  state: ParserState,
+  parentTag: string,
+  options: { throwOnError?: boolean } = {}
+): [ParserState, Node[]] {
   const children: Node[] = [];
   const implicitlyClosedBy = getImplicitlyClosedTags(parentTag);
   let currentState = state;
@@ -327,7 +364,9 @@ function parseChildren(state: ParserState, parentTag: string): [ParserState, Nod
         currentState,
         'mismatched-tag',
         `Expected closing tag for <${parentTag}> but found </${token.value}>`,
-        token.loc
+        token.loc,
+        'error',
+        options
       );
       // Try to recover by treating it as if parent was closed
       return [currentState, children];
@@ -339,7 +378,7 @@ function parseChildren(state: ParserState, parentTag: string): [ParserState, Nod
       return [currentState, children];
     }
 
-    const [nodeState, node] = parseNode(currentState);
+    const [nodeState, node] = parseNode(currentState, options);
     currentState = nodeState;
     if (node) {
       children.push(node);
@@ -354,19 +393,24 @@ function parseChildren(state: ParserState, parentTag: string): [ParserState, Nod
     const lastToken = currentState.tokens[currentState.tokens.length - 1];
     currentState = addDiagnostic(
       currentState,
-      'unclosed-tag',
+      'UNCLOSED_TAG',
       `Unclosed tag <${parentTag}>`,
       lastToken?.loc ?? {
         start: { line: 1, column: 1, offset: 0 },
         end: { line: 1, column: 1, offset: 0 },
-      }
+      },
+      'error',
+      options
     );
   }
 
   return [currentState, children];
 }
 
-function parseElement(state: ParserState): [ParserState, ElementNode | ComponentNode | null] {
+function parseElement(
+  state: ParserState,
+  options: { throwOnError?: boolean } = {}
+): [ParserState, ElementNode | ComponentNode | null] {
   const openToken = peek(state);
   if (!openToken || openToken.type !== TokenType.TagOpen) {
     return [state, null];
@@ -391,7 +435,7 @@ function parseElement(state: ParserState): [ParserState, ElementNode | Component
 
       // Parse children if not self-closing and not void element
       if (!isVoidElement(tag)) {
-        const [childrenState, parsedChildren] = parseChildren(currentState, tag);
+        const [childrenState, parsedChildren] = parseChildren(currentState, tag, options);
         currentState = childrenState;
         children = parsedChildren;
       }
@@ -427,12 +471,15 @@ function parseElement(state: ParserState): [ParserState, ElementNode | Component
   return [currentState, node];
 }
 
-function parseNode(state: ParserState): [ParserState, Node | null] {
+function parseNode(
+  state: ParserState,
+  options: { throwOnError?: boolean } = {}
+): [ParserState, Node | null] {
   // Try parsing in order of likelihood
   const [exprState, expression] = parseExpression(state);
   if (expression) return [exprState, expression];
 
-  const [elemState, element] = parseElement(state);
+  const [elemState, element] = parseElement(state, options);
   if (element) return [elemState, element];
 
   const [textState, text] = parseText(state);
@@ -441,12 +488,12 @@ function parseNode(state: ParserState): [ParserState, Node | null] {
   return [state, null];
 }
 
-function parse(state: ParserState): ParseResult {
+function parse(state: ParserState, options: { throwOnError?: boolean } = {}): ParseResult {
   const children: Node[] = [];
   let currentState = state;
 
   // Check for frontmatter first
-  const [frontmatterState, frontmatter] = parseFrontmatter(currentState);
+  const [frontmatterState, frontmatter] = parseFrontmatter(currentState, options);
   if (frontmatter) {
     children.push(frontmatter);
     currentState = frontmatterState;
@@ -454,7 +501,7 @@ function parse(state: ParserState): ParseResult {
 
   // Parse remaining content
   while (!isAtEnd(currentState)) {
-    const [nodeState, node] = parseNode(currentState);
+    const [nodeState, node] = parseNode(currentState, options);
     if (node) {
       children.push(node);
       currentState = nodeState;
@@ -487,7 +534,7 @@ export function parseAstro(source: string, options?: ParseOptions): ParseResult 
     () => {
       const tokens = tokenize(source);
       const initialState = createInitialState(tokens, options);
-      return parse(initialState);
+      return parse(initialState, options);
     },
     {
       operation: 'parse',

@@ -2,11 +2,11 @@ import type {
   ComponentNode,
   ElementNode,
   ExpressionNode,
-  FragmentNode,
   FrontmatterNode,
   TextNode,
 } from '@minimal-astro/types/ast';
 import { describe, expect, it } from 'vitest';
+import { CompilerError, FrontmatterParseError } from '../../src/errors.js';
 import { parseAstro } from '../../src/parser.js';
 
 describe('Parser', () => {
@@ -283,6 +283,43 @@ const title = "Test Page";
         (child) => child.type === 'Element' && (child as ElementNode).tag === 'html'
       );
       expect(htmlElement).toBeDefined();
+    });
+  });
+
+  describe('Error Handling - Throwing Errors', () => {
+    it('CMP-A1: should throw CompilerError with UNCLOSED_TAG code for unclosed <div>', () => {
+      const source = '<div>';
+
+      expect(() => {
+        parseAstro(source, { throwOnError: true });
+      }).toThrow(CompilerError);
+
+      try {
+        parseAstro(source, { throwOnError: true });
+      } catch (error) {
+        expect(error).toBeInstanceOf(CompilerError);
+        expect((error as CompilerError).code).toBe('UNCLOSED_TAG');
+        expect((error as CompilerError).message).toContain('Unclosed tag <div>');
+      }
+    });
+
+    it('CMP-A2: should throw FrontmatterParseError for syntax errors in frontmatter', () => {
+      const source = `---
+const x = {
+---
+<h1>Test</h1>`;
+
+      expect(() => {
+        parseAstro(source, { throwOnError: true });
+      }).toThrow(FrontmatterParseError);
+
+      try {
+        parseAstro(source, { throwOnError: true });
+      } catch (error) {
+        expect(error).toBeInstanceOf(FrontmatterParseError);
+        expect((error as FrontmatterParseError).code).toBe('FRONTMATTER_PARSE_ERROR');
+        expect((error as FrontmatterParseError).message).toContain('Unexpected token');
+      }
     });
   });
 });

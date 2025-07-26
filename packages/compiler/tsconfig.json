@@ -5,7 +5,12 @@
     "outDir": "./dist",
     "types": ["bun-types"],
     "noEmit": false,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "baseUrl": ".",
+    "paths": {
+      "@minimal-astro/types/ast": ["../types/src/ast.ts"],
+      "@minimal-astro/types/*": ["../types/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"],
