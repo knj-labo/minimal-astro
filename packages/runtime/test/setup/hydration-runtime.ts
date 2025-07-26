@@ -1,4 +1,3 @@
-// test/setup/hydration-runtime.ts
 import { vi } from 'vitest';
 
 // Polyfill & spy for window.requestIdleCallback

@@ -2,7 +2,6 @@
  * Pure data access functions for hydration runtime
  * These functions handle getting data without side effects
  */
-
 import type { ComponentType, PendingHydration } from './types.js';
 
 /**

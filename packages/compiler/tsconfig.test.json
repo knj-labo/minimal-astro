@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "types": ["vitest/globals", "bun-types"],
+    "noEmit": true
+  },
+  "include": ["src/**/*", "test/**/*"]
+}

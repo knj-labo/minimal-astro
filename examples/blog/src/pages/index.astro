@@ -1,8 +1,9 @@
 ---
 import Layout from '../components/Layout.astro';
 import PostCard from '../components/PostCard.astro';
-import Counter from '../components/Counter.jsx';
-import ThemeToggle from '../components/ThemeToggle.vue';
+import ReactCounter from '../components/Counter.jsx';
+import VueCounter from '../components/Counter.vue';
+import SvelteCounter from '../components/Counter.svelte;
 import { getCollection } from 'minimal-astro/content';
 
 const posts = await getCollection('post');
@@ -16,13 +17,14 @@ const recentPosts = posts
   <div class="hero">
     <h1>Minimal Astro Blog</h1>
     <p>A demonstration of multi-framework support and Islands Architecture</p>
-    <ThemeToggle client:only="vue" />
+    <VueCounter client:only="vue" />
+    <SvelteCounter client:only="svelte" />
   </div>
 
   <section class="demo">
     <h2>Interactive Demo</h2>
     <p>This counter is a React component that only hydrates on the client:</p>
-    <Counter client:load />
+    <ReactCounter client:load />
   </section>
 
   <section class="recent-posts">
