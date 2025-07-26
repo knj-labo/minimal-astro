@@ -647,15 +647,3 @@ export function createStreamingHtmlBuilder(options: HtmlBuilderOptions = {}) {
     },
   };
 }
-
-/**
- * Convenience function to build HTML to stream
- */
-export async function buildHtmlToStream(
-  ast: FragmentNode,
-  streamOptions: StreamingOptions,
-  builderOptions: HtmlBuilderOptions = {}
-): Promise<void> {
-  const builder = createStreamingHtmlBuilder(builderOptions);
-  await builder.buildToStream(ast, streamOptions);
-}
