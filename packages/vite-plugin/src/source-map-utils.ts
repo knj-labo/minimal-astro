@@ -1,7 +1,3 @@
-/**
- * Source map utilities using magic-string for production-ready source map generation
- */
-
 import MagicString from 'magic-string';
 import type { SourceMap } from 'magic-string';
 
@@ -18,9 +14,6 @@ export interface SourceMapTransformer {
   getResult(): { code: string; map: SourceMap };
 }
 
-/**
- * Create a source map transformer using factory pattern instead of class
- */
 export function createSourceMapTransformer(source: string, filename: string): SourceMapTransformer {
   const magicString = new MagicString(source, { filename });
 

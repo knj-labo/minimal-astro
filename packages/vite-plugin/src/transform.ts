@@ -1,16 +1,19 @@
 import { astToJSX, evaluateExpression, safeExecute } from '@minimal-astro/internal-helpers';
 import type {
+  Attr,
   ComponentNode,
   ElementNode,
+  ExpressionNode,
   FragmentNode,
   FrontmatterNode,
   Node,
+  TextNode,
 } from '@minimal-astro/types/ast';
+import { generateRenderFunction } from './code-generation-helpers.js';
 // type HydrationData available if needed
 import { injectHmrCode } from './hmr.js';
 import { createSourceMapTransformer } from './source-map-utils.js';
-import { extractImportsWithSwc, stripTypeScriptWithSwc } from './typescript-stripper.js';
-
+import { extractImports, stripTypeScript } from './typescript-stripper.js';
 
 export interface TransformOptions {
   filename: string;
@@ -25,9 +28,8 @@ export interface TransformOptions {
 
 export interface TransformResult {
   code: string;
-  map?: any; // Source map can be string or object
+  map?: string | Record<string, unknown>; // Source map can be string or object
 }
-
 
 /**
  * Transform an Astro AST to a JavaScript module
@@ -74,7 +76,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   const frontmatterImports: string[] = [];
   const componentImports: Map<string, string> = new Map(); // component name -> import path
   let frontmatterCode = '';
-  let _getStaticPathsCode = '';
+  let getStaticPathsCode = '';
 
   if (frontmatter) {
     const code = frontmatter.code;
@@ -83,7 +85,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     const match = code.match(getStaticPathsRegex);
 
     if (match) {
-      _getStaticPathsCode = match[0];
+      getStaticPathsCode = match[0];
       const remainingCode = code.replace(getStaticPathsRegex, '');
       const lines = remainingCode.split('\n');
       for (const line of lines) {
@@ -179,7 +181,6 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
         // Resolve the relative path
         let resolved = path;
         if (path.startsWith('../')) {
-          // Go up one directory from /src/pages to /src
           resolved = `/src/${path.substring(3)}`;
         } else if (path.startsWith('./')) {
           resolved = `${fileDir}/${path.substring(2)}`;
@@ -192,170 +193,130 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     }
   }
 
-  // Create the render function
-  parts.push('');
-  parts.push('// Component render function');
-  parts.push('export async function render(props = {}) {');
-  parts.push('  // Extract Astro from props or create default');
-  parts.push('  const Astro = props.Astro || {');
-  parts.push('    props: props,');
-  parts.push('    request: {},');
-  parts.push('    params: {},');
-  parts.push('    url: new URL("http://localhost:3000/"),');
-  parts.push('    slots: {}');
-  parts.push('  };
-  parts.push('  // Ensure props are accessible via Astro.props');
-  parts.push('  if (!Astro.props) Astro.props = props;');
-
-  // Add frontmatter code inside render function so it has access to Astro
-  if (frontmatterCode) {
-    parts.push('');
-    parts.push('  // Frontmatter execution');
-    // Strip TypeScript syntax from frontmatter code using SWC
-    const strippedCode = stripTypeScriptWithSwc(frontmatterCode, {
-      jsx: framework === 'react' || framework === 'preact',
-      filename: options.filename,
-    });
-    // Indent the code for the render function
-    const indentedCode = strippedCode
-      .split('\n')
-      .map((line) => (line ? `  ${line}` : ''))
-      .join('\n');
-    parts.push(indentedCode);
-  }
-
-  const _templateAst: FragmentNode = {
+  const templateAst: FragmentNode = {
     type: 'Fragment',
     children: templateNodes,
     loc: ast.loc,
   };
 
-  if (framework !== 'vanilla' && hasClientDirectives(ast)) {
-    // Use React renderer for components with client directives
-    parts.push('  // SSR with hydration support');
-    parts.push(
-      '  const renderResult = await renderUniversalComponent(Component, props, componentType, {'
-    );
-    parts.push('    // Pass renderers to the universal component renderer');
-    parts.push('    renderers: options.renderers,');
-    parts.push('    hydrate: true,');
-    parts.push('    components,');
-    parts.push('    props: {},');
-    parts.push('  }');
-    parts.push('  const { html, hydrationData, scripts } = renderResult;');
+  // Prepare frontmatter code
+  let processedFrontmatterCode = '';
+  if (frontmatterCode) {
+    // Strip TypeScript syntax from frontmatter code using SWC
+    const strippedCode = stripTypeScript(frontmatterCode, {
+      jsx: framework === 'react' || framework === 'preact',
+      filename: options.filename,
+    });
+    // Indent the code for the render function
+    processedFrontmatterCode = strippedCode
+      .split('\n')
+      .map((line) => (line ? `  ${line}` : ''))
+      .join('\n');
+  }
+
+  // Check if we need client components
+  const hasClientComponents = Object.keys(componentTypes).some((name) => {
+    return componentTypes[name] !== 'astro';
+  });
+
+  // Generate the render function using helper
+  const renderFunctionBody = generateRenderFunction({
+    frontmatterCode: processedFrontmatterCode,
+    templateAst,
+    prettyPrint,
+    hasClientComponents,
+    componentTypes,
+    componentPaths,
+  });
+
+  // Create the render function
+  parts.push('');
+  parts.push('// Component render function');
+  parts.push('export async function render(props = {}) {');
+  parts.push(renderFunctionBody);
+  parts.push('}');
+
+  // Add getStaticPaths export if it exists
+  if (getStaticPathsCode) {
     parts.push('');
-    parts.push('  // Combine HTML with hydration scripts');
-    parts.push(
-      '  const finalHtml = html + (scripts ? scripts.map(s => `<script>${s}</script>`).join("") : "");'
-    );
-    parts.push('  return { html: finalHtml, hydrationData };');
-  } else {
-    // Generate dynamic HTML at runtime
-    parts.push('  // Build HTML dynamically with Astro context');
-    parts.push('  try {');
+    parts.push('// Export getStaticPaths');
+    parts.push(getStaticPathsCode);
+  }
 
-    // Components are already registered at module level
+  // Add JSX component export if using React/Preact
+  if (framework !== 'vanilla') {
+    parts.push('');
+    parts.push('// JSX Component export');
+    parts.push('export function Component(props = {}) {');
 
-    parts.push('    ');
-    parts.push('    // Process AST to replace expressions and render components');
-    parts.push('    async function processAstNode(node, context) {');
-    parts.push(`      if (node.type === 'Expression') {`);
-    parts.push('        try {');
-    parts.push('          const value = evaluateExpression(node.code, context);');
-    parts.push(`          return { type: 'Text', value: String(value) };`);
-    parts.push('        } catch (e) {');
-    parts.push(`          return { type: 'Text', value: '' };`);
-    parts.push('        }');
-    parts.push('      }');
-    parts.push('      ');
-    parts.push('      // Handle Component nodes');
-    parts.push(`      if (node.type === 'Component') {`);
-    parts.push('        const Component = components[node.tag];');
-    parts.push(`        const componentType = componentTypes[node.tag] || 'astro';`);
-    parts.push('        ');
-    parts.push('        if (Component) {');
-    parts.push('          // Process component attributes');
-    parts.push('          const props = {};');
-    parts.push('          let hasClientDirective = false;');
-    parts.push('          ');
-    parts.push('          if (node.attrs) {');
-    parts.push('            for (const attr of node.attrs) {');
-    parts.push('              let value = attr.value;');
-    parts.push('              // Check for client directives');
-    parts.push(`              if (attr.name.startsWith('client:')) {`);
-    parts.push('                hasClientDirective = true;');
-    parts.push('                props[attr.name] = value || true;');
-    parts.push('                continue;');
-    parts.push('              }');
-    parts.push('              // Evaluate expression attributes');
-    parts.push(
-      `              if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {`
-    );
-    parts.push('                try {');
-    parts.push('                  const exprCode = value.slice(1, -1);
-    parts.push('                  value = evaluateExpression(exprCode, context);');
-    parts.push('                } catch (e) {');
-    parts.push('                  // Keep original value on error');
-    parts.push('                }');
-    parts.push('              }');
-    parts.push('              props[attr.name] = value;');
-    parts.push('            }');
-    parts.push('          }');
-    parts.push('          ');
-    parts.push('          // Handle different component types');
-    parts.push(
-      `          if (componentType === 'astro' && typeof Component.render === 'function') {`
-    );
-    parts.push('            // Astro component - handle slots');
-    parts.push('            const slotFunction = async () => {');
-    parts.push(`              if (!node.children || node.children.length === 0) return '';`);
-    parts.push('              ');
-    parts.push('              const childContext = { ...context };');
-    parts.push('              const processedChildren = [];');
-    parts.push('              ');
-    parts.push('              for (const child of node.children) {');
-    parts.push('                const processed = await processAstNode(child, childContext);');
-    parts.push(
-      `                if (processed.type === 'Text' && !processed.value.trim()) continue;`
-    );
-    parts.push('                processedChildren.push(processed);');
-    parts.push('              }');
-    parts.push('              ');
-    parts.push(
-      `              const html = buildHtml({ type: 'Fragment', children: processedChildren }, {`
-    );
-    parts.push('                prettyPrint: false,');
-    parts.push('                evaluateExpressions: false,');
-    parts.push('                escapeHtml: false');
-    parts.push('              });');
-    parts.push('              return html;');
-    parts.push('            };');
-    parts.push('            ');
-    parts.push('            const componentAstro = {');
-    parts.push('              ...context.Astro,');
-    parts.push('              props: props,');
-    parts.push('              slots: { default: slotFunction }
-    parts.push('            };');
-    parts.push('            ');
-    parts.push(
-      '            const result = await Component.render({ ...props, Astro: componentAstro });'
-    );
-    parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
-    parts.push('          } else {');
-    parts.push(
-      '            // Framework component (React/Vue/Svelte) - for now, just render placeholder'
-    );
-    parts.push('            // TODO: Implement proper SSR for framework components');
-    parts.push(
-      '            const componentId = `${node.tag}-${Math.random().toString(36).slice(2, 9)}`;'
-    );
-    parts.push('            ');
-    parts.push('            if (hasClientDirective) {');
-    parts.push('              // If it has a client directive, wrap in astro-island for hydration');
-    parts.push(
-      `              const directive = node.attrs.find(attr => attr.name.startsWith('client:'))?.name.replace('client:', '');`
-    );
-    parts.push(`              const propsJson = JSON.stringify(props).replace(/"/g, '&quot;');`);
-    parts.push('              ');
-    parts.push('              return { ');
-    parts.push(
+    const jsxCode = astToJSX(templateAst, {
+      runtime: framework,
+      jsxImportSource: framework,
+    });
+
+    parts.push(`  ${jsxCode.split('\n').join('\n  ')}`);
+    parts.push('}');
+  }
+
+  // Add metadata
+  parts.push('');
+  parts.push('// Component metadata');
+  parts.push('export const metadata = {');
+  parts.push(`  filename: ${JSON.stringify(filename)},`);
+  parts.push(`  dev: ${dev},`);
+  parts.push(`  hasClientDirectives: ${hasClientDirectives(ast)},`);
+  parts.push(`  framework: ${JSON.stringify(framework)},`);
+  parts.push('};');
+
+  // Default export for easier imports
+  parts.push('');
+  parts.push(
+    `export default { render, metadata${framework !== 'vanilla' ? ', Component' : ''}${getStaticPathsCode ? ', getStaticPaths' : ''} };`
+  );
+
+  const jsCode = parts.join('\n');
+
+  // Inject HMR code in development mode
+  const codeWithHmr = injectHmrCode(jsCode, filename, dev);
+
+  // Generate source map if requested
+  if (options.sourceMap) {
+    const transformer = createSourceMapTransformer(codeWithHmr, filename);
+    const result = transformer.getResult();
+    return {
+      code: result.code,
+      map: result.map,
+    };
+  }
+
+  return {
+    code: codeWithHmr,
+    map: undefined,
+  };
+}
+
+/**
+ * Check if the component has client directives
+ */
+export function hasClientDirectives(ast: FragmentNode): boolean {
+  return checkNodeForClientDirectives(ast);
+}
+
+function checkNodeForClientDirectives(node: Node): boolean {
+  switch (node.type) {
+    case 'Fragment':
+      return (node as FragmentNode).children.some(checkNodeForClientDirectives);
+
+    case 'Element':
+    case 'Component': {
+      const element = node as ElementNode | ComponentNode;
+      return (
+        element.attrs.some((attr) => attr.name.startsWith('client:')) ||
+        element.children.some(checkNodeForClientDirectives)
+      );
+    }
+
+    default:
+      return false;
+  }
+}

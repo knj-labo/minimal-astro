@@ -196,13 +196,29 @@ describe('HTML Builder', () => {
     });
 
     it('CMP-3: should evaluate arithmetic expressions like {1 + 1} to 2', () => {
-      const source = `---
-// No variables needed for pure arithmetic
----
-<p>The answer is {1 + 1}</p>`;
-
-      const result = parseAstro(source);
-      const html = buildHtml(result.ast, { evaluateExpressions: true });
+      const ast: FragmentNode = {
+        type: 'Fragment',
+        children: [
+          {
+            type: 'Element',
+            tag: 'p',
+            attrs: [],
+            children: [
+              {
+                type: 'Text',
+                value: 'The answer is ',
+                content: 'The answer is ',
+                loc: {} as Location,
+              },
+              { type: 'Expression', code: '1 + 1', loc: {} as Location },
+            ],
+            selfClosing: false,
+            loc: {} as Location,
+          },
+        ],
+        loc: {} as Location,
+      };
+      const html = buildHtml(ast, { evaluateExpressions: true });
 
       expect(html).toContain('<p>The answer is 2</p>');
       expect(html).not.toContain('1 + 1');

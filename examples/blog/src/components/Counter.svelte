@@ -1,5 +1,7 @@
 <script>
-const _count = 0;
+// biome-ignore lint/style/useConst: Svelte reactive variable
+// biome-ignore lint/correctness/noUnusedVariables: Used in template
+let count = 0;
 </script>
 
 <div style="padding: 10px">

@@ -6,17 +6,37 @@
 type HydrationDirective = 'load' | 'idle' | 'visible' | 'media' | 'only';
 
 // Global flag for development mode
+// Component module types
+type ReactComponent = React.ComponentType<Record<string, unknown>>;
+
+type ComponentModule = {
+  default?: ReactComponent | VueComponent | SvelteComponent;
+  [key: string]: unknown;
+};
+
+type VueComponent = {
+  setup?: () => unknown;
+  render?: () => unknown;
+  [key: string]: unknown;
+};
+
+type SvelteComponent = new (options: {
+  target: HTMLElement;
+  props?: Record<string, unknown>;
+  hydrate?: boolean;
+}) => unknown;
+
 declare global {
   interface Window {
     __ASTRO_DEV__?: boolean;
-    __ASTRO_COMPONENT_MODULES__?: Record<string, any>;
+    __ASTRO_COMPONENT_MODULES__?: Record<string, ComponentModule>;
     __ASTRO_COMPONENT_TYPES__?: Record<string, string>;
     __ASTRO_COMPONENT_PATHS__?: Record<string, string>;
   }
 }
 
 interface HydrationOptions {
-  componentModules?: Record<string, any>;
+  componentModules?: Record<string, ComponentModule>;
   componentTypes?: Record<string, string>;
   componentPaths?: Record<string, string>;
   dev?: boolean;
@@ -61,7 +81,7 @@ export async function hydrateComponent(island: HTMLElement) {
     );
   }
 
-  let props = {};
+  let props: Record<string, unknown> = {};
   try {
     props = propsStr ? JSON.parse(propsStr) : {};
   } catch (e) {
@@ -89,7 +109,12 @@ export async function hydrateComponent(island: HTMLElement) {
 /**
  * Hydrate component based on its framework type
  */
-async function hydrateByType(island: HTMLElement, Component: any, props: any, type?: string) {
+async function hydrateByType(
+  island: HTMLElement,
+  Component: ComponentModule,
+  props: Record<string, unknown>,
+  type?: string
+) {
   switch (type) {
     case 'react':
       await hydrateReact(island, Component, props);
@@ -108,7 +133,11 @@ async function hydrateByType(island: HTMLElement, Component: any, props: any, ty
 /**
  * Hydrate React component
  */
-async function hydrateReact(island: HTMLElement, Component: any, props: any) {
+async function hydrateReact(
+  island: HTMLElement,
+  Component: ComponentModule,
+  props: Record<string, unknown>
+) {
   if (window.__ASTRO_DEV__) {
     console.debug('[minimal-astro] Hydrating React component...');
   }
@@ -139,7 +168,11 @@ async function hydrateReact(island: HTMLElement, Component: any, props: any) {
 /**
  * Hydrate Vue component
  */
-async function hydrateVue(island: HTMLElement, Component: any, props: any) {
+async function hydrateVue(
+  island: HTMLElement,
+  Component: ComponentModule,
+  props: Record<string, unknown>
+) {
   const { createApp } = await import('vue');
   const directive = island.getAttribute('client-directive');
 
@@ -154,7 +187,11 @@ async function hydrateVue(island: HTMLElement, Component: any, props: any) {
 /**
  * Hydrate Svelte component
  */
-async function hydrateSvelte(island: HTMLElement, Component: any, props: any) {
+async function hydrateSvelte(
+  island: HTMLElement,
+  Component: ComponentModule,
+  props: Record<string, unknown>
+) {
   const directive = island.getAttribute('client-directive');
 
   if (directive === 'only') {
@@ -200,7 +237,7 @@ function setupHydrationStrategies() {
 async function loadComponents(
   paths: Record<string, string>,
   types: Record<string, string>,
-  modules: Record<string, any>
+  modules: Record<string, ComponentModule>
 ) {
   const imports = [];
 
@@ -234,7 +271,9 @@ async function loadComponents(
  */
 function setupLoadStrategy() {
   const islands = document.querySelectorAll('astro-island[client-directive="load"]');
-  islands.forEach((island) => hydrateComponent(island as HTMLElement));
+  for (const island of islands) {
+    hydrateComponent(island as HTMLElement);
+  }
 }
 
 /**
@@ -244,11 +283,15 @@ function setupIdleStrategy() {
   const islands = document.querySelectorAll('astro-island[client-directive="idle"]');
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
-      islands.forEach((island) => hydrateComponent(island as HTMLElement));
+      for (const island of islands) {
+        hydrateComponent(island as HTMLElement);
+      }
     });
   } else {
     setTimeout(() => {
-      islands.forEach((island) => hydrateComponent(island as HTMLElement));
+      for (const island of islands) {
+        hydrateComponent(island as HTMLElement);
+      }
     }, 200);
   }
 }
@@ -260,16 +303,20 @@ function setupVisibleStrategy() {
   const islands = document.querySelectorAll('astro-island[client-directive="visible"]');
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         if (entry.isIntersecting) {
           hydrateComponent(entry.target as HTMLElement);
           observer.unobserve(entry.target);
         }
-      });
+      }
     });
-    islands.forEach((island) => observer.observe(island));
+    for (const island of islands) {
+      observer.observe(island);
+    }
   } else {
-    islands.forEach((island) => hydrateComponent(island as HTMLElement));
+    for (const island of islands) {
+      hydrateComponent(island as HTMLElement);
+    }
   }
 }
 
@@ -278,12 +325,12 @@ function setupVisibleStrategy() {
  */
 function setupMediaStrategy() {
   const islands = document.querySelectorAll('astro-island[client-directive="media"]');
-  islands.forEach((island) => {
+  for (const island of islands) {
     const mediaQuery = island.getAttribute('client-media');
     if (mediaQuery && window.matchMedia(mediaQuery).matches) {
       hydrateComponent(island as HTMLElement);
     }
-  });
+  }
 }
 
 /**

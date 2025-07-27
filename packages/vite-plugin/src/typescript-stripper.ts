@@ -1,11 +1,36 @@
+/**
+ * TypeScript stripping module using SWC
+ * Provides fast and accurate TypeScript type removal without type checking
+ *
+ * @module typescript-stripper
+ */
+
 import { type Options, transformSync } from '@swc/core';
 
+/**
+ * Options for TypeScript stripping
+ * @interface StripTypeScriptOptions
+ */
 export interface StripTypeScriptOptions {
+  /** Whether to preserve JSX syntax (for React/Preact) */
   jsx?: boolean;
+  /** Source filename for better error messages */
   filename?: string;
 }
 
-export function stripTypeScriptWithSwc(code: string, options: StripTypeScriptOptions): string {
+/**
+ * Strips TypeScript types from source code using SWC
+ * This is much faster and more accurate than regex-based stripping
+ *
+ * @param {string} code - TypeScript source code
+ * @param {StripTypeScriptOptions} options - Stripping options
+ * @returns {string} JavaScript code with types removed
+ *
+ * @example
+ * const js = stripTypeScriptWithSwc('const x: number = 5;', {});
+ * // Returns: 'const x = 5;'
+ */
+export function stripTypeScript(code: string, options: StripTypeScriptOptions): string {
   const swcOptions: Options = {
     jsc: {
       parser: {
@@ -23,7 +48,24 @@ export function stripTypeScriptWithSwc(code: string, options: StripTypeScriptOpt
   return result.code;
 }
 
-export function extractImportsWithSwc(code: string, options: StripTypeScriptOptions): string[] {
+/**
+ * Extracts import statements from TypeScript/JavaScript code using SWC's AST
+ * More accurate than regex-based extraction
+ *
+ * @param {string} code - Source code to analyze
+ * @param {StripTypeScriptOptions} options - Parser options
+ * @returns {string[]} Array of reconstructed import statements
+ *
+ * @example
+ * const imports = extractImportsWithSwc(
+ *   'import React from "react";\nimport { useState } from "react";',
+ *   {}
+ * );
+ * // Returns: ['import React from \'react\';', 'import { useState } from \'react\';']
+ *
+ * @todo Implement proper AST-based import extraction with full metadata
+ */
+export function extractImports(code: string, options: StripTypeScriptOptions): string[] {
   const imports: string[] = [];
   const swcOptions: Options = {
     jsc: {
@@ -37,7 +79,7 @@ export function extractImportsWithSwc(code: string, options: StripTypeScriptOpti
     filename: options.filename,
     callbacks: {
       afterParse(program) {
-        program.body.forEach((node) => {
+        for (const node of program.body) {
           if (node.type === 'ImportDeclaration') {
             // This is a very basic way to reconstruct the import statement.
             // It might not cover all edge cases.
@@ -78,7 +120,7 @@ export function extractImportsWithSwc(code: string, options: StripTypeScriptOpti
             }
             imports.push(importString);
           }
-        });
+        }
         return program;
       },
     },

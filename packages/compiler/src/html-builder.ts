@@ -1,4 +1,4 @@
-import { extractVariables } from '@minimal-astro/internal-helpers/expression-evaluator';
+import { extractVariables } from '@minimal-astro/internal-helpers';
 
 export interface HtmlBuilderOptions {
   prettyPrint?: boolean;
@@ -195,19 +195,23 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, unknown>
 
   for (const child of ast.children) {
     if (child.type === 'Frontmatter') {
-      try {
-        // Strip TypeScript syntax first
-        const strippedCode = child.code
-          .replace(/(?<!['"`:]):\s*[A-Z][A-Za-z0-9_<>[\]{}|&\s]*(?=\s*[=,;)\]}])/g, '') // Remove type annotations (only if starts with capital letter)
-          .replace(/interface\s+\w+\s*\{[^}]*\}/gs, '') // Remove interfaces
-          .replace(/type\s+\w+\s*=\s*[^;]+;/g, ''); // Remove type declarations
+      const frontmatter = child as FrontmatterNode;
 
-        const extracted = extractVariables(strippedCode);
-        Object.assign(variables, extracted);
-      } catch (error) {
-        // If frontmatter evaluation fails, continue with empty variables
-        console.warn('Failed to evaluate frontmatter:', error);
+      // Extract JavaScript variable names from frontmatter code
+      if (frontmatter.code) {
+        try {
+          // Extract variable names from the frontmatter JavaScript code
+          const varNames = extractVariables(frontmatter.code);
+          // For build-time HTML generation, we can't execute the JavaScript
+          // So we'll mark these as needing runtime evaluation
+          for (const varName of varNames) {
+            variables[varName] = `__FRONTMATTER_VAR_${varName}__`;
+          }
+        } catch (error) {
+          console.warn('Failed to extract frontmatter variables:', error);
+        }
       }
+
       break; // Only process the first frontmatter block
     }
   }
