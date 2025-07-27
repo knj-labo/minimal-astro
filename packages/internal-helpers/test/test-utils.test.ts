@@ -4,8 +4,8 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createFixture } from '../src/test-utils/index.js'
 
-describe('createFixture', () => {
-  it('should create a temporary directory', async () => {
+describe('createFixtureの動作確認', () => {
+  it('一時ディレクトリを作成できること', async () => {
     const fixture = await createFixture()
 
     expect(existsSync(fixture.path)).toBe(true)
@@ -14,7 +14,7 @@ describe('createFixture', () => {
     await fixture.cleanup()
   })
 
-  it('should clean up the directory when cleanup is called', async () => {
+  it('cleanup を呼ぶとディレクトリが削除されること', async () => {
     const fixture = await createFixture()
     const tempPath = fixture.path
 
@@ -25,7 +25,7 @@ describe('createFixture', () => {
     expect(existsSync(tempPath)).toBe(false)
   })
 
-  it('should write files to the fixture directory', async () => {
+  it('ファイルを書き込めること', async () => {
     const fixture = await createFixture()
 
     await fixture.writeFile('test.txt', 'Hello, World!')
@@ -39,7 +39,7 @@ describe('createFixture', () => {
     await fixture.cleanup()
   })
 
-  it('should accept a custom prefix', async () => {
+  it('プレフィックスをカスタマイズできること', async () => {
     const fixture = await createFixture('custom-test-')
 
     expect(fixture.path).toContain('custom-test-')
