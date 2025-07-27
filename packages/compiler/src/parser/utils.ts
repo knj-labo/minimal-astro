@@ -1,4 +1,4 @@
-import type { AstroAST, AstroNode, ElementNode } from './types.js'
+import type { AstroAST, AstroNode, ElementNode } from './ast.js'
 
 /**
  * Walk handler function type for visiting AST nodes

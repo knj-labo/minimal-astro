@@ -1,0 +1,12 @@
+{
+  "entryPoints": ["src/parser/ast.ts"],
+  "out": "docs",
+  "name": "Minimal Astro AST",
+  "theme": "default",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "hideGenerator": true,
+  "readme": "none",
+  "plugin": [],
+  "tsconfig": "./tsconfig.json"
+}
