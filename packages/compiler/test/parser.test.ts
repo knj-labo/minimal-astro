@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/parser/index.js'
 
-describe('Parser', () => {
-  it('should parse empty file', () => {
+describe('パーサー', () => {
+  it('空のファイルをパースできる', () => {
     const source = ''
     const ast = parse(source)
 
@@ -12,7 +12,7 @@ describe('Parser', () => {
     })
   })
 
-  it('should parse HTML only', () => {
+  it('HTMLのみをパースできる', () => {
     const source = '<div>Hello World</div>'
     const ast = parse(source)
 
@@ -35,7 +35,7 @@ describe('Parser', () => {
     })
   })
 
-  it('should parse frontmatter only', () => {
+  it('Frontmatterのみをパースできる', () => {
     const source = `---
 const title = 'Hello'
 const description = 'World'
@@ -54,7 +54,7 @@ const description = 'World'`,
     })
   })
 
-  it('should parse frontmatter + HTML', () => {
+  it('Frontmatter + HTMLをパースできる', () => {
     const source = `---
 const title = 'My Page'
 ---
@@ -97,7 +97,7 @@ const title = 'My Page'
     })
   })
 
-  it('should parse HTML with JS expressions', () => {
+  it('JS式を含むHTMLをパースできる', () => {
     const source = '<div>{count}</div>'
     const ast = parse(source)
 
@@ -120,7 +120,7 @@ const title = 'My Page'
     })
   })
 
-  it('should generate AST snapshot', () => {
+  it('ASTのスナップショットを生成する', () => {
     const source = `---
 const items = ['apple', 'banana', 'orange']
 ---
