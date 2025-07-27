@@ -1,6 +1,6 @@
 import { tokenize } from '../tokenizer/index.js'
 import type { Token } from '../tokenizer/types.js'
-import type { AstroAST, AstroNode, ElementNode, ExpressionNode } from './types.js'
+import type { AstroAST, AstroNode, ElementNode, ExpressionNode } from './ast.js'
 
 /**
  * Parser state that maintains the current position in the token stream
