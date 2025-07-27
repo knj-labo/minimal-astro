@@ -33,6 +33,37 @@ importers:
         specifier: ^5.4.11
         version: 5.4.19(@types/node@20.19.9)
 
+  packages/compiler:
+    dependencies:
+      acorn:
+        specifier: ^8.14.0
+        version: 8.15.0
+      estree-walker:
+        specifier: ^3.0.3
+        version: 3.0.3
+      moo:
+        specifier: ^0.5.2
+        version: 0.5.2
+    devDependencies:
+      '@minimal-astro/internal-helpers':
+        specifier: workspace:*
+        version: link:../internal-helpers
+      '@types/estree':
+        specifier: ^1.0.8
+        version: 1.0.8
+      '@types/moo':
+        specifier: ^0.5.9
+        version: 0.5.10
+      '@types/node':
+        specifier: ^20.11.24
+        version: 20.19.9
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@20.19.9)
+
   packages/internal-helpers:
     dependencies:
       fs-extra:
@@ -348,6 +379,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/moo@0.5.10':
+    resolution: {integrity: sha512-W6KzyZjXUYpwQfLK1O1UDzqcqYlul+lO7Bt71luyIIyNlOZwJaNeWWdqFs1C/f2hohZvUFHMk6oFNe9Rg48DbA==}
+
   '@types/node@20.19.9':
     resolution: {integrity: sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==}
 
@@ -379,6 +413,11 @@ packages:
 
   '@vitest/utils@2.1.9':
     resolution: {integrity: sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ==}
+
+  acorn@8.15.0:
+    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -449,6 +488,9 @@ packages:
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+
+  moo@0.5.2:
+    resolution: {integrity: sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -790,6 +832,8 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/moo@0.5.10': {}
+
   '@types/node@20.19.9':
     dependencies:
       undici-types: 6.21.0
@@ -833,6 +877,8 @@ snapshots:
       '@vitest/pretty-format': 2.1.9
       loupe: 3.2.0
       tinyrainbow: 1.2.0
+
+  acorn@8.15.0: {}
 
   assertion-error@2.0.1: {}
 
@@ -912,6 +958,8 @@ snapshots:
   magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.4
+
+  moo@0.5.2: {}
 
   ms@2.1.3: {}
 

@@ -1,0 +1,33 @@
+{
+  "name": "@minimal-astro/compiler",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Astro file parser and compiler",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "acorn": "^8.14.0",
+    "estree-walker": "^3.0.3",
+    "moo": "^0.5.2"
+  },
+  "devDependencies": {
+    "@minimal-astro/internal-helpers": "workspace:*",
+    "@types/estree": "^1.0.8",
+    "@types/moo": "^0.5.9",
+    "@types/node": "^20.11.24",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
