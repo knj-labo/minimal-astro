@@ -27,6 +27,12 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@20.19.9)
 
+  examples/blog:
+    devDependencies:
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.19(@types/node@20.19.9)
+
 packages:
 
   '@biomejs/biome@1.9.4':
