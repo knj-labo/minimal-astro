@@ -370,6 +370,13 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           // Render the page with Astro context
           const result = await astroModule.render({ Astro });
 
+          // Debug logging
+          logger.info('Rendered page', {
+            url,
+            htmlLength: result.html?.length || 0,
+            htmlPreview: result.html?.substring(0, 200),
+          });
+
           // Send HTML response
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
           res.end(result.html);

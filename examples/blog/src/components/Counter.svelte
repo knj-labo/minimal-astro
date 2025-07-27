@@ -1,5 +1,5 @@
 <script>
-const _count = 0;
+const count = 0;
 </script>
 
 <div style="padding: 10px">
@@ -7,7 +7,7 @@ const _count = 0;
     <button on:click={() => count++}>
         Increment
     </button>
-    <button on:click{() => count--}>
+    <button on:click={() => count--}>
         Decrement
     </button>
 </div>

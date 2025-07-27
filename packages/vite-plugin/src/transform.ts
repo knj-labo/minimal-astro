@@ -90,10 +90,12 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
   const frontmatter = ast.children.find((child: Node) => child.type === 'Frontmatter') as
     | FrontmatterNode
     | undefined;
+
   const templateNodes = ast.children.filter((child) => child.type !== 'Frontmatter');
 
   // Generate the module
   const parts: string[] = [];
+
   const frontmatterImports: string[] = [];
   const componentImports: Map<string, string> = new Map(); // component name -> import path
   let frontmatterCode = '';
@@ -129,7 +131,8 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
       }
     } else {
       const lines = code.split('\n');
-      for (const line of lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
         if (line.trim().startsWith('import')) {
           frontmatterImports.push(line);
           // Extract component imports
@@ -163,8 +166,29 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(...frontmatterImports);
   }
 
+  // Create component registry at module level
+  parts.push('');
+  parts.push('// Component registry at module level');
+  parts.push('const components = {};');
+  parts.push('const componentTypes = {};');
+
+  // Register imported components at module level
+  for (const [name, path] of componentImports) {
+    parts.push(`components['${name}'] = ${name};`);
+    // Detect component type from path
+    if (path.endsWith('.jsx') || path.endsWith('.tsx')) {
+      parts.push(`componentTypes['${name}'] = 'react';`);
+    } else if (path.endsWith('.vue')) {
+      parts.push(`componentTypes['${name}'] = 'vue';`);
+    } else if (path.endsWith('.svelte')) {
+      parts.push(`componentTypes['${name}'] = 'svelte';`);
+    } else {
+      parts.push(`componentTypes['${name}'] = 'astro';`);
+    }
+  }
+
   // Track component paths for client-side hydration
-  const componentPaths: Record<string, string> = {};
+  parts.push('const componentPaths = {};');
   for (const imp of frontmatterImports) {
     const match = imp.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/);
     if (match) {
@@ -186,9 +210,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
           resolved = `${fileDir}/${path.substring(2)}`;
         }
 
-        componentPaths[name] = resolved;
+        parts.push(`componentPaths['${name}'] = '${resolved}';`);
       } else {
-        componentPaths[name] = path;
+        parts.push(`componentPaths['${name}'] = '${path}';`);
       }
     }
   }
@@ -252,25 +276,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('  // Build HTML dynamically with Astro context');
     parts.push('  try {');
 
-    // Add component registry
-    parts.push('    // Component registry for rendering');
-    parts.push('    const components = {};');
-    parts.push('    const componentTypes = {};');
-
-    // Register imported components with their types
-    for (const [name, path] of componentImports) {
-      parts.push(`    components['${name}'] = ${name};`);
-      // Detect component type from path
-      if (path.endsWith('.jsx') || path.endsWith('.tsx')) {
-        parts.push(`    componentTypes['${name}'] = 'react';`);
-      } else if (path.endsWith('.vue')) {
-        parts.push(`    componentTypes['${name}'] = 'vue';`);
-      } else if (path.endsWith('.svelte')) {
-        parts.push(`    componentTypes['${name}'] = 'svelte';`);
-      } else {
-        parts.push(`    componentTypes['${name}'] = 'astro';`);
-      }
-    }
+    // Components are already registered at module level
 
     parts.push('    ');
     parts.push('    // Process AST to replace expressions and render components');
@@ -294,6 +300,9 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(`        const componentType = componentTypes[node.tag] || 'astro';`);
     parts.push('        ');
     parts.push('        if (Component) {');
+    parts.push('          console.log("[minimal-astro] Processing component:", node.tag);');
+    parts.push('          console.log("[minimal-astro] Component found:", !!Component);');
+    parts.push('          console.log("[minimal-astro] Component type:", typeof Component);');
     parts.push('          // Process component attributes');
     parts.push('          const props = {};');
     parts.push('          let hasClientDirective = false;');
@@ -363,6 +372,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push(
       '            const result = await Component.render({ ...props, Astro: componentAstro });'
     );
+    parts.push('            console.log("[minimal-astro] Component render result:", result);');
     parts.push(`            return { type: 'RawHTML', value: result.html || '' };`);
     parts.push('          } else {');
     parts.push(
@@ -395,6 +405,11 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     );
     parts.push('            }');
     parts.push('          }');
+    parts.push('        } else {');
+    parts.push('          console.log("[minimal-astro] Component NOT found:", node.tag);');
+    parts.push(
+      '          console.log("[minimal-astro] Available components:", Object.keys(components));'
+    );
     parts.push('        }');
     parts.push('        // If component not found, return comment');
     parts.push(`        return { type: 'Text', value: '<!-- Component: ' + node.tag + ' -->' };`);
@@ -494,13 +509,27 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     );
     parts.push('    // Pass Astro context directly to processAstNode');
     parts.push('    const fullContext = { ...evalContext, Astro };');
-    parts.push('    await processAstNode(processedAst, fullContext);');
+    parts.push('    // Process the AST - handle Fragment specially');
+    parts.push('    if (processedAst.type === "Fragment" && processedAst.children) {');
+    parts.push('      processedAst.children = await Promise.all(');
+    parts.push('        processedAst.children.map(child => processAstNode(child, fullContext))');
+    parts.push('      );');
+    parts.push('    } else {');
+    parts.push('      processedAst = await processAstNode(processedAst, fullContext);');
+    parts.push('    }');
     parts.push('    ');
     parts.push('    let html = buildHtml(processedAst, {');
     parts.push(`      prettyPrint: ${prettyPrint},`);
     parts.push('      evaluateExpressions: false,');
     parts.push('      escapeHtml: false');
     parts.push('    });');
+    parts.push('    ');
+    parts.push('    // Debug logging');
+    parts.push(
+      '    console.log("[minimal-astro] Processed AST:", JSON.stringify(processedAst, null, 2));'
+    );
+    parts.push('    console.log("[minimal-astro] Generated HTML length:", html.length);');
+    parts.push('    console.log("[minimal-astro] HTML preview:", html.substring(0, 200));');
     parts.push('    ');
     parts.push('    // Add hydration script if there are any client components');
     parts.push('    const hasClientComponents = Object.keys(componentTypes).some(name => {');
@@ -514,7 +543,7 @@ function transformAstroToJsInternal(ast: FragmentNode, options: TransformOptions
     parts.push('(function() {');
     parts.push('  const componentModules = {};');
     parts.push('  const componentTypes = ${JSON.stringify(componentTypes)};');
-    parts.push(`  const componentPaths = \${JSON.stringify(${JSON.stringify(componentPaths)})};`);
+    parts.push(`  const componentPaths = \${JSON.stringify(componentPaths)};`);
     parts.push('  ');
     parts.push('  async function hydrateComponent(island) {');
     parts.push(`    const componentName = island.getAttribute('component-export');`);

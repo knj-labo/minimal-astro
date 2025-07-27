@@ -147,25 +147,30 @@ function scanFrontmatter(state: TokenizerState): [TokenizerState, Token | null] 
 
     const contentStart = currentState.position;
     while (currentState.position < currentState.source.length) {
-      if (peek(currentState) === '\n' && peekSequence(currentState, '\n---')) {
-        const content = currentState.source.slice(contentStart, currentState.position);
-        currentState = advance(currentState); // Skip newline
-        currentState = advance(currentState, 3); // Skip ---
+      if (peek(currentState) === '\n') {
+        // Check if the next line starts with ---
+        const tempState = advance(currentState);
+        if (peekSequence(tempState, '---')) {
+          const content = currentState.source.slice(contentStart, currentState.position);
+          currentState = advance(currentState); // Skip newline
+          currentState = advance(currentState, 3); // Skip ---
 
-        return [
-          currentState,
-          {
-            type: TokenType.FrontmatterContent,
-            value: content.trim(),
-            loc: {
-              start,
-              end: getCurrentPosition(currentState),
+          return [
+            currentState,
+            {
+              type: TokenType.FrontmatterContent,
+              value: content.trim(),
+              loc: {
+                start,
+                end: getCurrentPosition(currentState),
+              },
             },
-          },
-        ];
+          ];
+        }
       }
       currentState = advance(currentState);
     }
+    console.log('[DIAG] Failed to find frontmatter end marker');
   }
   return [state, null];
 }

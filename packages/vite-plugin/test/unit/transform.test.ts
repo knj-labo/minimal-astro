@@ -1,3 +1,4 @@
+// @ts-ignore
 import type { FragmentNode } from '@minimal-astro/types/ast';
 import { describe, expect, test } from 'vitest';
 import { transformAstroToJs } from '../../src/transform.js';
