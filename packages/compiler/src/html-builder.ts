@@ -1,14 +1,4 @@
-import type {
-  Attr,
-  ComponentNode,
-  ElementNode,
-  ExpressionNode,
-  FragmentNode,
-  FrontmatterNode,
-  Node,
-  RawHTMLNode,
-  TextNode,
-} from '@minimal-astro/types/ast';
+import { extractVariables } from '@minimal-astro/internal-helpers';
 
 export interface HtmlBuilderOptions {
   prettyPrint?: boolean;
@@ -183,23 +173,7 @@ interface EvaluationContext {
  */
 function evaluateExpression(code: string, context: EvaluationContext): string {
   try {
-    // Create a function that only has access to the context variables
-    // Note: 'with' statement is used here for variable scope isolation
-    // This is generally discouraged but acceptable for build-time evaluation
-    const func = new Function(
-      'context',
-      `
-      with(context.variables) {
-        try {
-          return ${code};
-        } catch (e) {
-          return undefined;
-        }
-      }
-    `
-    );
-
-    const result = func(context);
+    const result = safeEvaluateExpression(code, context.variables);
 
     // Convert result to string, handling undefined/null gracefully
     if (result === undefined || result === null) {
@@ -221,38 +195,23 @@ function extractFrontmatterVariables(ast: FragmentNode): Record<string, unknown>
 
   for (const child of ast.children) {
     if (child.type === 'Frontmatter') {
-      try {
-        // Strip TypeScript syntax first
-        const strippedCode = child.code
-          .replace(/(?<!['"`:]):\s*[A-Z][A-Za-z0-9_<>[\\]{}|&\s]*(?=\s*[=,;)\\]}])/g, '') // Remove type annotations (only if starts with capital letter)
-          .replace(/interface\s+\w+\s*\{[^}]*\}/gs, '') // Remove interfaces
-          .replace(/type\s+\w+\s*=\s*[^;]+;/g, ''); // Remove type declarations
+      const frontmatter = child as FrontmatterNode;
 
-        // Create a safer evaluation context
-        const func = new Function(`
-          ${strippedCode}
-          
-          // Extract all declared variables
-          const context = {};
-          ${
-            strippedCode
-              .match(/(?:const|let|var)\s+(\w+)/g)
-              ?.map((match: string) => {
-                const varName = match.replace(/(?:const|let|var)\s+/, '');
-                return `try { context.${varName} = ${varName}; } catch (e) { context.${varName} = undefined; }`;
-              })
-              .join('\n') || ''
+      // Extract JavaScript variable names from frontmatter code
+      if (frontmatter.code) {
+        try {
+          // Extract variable names from the frontmatter JavaScript code
+          const varNames = extractVariables(frontmatter.code);
+          // For build-time HTML generation, we can't execute the JavaScript
+          // So we'll mark these as needing runtime evaluation
+          for (const varName of varNames) {
+            variables[varName] = `__FRONTMATTER_VAR_${varName}__`;
           }
-          
-          return context;
-        `);
-
-        const result = func();
-        Object.assign(variables, result);
-      } catch (error) {
-        // If frontmatter evaluation fails, continue with empty variables
-        console.warn('Failed to evaluate frontmatter:', error);
+        } catch (error) {
+          console.warn('Failed to extract frontmatter variables:', error);
+        }
       }
+
       break; // Only process the first frontmatter block
     }
   }

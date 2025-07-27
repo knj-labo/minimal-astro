@@ -1,5 +1,7 @@
 <script>
-const _count = 0;
+// biome-ignore lint/style/useConst: Svelte reactive variable
+// biome-ignore lint/correctness/noUnusedVariables: Used in template
+let count = 0;
 </script>
 
 <div style="padding: 10px">
@@ -7,7 +9,7 @@ const _count = 0;
     <button on:click={() => count++}>
         Increment
     </button>
-    <button on:click{() => count--}>
+    <button on:click={() => count--}>
         Decrement
     </button>
 </div>

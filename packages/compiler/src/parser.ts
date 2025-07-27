@@ -11,7 +11,7 @@ import type {
   SourceSpan,
   TextNode,
 } from '@minimal-astro/types/ast';
-import { CompilerError, FrontmatterParseError } from './errors.js';
+import { CompilerError } from './errors.js';
 import { type Token, TokenType, tokenize } from './tokenizer.js';
 import { safeExecute } from './utils.js';
 
@@ -228,35 +228,14 @@ function parseAttributes(state: ParserState): [ParserState, Attr[]] {
 
 function parseFrontmatter(
   state: ParserState,
-  options: { throwOnError?: boolean } = {}
+  _options: { throwOnError?: boolean } = {}
 ): [ParserState, FrontmatterNode | null] {
   const token = peek(state);
   if (token && token.type === TokenType.FrontmatterContent) {
     const [newState] = advance(state);
-    try {
-      // A simple check for syntax errors could be to try to parse it.
-      // This is not a full validation, but can catch basic errors.
-      // For a real implementation, a proper JS parser would be needed.
-      new Function(token.value);
-      // biome-ignore lint/suspicious/noExplicitAny: Error type from Function constructor
-    } catch (e: any) {
-      if (options.throwOnError) {
-        throw new FrontmatterParseError(
-          `Frontmatter parsing error: ${e.message}`,
-          token.loc,
-          state.filename
-        );
-      }
-      const errorState = addDiagnostic(
-        newState,
-        'FRONTMATTER_PARSE_ERROR',
-        `Frontmatter parsing error: ${e.message}`,
-        token.loc,
-        'error',
-        options
-      );
-      return [errorState, null];
-    }
+    // Skip the Function check for now - frontmatter often contains
+    // import statements and top-level await which aren't valid in Function()
+    // A proper JS/TS parser would be needed for real validation
 
     return [
       newState,
@@ -498,6 +477,7 @@ function parse(state: ParserState, options: { throwOnError?: boolean } = {}): Pa
   if (frontmatter) {
     children.push(frontmatter);
     currentState = frontmatterState;
+  } else {
   }
 
   // Parse remaining content

@@ -59,3 +59,9 @@ export { scheduleIdle } from './strategies/idle.js';
 export { scheduleVisible } from './strategies/visible.js';
 export { scheduleMedia } from './strategies/media.js';
 export { scheduleOnly } from './strategies/only.js';
+
+// Client hydration module for external script loading
+export {
+  initHydration,
+  hydrateComponent,
+} from './client-hydration.js';

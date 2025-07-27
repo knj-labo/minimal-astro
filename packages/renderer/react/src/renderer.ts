@@ -12,7 +12,10 @@ import type {
   Node,
   TextNode,
 } from '@minimal-astro/internal-helpers';
-import { createContextualLogger } from '@minimal-astro/internal-helpers';
+import {
+  createContextualLogger,
+  evaluateExpression as safeEvaluateExpression,
+} from '@minimal-astro/internal-helpers';
 
 // Component type definition
 type ComponentType<P = Record<string, unknown>> = (props: P) => unknown;
@@ -428,16 +431,12 @@ function renderComponentToString(
 }
 
 /**
- * Helper to evaluate expressions
+ * Helper to evaluate expressions using safe evaluator
  */
 function evaluateExpression(code: string, context: Record<string, unknown>): unknown {
-  // Create a function with context variables
-  const contextKeys = Object.keys(context);
-  const contextValues = Object.values(context);
-
   try {
-    const fn = new Function(...contextKeys, `return (${code})`);
-    return fn(...contextValues);
+    const result = safeEvaluateExpression(code, context);
+    return result !== undefined ? result : '';
   } catch (_error) {
     throw new Error(`Failed to evaluate expression: ${code}`);
   }

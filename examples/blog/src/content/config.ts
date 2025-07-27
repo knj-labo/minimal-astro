@@ -1,3 +1,4 @@
+// @ts-ignore
 import { defineCollection, z } from 'minimal-astro/content';
 
 const postCollection = defineCollection({

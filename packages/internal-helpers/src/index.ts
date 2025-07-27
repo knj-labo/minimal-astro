@@ -56,6 +56,13 @@ export {
   type JSXTransformOptions,
 } from './jsx-transform.js';
 
+// Expression evaluator
+export {
+  evaluateExpression,
+  extractVariables,
+  type EvaluatorContext,
+} from './expression-evaluator.js';
+
 // Universal SSR types
 export type {
   FrameworkType,
