@@ -1,0 +1,31 @@
+name: Feature
+description: 機能追加・改善
+labels: ["feature"]
+
+body:
+  - type: markdown
+    id: context
+    attributes:
+      value: |
+        ### 背景
+        仕様書該当章: <!-- 例: 5.1 parser -->
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: タスク
+      description: チェックリスト形式で細分化してください
+      value: |
+        - [ ] 実装
+        - [ ] ユニットテスト
+        - [ ] ドキュメント
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件
+      description: 動作検証やテスト結果など、Done の判断材料
+    validations:
+      required: true
