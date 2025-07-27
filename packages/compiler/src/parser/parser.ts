@@ -2,11 +2,26 @@ import { tokenize } from '../tokenizer/index.js'
 import type { Token } from '../tokenizer/types.js'
 import type { AstroAST, AstroNode, ElementNode, ExpressionNode } from './types.js'
 
+/**
+ * Parser state that maintains the current position in the token stream
+ */
 interface ParserState {
   tokens: Token[]
   current: number
 }
 
+/**
+ * Parse Astro source code into an Abstract Syntax Tree (AST)
+ *
+ * @param source - The Astro source code to parse
+ * @returns The root AST node (Program)
+ *
+ * @example
+ * ```typescript
+ * const ast = parse('<div>Hello {name}</div>')
+ * console.log(ast) // { type: 'Program', children: [...] }
+ * ```
+ */
 export function parse(source: string): AstroAST {
   const tokens = tokenize(source)
   const initialState: ParserState = { tokens, current: 0 }
@@ -18,6 +33,12 @@ export function parse(source: string): AstroAST {
   }
 }
 
+/**
+ * Parse the entire program by collecting all top-level nodes
+ *
+ * @param initialState - The initial parser state
+ * @returns An object containing the parsed children and final state
+ */
 function parseProgram(initialState: ParserState): { children: AstroNode[]; state: ParserState } {
   const children: AstroNode[] = []
   let state = initialState
@@ -35,6 +56,12 @@ function parseProgram(initialState: ParserState): { children: AstroNode[]; state
   return { children, state }
 }
 
+/**
+ * Parse a single node based on the current token
+ *
+ * @param state - The current parser state
+ * @returns An object containing the parsed node (or null) and new state
+ */
 function parseNode(state: ParserState): { node: AstroNode | null; state: ParserState } {
   const token = peek(state)
 
@@ -70,6 +97,12 @@ function parseNode(state: ParserState): { node: AstroNode | null; state: ParserS
   return { node: null, state: advance(state).state }
 }
 
+/**
+ * Parse frontmatter block (JavaScript/TypeScript code between --- markers)
+ *
+ * @param state - The current parser state
+ * @returns An object containing the parsed frontmatter node and new state
+ */
 function parseFrontmatter(state: ParserState): { node: AstroNode; state: ParserState } {
   const { state: s1 } = consume(state, 'FRONTMATTER_START')
 
@@ -93,6 +126,12 @@ function parseFrontmatter(state: ParserState): { node: AstroNode; state: ParserS
   }
 }
 
+/**
+ * Parse HTML/JSX element including attributes and children
+ *
+ * @param state - The current parser state
+ * @returns An object containing the parsed element node and new state
+ */
 function parseElement(state: ParserState): { node: ElementNode; state: ParserState } {
   const { state: s1 } = consume(state, 'HTML_TAG_OPEN')
   const { token: nameToken, state: s2 } = consume(s1, 'HTML_TAG_NAME')
@@ -180,6 +219,12 @@ function parseElement(state: ParserState): { node: ElementNode; state: ParserSta
   }
 }
 
+/**
+ * Parse JavaScript expression within curly braces { }
+ *
+ * @param state - The current parser state
+ * @returns An object containing the parsed expression node and new state
+ */
 function parseExpression(state: ParserState): { node: ExpressionNode; state: ParserState } {
   const { state: s1 } = consume(state, 'EXPRESSION_START')
 
@@ -203,6 +248,12 @@ function parseExpression(state: ParserState): { node: ExpressionNode; state: Par
   }
 }
 
+/**
+ * Parse text content between elements
+ *
+ * @param state - The current parser state
+ * @returns An object containing the parsed text node (or null if empty) and new state
+ */
 function parseText(state: ParserState): { node: AstroNode | null; state: ParserState } {
   let value = ''
   let currentState = state
@@ -229,6 +280,14 @@ function parseText(state: ParserState): { node: AstroNode | null; state: ParserS
 }
 
 // Immutable state helpers
+
+/**
+ * Look at a token without consuming it
+ *
+ * @param state - The current parser state
+ * @param offset - How many tokens ahead to look (default: 0)
+ * @returns The token at the specified position
+ */
 function peek(state: ParserState, offset = 0): Token {
   const index = state.current + offset
   if (index >= state.tokens.length) {
@@ -237,6 +296,12 @@ function peek(state: ParserState, offset = 0): Token {
   return state.tokens[index]
 }
 
+/**
+ * Consume the current token and advance to the next one
+ *
+ * @param state - The current parser state
+ * @returns An object containing the consumed token and new state
+ */
 function advance(state: ParserState): { token: Token; state: ParserState } {
   if (isAtEnd(state)) {
     return { token: state.tokens[state.current], state }
@@ -248,6 +313,14 @@ function advance(state: ParserState): { token: Token; state: ParserState } {
   }
 }
 
+/**
+ * Consume a token of a specific type or throw an error
+ *
+ * @param state - The current parser state
+ * @param type - The expected token type
+ * @returns An object containing the consumed token and new state
+ * @throws Error if the current token doesn't match the expected type
+ */
 function consume(state: ParserState, type: string): { token: Token; state: ParserState } {
   const token = peek(state)
   if (token.type !== type) {
@@ -256,6 +329,12 @@ function consume(state: ParserState, type: string): { token: Token; state: Parse
   return advance(state)
 }
 
+/**
+ * Check if we've reached the end of the token stream
+ *
+ * @param state - The current parser state
+ * @returns True if at the end of the token stream
+ */
 function isAtEnd(state: ParserState): boolean {
   return peek(state).type === 'EOF'
 }
