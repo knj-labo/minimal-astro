@@ -1,0 +1,83 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Tokenizer > should tokenize frontmatter 1`] = `
+[
+  {
+    "col": 1,
+    "line": 1,
+    "type": "FRONTMATTER_START",
+    "value": "---",
+  },
+  {
+    "col": 22,
+    "line": 2,
+    "type": "FRONTMATTER_CONTENT",
+    "value": "const title = 'Hello'",
+  },
+  {
+    "col": 1,
+    "line": 3,
+    "type": "FRONTMATTER_END",
+    "value": "---",
+  },
+  {
+    "col": 4,
+    "line": 3,
+    "type": "EOF",
+    "value": "",
+  },
+]
+`;
+
+exports[`Tokenizer > should tokenize simple HTML 1`] = `
+[
+  {
+    "col": 1,
+    "line": 1,
+    "type": "HTML_TAG_OPEN",
+    "value": "<",
+  },
+  {
+    "col": 5,
+    "line": 1,
+    "type": "HTML_TAG_NAME",
+    "value": "div",
+  },
+  {
+    "col": 5,
+    "line": 1,
+    "type": "HTML_TAG_CLOSE",
+    "value": ">",
+  },
+  {
+    "col": 17,
+    "line": 1,
+    "type": "TEXT",
+    "value": "Hello World",
+  },
+  {
+    "col": 17,
+    "line": 1,
+    "type": "HTML_TAG_CLOSE",
+    "value": "</",
+  },
+  {
+    "col": 22,
+    "line": 1,
+    "type": "HTML_TAG_NAME",
+    "value": "div",
+  },
+  {
+    "col": 22,
+    "line": 1,
+    "type": "HTML_TAG_CLOSE",
+    "value": ">",
+  },
+  {
+    "col": 23,
+    "line": 1,
+    "type": "EOF",
+    "value": "",
+  },
+]
+`;

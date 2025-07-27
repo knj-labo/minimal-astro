@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Parser > should generate AST snapshot 1`] = `
+{
+  "children": [
+    {
+      "type": "Frontmatter",
+      "value": "const items = ['apple', 'banana', 'orange']",
+    },
+    {
+      "attributes": [],
+      "children": [
+        {
+          "attributes": [],
+          "children": [
+            {
+              "attributes": [],
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "Fruit List",
+                },
+              ],
+              "name": "title",
+              "selfClosing": false,
+              "type": "Element",
+            },
+          ],
+          "name": "head",
+          "selfClosing": false,
+          "type": "Element",
+        },
+        {
+          "attributes": [],
+          "children": [
+            {
+              "attributes": [],
+              "children": [
+                {
+                  "type": "Text",
+                  "value": "My Fruits",
+                },
+              ],
+              "name": "h1",
+              "selfClosing": false,
+              "type": "Element",
+            },
+            {
+              "attributes": [],
+              "children": [
+                {
+                  "type": "Expression",
+                  "value": "items.map(item => <li>{item}</li>)",
+                },
+              ],
+              "name": "ul",
+              "selfClosing": false,
+              "type": "Element",
+            },
+          ],
+          "name": "body",
+          "selfClosing": false,
+          "type": "Element",
+        },
+      ],
+      "name": "html",
+      "selfClosing": false,
+      "type": "Element",
+    },
+  ],
+  "type": "Program",
+}
+`;
