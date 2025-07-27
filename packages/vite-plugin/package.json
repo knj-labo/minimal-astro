@@ -28,8 +28,10 @@
     "vite": "^5.0.0"
   },
   "devDependencies": {
+    "@swc/core": "^1.13.2",
     "@types/node": "^20.0.0",
     "bun-types": "latest",
+    "magic-string": "^0.30.17",
     "typescript": "^5.4.0"
   },
   "peerDependencies": {

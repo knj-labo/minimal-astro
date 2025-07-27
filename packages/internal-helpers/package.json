@@ -17,7 +17,10 @@
     "lint": "biome check .",
     "format": "biome format --write ."
   },
-  "dependencies": {},
+  "dependencies": {
+    "acorn": "^8.15.0",
+    "pino": "^9.7.0"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.4.0"

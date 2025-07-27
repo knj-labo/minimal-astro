@@ -170,7 +170,6 @@ function scanFrontmatter(state: TokenizerState): [TokenizerState, Token | null] 
       }
       currentState = advance(currentState);
     }
-    console.log('[DIAG] Failed to find frontmatter end marker');
   }
   return [state, null];
 }

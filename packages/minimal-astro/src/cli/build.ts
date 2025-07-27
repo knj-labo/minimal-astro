@@ -354,6 +354,22 @@ function logBuildSummary(summary: BuildSummary): void {
 // MAIN BUILD FUNCTION - Orchestrates pure functions and side effects
 // ============================================================================
 
+import { rm } from 'node:fs/promises';
+
+/**
+ * Cleans the output directory before a build
+ */
+async function cleanOutputDir(outputDir: string): Promise<void> {
+  try {
+    await rm(outputDir, { recursive: true, force: true });
+  } catch (error) {
+    // It's okay if the directory doesn't exist
+    if (error.code !== 'ENOENT') {
+      throw new Error(`Failed to clean output directory: ${outputDir}`);
+    }
+  }
+}
+
 /**
  * Main build function - orchestrates the entire build process
  * Separates side effects from pure logic for better testability
@@ -363,6 +379,9 @@ export async function build(options: BuildOptions): Promise<BuildResult> {
 
   // Side effect: logging
   logBuildStart(inputDir, outputDir);
+
+  // Side effect: clean output directory
+  await cleanOutputDir(outputDir);
 
   // Side effect: validation
   validateInputDirectory(inputDir);

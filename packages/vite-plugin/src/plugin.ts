@@ -271,6 +271,40 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
           return next();
         }
 
+        // Handle client hydration script
+        if (url === '/_astro/client-hydration.js') {
+          try {
+            // Use import.meta.resolve or fallback to path resolution
+            const { fileURLToPath } = await import('node:url');
+            const { join, dirname } = await import('node:path');
+
+            // Try to resolve the runtime package location
+            const currentDir = dirname(fileURLToPath(import.meta.url));
+            const hydrationPath = join(
+              currentDir,
+              '..',
+              '..',
+              'runtime',
+              'dist',
+              'client-hydration.js'
+            );
+
+            const fs = await import('node:fs');
+            const content = await fs.promises.readFile(hydrationPath, 'utf-8');
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/javascript');
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            res.end(content);
+            return;
+          } catch (error) {
+            logger.error('Failed to serve hydration script', error as Error);
+            res.statusCode = 500;
+            res.end('Failed to load hydration script');
+            return;
+          }
+        }
+
         // Skip asset requests (files with extensions, except .html)
         const hasExtension = url.includes('.') && !url.endsWith('.html');
         if (hasExtension) {
@@ -412,9 +446,7 @@ export function astroVitePlugin(options: AstroVitePluginOptions = {}): Plugin {
 
       // Check if this is already transformed code
       if (code.includes('// Auto-generated from')) {
-        console.warn(
-          `[minimal-astro] WARNING: Attempting to transform already-transformed code for ${id}`
-        );
+        logger.warn(`Attempting to transform already-transformed code for ${id}`);
         return null;
       }
 

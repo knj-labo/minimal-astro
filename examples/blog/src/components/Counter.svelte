@@ -1,5 +1,5 @@
 <script>
-const count = 0;
+const _count = 0;
 </script>
 
 <div style="padding: 10px">

@@ -112,9 +112,16 @@ export function createLogger(options: LoggerOptions = {}): Logger {
 }
 
 /**
- * Default logger instance for convenience
+ * Import pino logger for production builds
  */
-export const logger: Logger = createLogger();
+import { createPinoLogger } from './pino-logger.js';
+
+/**
+ * Default logger instance for convenience
+ * Uses pino in production for better performance
+ */
+export const logger: Logger =
+  process.env.USE_PINO !== 'false' ? createPinoLogger() : createLogger();
 
 /**
  * Get default log level from environment
