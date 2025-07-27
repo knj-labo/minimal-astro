@@ -1,14 +1,19 @@
 # editor
 .idea
+.vscode
+*.swp
+*.swo
 
 # dependency
 node_modules
+.pnpm-store
 
 # build outputs
 dist/
 build/
 coverage/
 *.tsbuildinfo
+.next
 
 # prevent declaration files in src directories
 packages/*/src/**/*.d.ts
@@ -16,6 +21,28 @@ packages/*/src/**/*.d.ts
 # cache
 .turbo
 .biome-cache
+.cache
+
+# OS
+.DS_Store
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# temporary files
+*.tmp
+tmp/
 
 # settings
 .claude
