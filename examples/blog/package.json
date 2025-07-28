@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@minimal-astro/vite-plugin": "workspace:*",
     "vite": "^5.4.11"
   }
 }
