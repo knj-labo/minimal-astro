@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildHTML > 複雑なASTのスナップショット 1`] = `"<html lang="ja"><head><title>{title}</title><meta charset="UTF-8" /></head><body><h1 class="heading">Welcome to {title}</h1><p>This is a &lt;test&gt; of HTML escaping &amp; special &quot;characters&quot;.</p><img src="/image.png" alt="Test Image"></img></body></html>"`;

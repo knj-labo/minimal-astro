@@ -9,3 +9,4 @@
 
 export { escapeHtml } from './escape.js'
 export { serializeText, serializeElement } from './serializer.js'
+export { buildHTML } from './builder.js'
