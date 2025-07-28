@@ -44,6 +44,15 @@ export function vitePluginAstro(): Plugin {
     enforce: 'pre',
 
     /**
+     * Disable index.html handling
+     */
+    config() {
+      return {
+        appType: 'custom',
+      }
+    },
+
+    /**
      * Transform hook for processing .astro files
      */
     transform(code: string, id: string) {
@@ -64,16 +73,27 @@ export function vitePluginAstro(): Plugin {
     /**
      * Configure server to handle .astro files
      */
-    configureServer(server) {
-      // Add .astro to the list of extensions that trigger full page reload
-      // This is temporary until proper HMR is implemented
-      server.watcher.on('change', file => {
-        if (file.endsWith('.astro')) {
-          server.ws.send({
-            type: 'full-reload',
-          })
-        }
-      })
+    async configureServer(server) {
+      // Import middleware
+      const { createAstroMiddleware } = await import('./middleware.js')
+
+      // Return a function that adds our middleware
+      // This ensures it runs before Vite's built-in middleware
+      return () => {
+        server.middlewares.use(createAstroMiddleware(server))
+      }
+    },
+
+    /**
+     * Configure HMR
+     */
+    handleHotUpdate({ file, server }) {
+      if (file.endsWith('.astro')) {
+        // Trigger full page reload for .astro files
+        server.ws.send({
+          type: 'full-reload',
+        })
+      }
     },
   }
 }

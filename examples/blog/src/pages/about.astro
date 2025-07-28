@@ -1,0 +1,43 @@
+---
+const title = 'About minimal-astro'
+const author = {
+  name: 'Kenji',
+  role: 'Developer',
+  description: 'Building a minimal implementation of Astro to understand its internals.',
+}
+const createdAt = new Date().toLocaleDateString('ja-JP')
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+  </head>
+  <body>
+    <h1>{title}</h1>
+    
+    <section>
+      <h2>About this project</h2>
+      <p>minimal-astro is an educational project that reimplements core features of Astro from scratch.</p>
+      
+      <h3>Author</h3>
+      <dl>
+        <dt>Name</dt>
+        <dd>{author.name}</dd>
+        
+        <dt>Role</dt>
+        <dd>{author.role}</dd>
+        
+        <dt>Description</dt>
+        <dd>{author.description}</dd>
+      </dl>
+      
+      <p>Created on: {createdAt}</p>
+    </section>
+    
+    <nav>
+      <a href="/">Back to Home</a>
+    </nav>
+  </body>
+</html>
