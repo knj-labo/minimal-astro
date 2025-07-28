@@ -1,6 +1,6 @@
 export { parse } from './parser/index.js'
 export { tokenize } from './tokenizer/index.js'
-export { escapeHtml, serializeText, serializeElement } from './html-builder/index.js'
+export { escapeHtml, serializeText, serializeElement, buildHTML } from './html-builder/index.js'
 
 export type {
   AstroAST,
