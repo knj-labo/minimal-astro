@@ -21,7 +21,7 @@ describe('vitePluginAstro', () => {
     // .astroファイルは変換される
     const astroResult = transform('<h1>Test</h1>', '/src/pages/index.astro')
     expect(astroResult).not.toBeNull()
-    expect(astroResult.code).toContain('export default')
+    expect(astroResult?.code).toContain('export default')
 
     // .jsファイルは変換されない
     const jsResult = transform('console.log("test")', '/src/utils/helper.js')
