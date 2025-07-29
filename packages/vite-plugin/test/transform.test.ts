@@ -49,7 +49,9 @@ const items = ['Apple', 'Banana', 'Orange']
     expect(result.code).toContain('export default function render()')
     expect(result.code).toContain("const items = ['Apple', 'Banana', 'Orange']")
     expect(result.code).toContain('<title>Fruit List</title>')
-    expect(result.code).toContain('${items.map(item => <li>{item}</li>).join(')
+    expect(result.code).toContain(
+      "${items.map(item => `<li>${escapeHtml(String(item))}</li>`).join('')",
+    )
   })
 
   it('空の.astroファイルの変換', () => {

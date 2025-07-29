@@ -73,7 +73,17 @@ function elementToTemplate(node: ElementNode): string {
         const expr = child.value
         if (expr.includes('.map') && expr.includes('<')) {
           // Transform JSX-like expressions to template strings
-          // This is a simplified approach - in production we'd use proper JSX transform
+          // Extract the map callback and transform it
+          const mapMatch = expr.match(/\.map\s*\(\s*(\w+)\s*=>\s*<(\w+)>([^<]*)<\/\2>\s*\)/)
+          if (mapMatch) {
+            const [, itemVar, tagName, content] = mapMatch
+            const itemExpr = content.replace(
+              new RegExp(`\\{${itemVar}\\}`, 'g'),
+              `\${escapeHtml(String(${itemVar}))}`,
+            )
+            return `\${${expr.split('.map')[0]}.map(${itemVar} => \`<${tagName}>${itemExpr}</${tagName}>\`).join('')}`
+          }
+          // Fallback for other JSX patterns
           return `\${${expr}.join('')}`
         }
       }
@@ -108,6 +118,11 @@ function extractFrontmatter(ast: AstroAST): string {
  * @returns Transformed JavaScript code and optional source map
  */
 export function transformAstro(code: string, id: string): { code: string; map: null } {
+  // Skip if already transformed
+  if (code.includes('// Transformed from:') && code.includes('export default function render()')) {
+    return { code, map: null }
+  }
+
   // Parse the .astro file into an AST
   const ast = parse(code)
 

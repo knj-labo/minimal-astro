@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@minimal-astro/compiler": "workspace:*"
+  },
   "devDependencies": {
     "@minimal-astro/vite-plugin": "workspace:*",
     "vite": "^5.4.11"

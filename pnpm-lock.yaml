@@ -28,6 +28,10 @@ importers:
         version: 2.1.9(@types/node@20.19.9)
 
   examples/blog:
+    dependencies:
+      '@minimal-astro/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
     devDependencies:
       '@minimal-astro/vite-plugin':
         specifier: workspace:*

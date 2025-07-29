@@ -5,8 +5,8 @@
   "description": "Vite plugin for transforming .astro files",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/vite-plugin/src/index.d.ts",
+      "import": "./dist/vite-plugin/src/index.js"
     }
   },
   "files": ["dist"],

@@ -20,6 +20,12 @@ describe('SSR Middleware', () => {
       },
       plugins: [vitePluginAstro()],
       logLevel: 'error',
+      resolve: {
+        conditions: ['development'],
+      },
+      ssr: {
+        external: ['@minimal-astro/compiler'],
+      },
     })
 
     // Wait a bit for the middleware to be registered

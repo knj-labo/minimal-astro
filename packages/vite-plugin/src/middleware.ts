@@ -25,7 +25,7 @@ export function resolveAstroFile(url: string, root: string): string | null {
 
   // Handle root path
   if (cleanUrl === '/' || cleanUrl === '') {
-    const indexPath = join(root, 'src/pages/index.astro')
+    const indexPath = join(root, 'src/index.astro')
     return existsSync(indexPath) ? indexPath : null
   }
 
@@ -33,8 +33,8 @@ export function resolveAstroFile(url: string, root: string): string | null {
   const urlPath = cleanUrl.startsWith('/') ? cleanUrl.slice(1) : cleanUrl
   const astroPath = urlPath.endsWith('.astro') ? urlPath : `${urlPath}.astro`
 
-  // Try to find the file in src/pages
-  const filePath = join(root, 'src/pages', astroPath)
+  // Try to find the file in src directory
+  const filePath = join(root, 'src', astroPath)
   return existsSync(filePath) ? filePath : null
 }
 

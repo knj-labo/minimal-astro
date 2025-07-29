@@ -3,4 +3,9 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vitePluginAstro()],
+  build: {
+    rollupOptions: {
+      input: './src/index.astro',
+    },
+  },
 })
