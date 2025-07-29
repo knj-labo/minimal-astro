@@ -55,24 +55,23 @@ export function vitePluginAstro(): Plugin {
     /**
      * Resolve .astro file imports
      */
-    async resolveId(id: string, importer) {
+    async resolveId(id: string, importer?: string) {
       // Handle .astro imports
       if (id.endsWith('.astro')) {
+        const path = await import('node:path')
+
         // If it's already an absolute path, return it
-        if (id.startsWith('/')) {
+        if (path.isAbsolute(id)) {
           return id
         }
 
         // Resolve relative imports
         if (importer) {
-          const { resolve } = await import('node:path')
-          const { dirname } = await import('node:path')
-          return resolve(dirname(importer), id)
+          return path.resolve(path.dirname(importer), id)
         }
 
         // For entry points, resolve from root
-        const { resolve } = await import('node:path')
-        return resolve(id)
+        return path.resolve(id)
       }
       return null
     },
