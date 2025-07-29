@@ -1,0 +1,26 @@
+---
+const title = 'Hello minimal-astro'
+const message = 'Welcome to minimal-astro!'
+const items = ['Fast by default', 'Island Architecture', 'Multi-framework support']
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+  </head>
+  <body>
+    <h1>{message}</h1>
+    <p>This is a minimal implementation of Astro, built from scratch.</p>
+    
+    <h2>Features</h2>
+    <ul>
+      {items.map(item => <li>{item}</li>)}
+    </ul>
+    
+    <nav>
+      <a href="/about">About</a>
+    </nav>
+  </body>
+</html>

@@ -16,8 +16,11 @@ coverage/
 .next
 docs/
 
-# prevent declaration files in src directories
+# prevent build artifacts in src directories
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
 packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
 
 # cache
 .turbo

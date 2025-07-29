@@ -50,7 +50,8 @@
       "coverage",
       "*.min.js",
       ".husky",
-      "*.tsbuildinfo"
+      "*.tsbuildinfo",
+      "**/*.astro"
     ]
   }
 }
