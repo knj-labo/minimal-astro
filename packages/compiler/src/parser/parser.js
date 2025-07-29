@@ -118,25 +118,16 @@ function parseElement(state) {
       const attrName = attrResult.token.value
       currentState = attrResult.state
       let attrValue = ''
-      // Skip whitespace and equals
-      while (peek(currentState).type === 'TEXT' && peek(currentState).value.trim() === '') {
-        currentState = advance(currentState).state
-      }
-      if (peek(currentState).value === '=') {
-        currentState = advance(currentState).state // Skip =
-        // Skip whitespace
-        while (peek(currentState).type === 'TEXT' && peek(currentState).value.trim() === '') {
-          currentState = advance(currentState).state
-        }
-        if (peek(currentState).type === 'HTML_ATTRIBUTE_VALUE') {
-          const valueResult = advance(currentState)
-          attrValue = valueResult.token.value
-          currentState = valueResult.state
-        } else if (peek(currentState).type === 'EXPRESSION_START') {
-          const exprResult = parseExpression(currentState)
-          attrValue = exprResult.node
-          currentState = exprResult.state
-        }
+      // Check if next token is the attribute value
+      if (peek(currentState).type === 'HTML_ATTRIBUTE_VALUE') {
+        const valueResult = advance(currentState)
+        attrValue = valueResult.token.value
+        currentState = valueResult.state
+      } else if (peek(currentState).type === 'EXPRESSION_START') {
+        // Handle dynamic attribute values like class={className}
+        const exprResult = parseExpression(currentState)
+        attrValue = exprResult.node
+        currentState = exprResult.state
       }
       attributes.push({ name: attrName, value: attrValue })
     } else {

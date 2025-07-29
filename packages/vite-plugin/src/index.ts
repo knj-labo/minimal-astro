@@ -62,14 +62,14 @@ export function vitePluginAstro(): Plugin {
         if (id.startsWith('/')) {
           return id
         }
-        
+
         // Resolve relative imports
         if (importer) {
           const { resolve } = await import('node:path')
           const { dirname } = await import('node:path')
           return resolve(dirname(importer), id)
         }
-        
+
         // For entry points, resolve from root
         const { resolve } = await import('node:path')
         return resolve(id)
